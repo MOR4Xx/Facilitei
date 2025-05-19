@@ -16,8 +16,6 @@ public class Trabalhador extends Cliente {
     @Column(name = "tipo_servico")
     private List<TipoServico> tipoServico = new ArrayList<>();
 
-    // Aqui você pode adicionar mais atributos futuramente
-    // Ex: disponibilidade, avaliações, descrição pessoal, etc.
 
     public Trabalhador() {
     }

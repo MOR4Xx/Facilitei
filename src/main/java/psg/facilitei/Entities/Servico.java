@@ -1,25 +1,53 @@
 package psg.facilitei.Entities;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.persistence.Entity;
 import psg.facilitei.Entities.Enum.TipoServico;
 
 @Entity
+@Table(name = "servico")
 public class Servico {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotBlank(message = "O título do serviço é obrigatório")
+    @Column(nullable = false)
     private String titulo;
+
+    @NotBlank(message = "A descrição do serviço é obrigatória")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
+
     private Double mediaAvaliacoes;
+
+    @NotBlank(message = "Informe os dias disponíveis")
+    @Column(name = "dias_disponiveis", nullable = false)
     private String diasDisponiveis;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "solicitacao_id")
     private Solicitacao solicitacao;
 
+    @Enumerated(EnumType.STRING)
+    @NotNull(message = "O tipo do serviço é obrigatório")
+    @Column(name = "tipo_servico", nullable = false)
     private TipoServico tipoServico;
+
+    @ManyToMany
+    @JoinTable(name = "servico_trabalhador", joinColumns = @JoinColumn(name = "servico_id"), inverseJoinColumns = @JoinColumn(name = "trabalhador_id"))
     private List<Trabalhador> trabalhador = new ArrayList<>();
+
+    @ManyToMany
+    @JoinTable(name = "servico_cliente", joinColumns = @JoinColumn(name = "servico_id"), inverseJoinColumns = @JoinColumn(name = "cliente_id"))
     private List<Cliente> clientes = new ArrayList<>();
-    
+
     public Servico() {
     }
 
@@ -35,6 +63,8 @@ public class Servico {
         this.trabalhador = trabalhador;
         this.clientes = clientes;
     }
+
+    // Getters e Setters
 
     public Long getId() {
         return id;
@@ -96,8 +126,16 @@ public class Servico {
         return trabalhador;
     }
 
+    public void setTrabalhador(List<Trabalhador> trabalhador) {
+        this.trabalhador = trabalhador;
+    }
+
     public List<Cliente> getClientes() {
         return clientes;
+    }
+
+    public void setClientes(List<Cliente> clientes) {
+        this.clientes = clientes;
     }
 
     @Override
@@ -151,6 +189,4 @@ public class Servico {
             return false;
         return true;
     }
-    
-    
 }

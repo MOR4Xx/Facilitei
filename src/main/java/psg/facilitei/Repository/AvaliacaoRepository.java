@@ -4,6 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import psg.facilitei.Entities.Avaliacao;
 
-public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long>{
+public interface AvaliacaoRepository extends JpaRepository<Avaliacao, Long> {
 
 }

@@ -2,13 +2,12 @@ package psg.facilitei.Entities;
 
 import java.util.List;
 
-import org.antlr.v4.runtime.misc.NotNull;
 
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.*;
+
 
 @Entity
-@Table(name = "chat") // Por padrão, nomes de tabelas em minúsculo são mais comuns
+@Table(name = "chat") 
 public class Chat {
 
     @Id
