@@ -1,4 +1,4 @@
-package psg.facilitei.Entities.Enum;
+package psg.facilitei.Entity.Enum;
 
 public enum StatusSolicitacao {
     PENDENTE, // A solicitação foi criada, mas ainda não foi aceita pelo trabalhador

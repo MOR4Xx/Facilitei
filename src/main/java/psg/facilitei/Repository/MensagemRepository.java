@@ -2,7 +2,7 @@ package psg.facilitei.Repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import psg.facilitei.Entities.Mensagem;
+import psg.facilitei.Entity.Mensagem;
 
 public interface MensagemRepository extends JpaRepository<Mensagem, Long>{
 

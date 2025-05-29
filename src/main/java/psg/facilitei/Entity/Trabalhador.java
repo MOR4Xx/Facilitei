@@ -1,10 +1,10 @@
-package psg.facilitei.Entities;
+package psg.facilitei.Entity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.*;
-import psg.facilitei.Entities.Enum.TipoServico;
+import psg.facilitei.Entity.Enum.TipoServico;
 
 @Entity
 @Table(name = "trabalhador")
