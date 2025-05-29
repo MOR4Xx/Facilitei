@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import psg.facilitei.Entities.Enum.StatusServico;
 import psg.facilitei.Entities.Enum.TipoServico;
 
 @Entity
@@ -25,15 +26,15 @@ public class Servico {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
 
-    private Double mediaAvaliacoes;
+    private Avaliacao avaliacaoServico;
 
     @NotBlank(message = "Informe os dias disponíveis")
     @Column(name = "dias_disponiveis", nullable = false)
-    private String diasDisponiveis;
+    private Disponibilidade disponibilidade;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "solicitacao_id")
-    private Solicitacao solicitacao;
+    private SolicitacaoServico solicitacao;
 
     @Enumerated(EnumType.STRING)
     @NotNull(message = "O tipo do serviço é obrigatório")
@@ -46,96 +47,105 @@ public class Servico {
 
     @ManyToMany
     @JoinTable(name = "servico_cliente", joinColumns = @JoinColumn(name = "servico_id"), inverseJoinColumns = @JoinColumn(name = "cliente_id"))
-    private List<Cliente> clientes = new ArrayList<>();
+    private List<Cliente> cliente = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @NotNull(message = "O tipo do serviço é obrigatório")
+    @Column(name = "tipo_servico", nullable = false)
+    private StatusServico statusServico;
 
     public Servico() {
     }
 
-    public Servico(Long id, String titulo, String descricao, Double mediaAvaliacoes, String diasDisponiveis,
-            Solicitacao solicitacao, TipoServico tipoServico, List<Trabalhador> trabalhador, List<Cliente> clientes) {
+    public Servico(Long id, @NotBlank(message = "O título do serviço é obrigatório") String titulo,
+            @NotBlank(message = "A descrição do serviço é obrigatória") String descricao, Avaliacao avaliacaoServico,
+            @NotBlank(message = "Informe os dias disponíveis") Disponibilidade disponibilidade,
+            SolicitacaoServico solicitacao,
+            @NotNull(message = "O tipo do serviço é obrigatório") TipoServico tipoServico,
+            List<Trabalhador> trabalhador, List<Cliente> cliente,
+            @NotNull(message = "O tipo do serviço é obrigatório") StatusServico statusServico) {
         this.id = id;
         this.titulo = titulo;
         this.descricao = descricao;
-        this.mediaAvaliacoes = mediaAvaliacoes;
-        this.diasDisponiveis = diasDisponiveis;
+        this.avaliacaoServico = avaliacaoServico;
+        this.disponibilidade = disponibilidade;
         this.solicitacao = solicitacao;
         this.tipoServico = tipoServico;
         this.trabalhador = trabalhador;
-        this.clientes = clientes;
+        this.cliente = cliente;
+        this.statusServico = statusServico;
     }
-
-    // Getters e Setters
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getTitulo() {
         return titulo;
     }
 
-    public void setTitulo(String titulo) {
-        this.titulo = titulo;
-    }
-
     public String getDescricao() {
         return descricao;
     }
 
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
+    public Avaliacao getAvaliacaoServico() {
+        return avaliacaoServico;
     }
 
-    public Double getMediaAvaliacoes() {
-        return mediaAvaliacoes;
+    public Disponibilidade getDisponibilidade() {
+        return disponibilidade;
     }
 
-    public void setMediaAvaliacoes(Double mediaAvaliacoes) {
-        this.mediaAvaliacoes = mediaAvaliacoes;
-    }
-
-    public String getDiasDisponiveis() {
-        return diasDisponiveis;
-    }
-
-    public void setDiasDisponiveis(String diasDisponiveis) {
-        this.diasDisponiveis = diasDisponiveis;
-    }
-
-    public Solicitacao getSolicitacao() {
+    public SolicitacaoServico getSolicitacao() {
         return solicitacao;
-    }
-
-    public void setSolicitacao(Solicitacao solicitacao) {
-        this.solicitacao = solicitacao;
     }
 
     public TipoServico getTipoServico() {
         return tipoServico;
     }
 
-    public void setTipoServico(TipoServico tipoServico) {
-        this.tipoServico = tipoServico;
-    }
-
     public List<Trabalhador> getTrabalhador() {
         return trabalhador;
     }
 
-    public void setTrabalhador(List<Trabalhador> trabalhador) {
-        this.trabalhador = trabalhador;
+    public List<Cliente> getCliente() {
+        return cliente;
     }
 
-    public List<Cliente> getClientes() {
-        return clientes;
+    public StatusServico getStatusServico() {
+        return statusServico;
     }
 
-    public void setClientes(List<Cliente> clientes) {
-        this.clientes = clientes;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public void setAvaliacaoServico(Avaliacao avaliacaoServico) {
+        this.avaliacaoServico = avaliacaoServico;
+    }
+
+    public void setDisponibilidade(Disponibilidade disponibilidade) {
+        this.disponibilidade = disponibilidade;
+    }
+
+    public void setSolicitacao(SolicitacaoServico solicitacao) {
+        this.solicitacao = solicitacao;
+    }
+
+    public void setTipoServico(TipoServico tipoServico) {
+        this.tipoServico = tipoServico;
+    }
+
+    public void setStatusServico(StatusServico statusServico) {
+        this.statusServico = statusServico;
     }
 
     @Override
@@ -144,10 +154,9 @@ public class Servico {
         int result = 1;
         result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((titulo == null) ? 0 : titulo.hashCode());
-        result = prime * result + ((descricao == null) ? 0 : descricao.hashCode());
-        result = prime * result + ((mediaAvaliacoes == null) ? 0 : mediaAvaliacoes.hashCode());
-        result = prime * result + ((diasDisponiveis == null) ? 0 : diasDisponiveis.hashCode());
+        result = prime * result + ((disponibilidade == null) ? 0 : disponibilidade.hashCode());
         result = prime * result + ((tipoServico == null) ? 0 : tipoServico.hashCode());
+        result = prime * result + ((trabalhador == null) ? 0 : trabalhador.hashCode());
         return result;
     }
 
@@ -170,23 +179,20 @@ public class Servico {
                 return false;
         } else if (!titulo.equals(other.titulo))
             return false;
-        if (descricao == null) {
-            if (other.descricao != null)
+        if (disponibilidade == null) {
+            if (other.disponibilidade != null)
                 return false;
-        } else if (!descricao.equals(other.descricao))
-            return false;
-        if (mediaAvaliacoes == null) {
-            if (other.mediaAvaliacoes != null)
-                return false;
-        } else if (!mediaAvaliacoes.equals(other.mediaAvaliacoes))
-            return false;
-        if (diasDisponiveis == null) {
-            if (other.diasDisponiveis != null)
-                return false;
-        } else if (!diasDisponiveis.equals(other.diasDisponiveis))
+        } else if (!disponibilidade.equals(other.disponibilidade))
             return false;
         if (tipoServico != other.tipoServico)
             return false;
+        if (trabalhador == null) {
+            if (other.trabalhador != null)
+                return false;
+        } else if (!trabalhador.equals(other.trabalhador))
+            return false;
         return true;
     }
+
+   
 }

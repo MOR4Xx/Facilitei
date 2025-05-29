@@ -1,5 +1,6 @@
 package psg.facilitei.Entities;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,31 +17,30 @@ public class Disponibilidade {
 
     @NotBlank(message = "O dia da semana não pode estar em branco")
     @Column(name = "dia_semana", nullable = false)
-    private String diaSemana;
+    private LocalDateTime Data;
 
     @NotBlank(message = "O horário de início não pode estar em branco")
     @Column(name = "horario_inicio", nullable = false)
-    private String horarioInicio;
+    private LocalDateTime horarioInicio;
 
     @NotBlank(message = "O horário de fim não pode estar em branco")
     @Column(name = "horario_fim", nullable = false)
-    private String horarioFim;
-
-    @ManyToMany(mappedBy = "disponibilidades")
-    private List<Trabalhador> trabalhadores = new ArrayList<>();
+    private LocalDateTime horarioFim;
 
     @OneToMany(mappedBy = "disponibilidade")
     private List<Servico> servicos = new ArrayList<>();
 
-    public Disponibilidade() {}
+    public Disponibilidade() {
+    }
 
-    public Disponibilidade(Long id, String diaSemana, String horarioInicio, String horarioFim,
-            List<Trabalhador> trabalhadores, List<Servico> servicos) {
+    public Disponibilidade(Long id, @NotBlank(message = "O dia da semana não pode estar em branco") LocalDateTime data,
+            @NotBlank(message = "O horário de início não pode estar em branco") LocalDateTime horarioInicio,
+            @NotBlank(message = "O horário de fim não pode estar em branco") LocalDateTime horarioFim,
+            List<Servico> servicos) {
         this.id = id;
-        this.diaSemana = diaSemana;
+        Data = data;
         this.horarioInicio = horarioInicio;
         this.horarioFim = horarioFim;
-        this.trabalhadores = trabalhadores;
         this.servicos = servicos;
     }
 
@@ -52,32 +52,28 @@ public class Disponibilidade {
         this.id = id;
     }
 
-    public String getDiaSemana() {
-        return diaSemana;
+    public LocalDateTime getData() {
+        return Data;
     }
 
-    public void setDiaSemana(String diaSemana) {
-        this.diaSemana = diaSemana;
+    public void setData(LocalDateTime data) {
+        Data = data;
     }
 
-    public String getHorarioInicio() {
+    public LocalDateTime getHorarioInicio() {
         return horarioInicio;
     }
 
-    public void setHorarioInicio(String horarioInicio) {
+    public void setHorarioInicio(LocalDateTime horarioInicio) {
         this.horarioInicio = horarioInicio;
     }
 
-    public String getHorarioFim() {
+    public LocalDateTime getHorarioFim() {
         return horarioFim;
     }
 
-    public void setHorarioFim(String horarioFim) {
+    public void setHorarioFim(LocalDateTime horarioFim) {
         this.horarioFim = horarioFim;
-    }
-
-    public List<Trabalhador> getTrabalhadores() {
-        return trabalhadores;
     }
 
     public List<Servico> getServicos() {
@@ -89,9 +85,10 @@ public class Disponibilidade {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((diaSemana == null) ? 0 : diaSemana.hashCode());
+        result = prime * result + ((Data == null) ? 0 : Data.hashCode());
         result = prime * result + ((horarioInicio == null) ? 0 : horarioInicio.hashCode());
         result = prime * result + ((horarioFim == null) ? 0 : horarioFim.hashCode());
+        result = prime * result + ((servicos == null) ? 0 : servicos.hashCode());
         return result;
     }
 
@@ -109,10 +106,10 @@ public class Disponibilidade {
                 return false;
         } else if (!id.equals(other.id))
             return false;
-        if (diaSemana == null) {
-            if (other.diaSemana != null)
+        if (Data == null) {
+            if (other.Data != null)
                 return false;
-        } else if (!diaSemana.equals(other.diaSemana))
+        } else if (!Data.equals(other.Data))
             return false;
         if (horarioInicio == null) {
             if (other.horarioInicio != null)
@@ -124,13 +121,12 @@ public class Disponibilidade {
                 return false;
         } else if (!horarioFim.equals(other.horarioFim))
             return false;
+        if (servicos == null) {
+            if (other.servicos != null)
+                return false;
+        } else if (!servicos.equals(other.servicos))
+            return false;
         return true;
     }
 
-    // hashCode e equals mantidos como estão
-
-
-   
-    
-    
 }
