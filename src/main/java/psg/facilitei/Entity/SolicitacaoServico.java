@@ -1,11 +1,11 @@
-package psg.facilitei.Entities;
+package psg.facilitei.Entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
+import psg.facilitei.Entity.Enum.StatusServico;
+import psg.facilitei.Entity.Enum.StatusSolicitacao;
 
-import psg.facilitei.Entities.Enum.StatusServico;
-import psg.facilitei.Entities.Enum.StatusSolicitacao;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "solicitacao_servico")

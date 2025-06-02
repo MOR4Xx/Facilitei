@@ -1,4 +1,4 @@
-package psg.facilitei.Entities;
+package psg.facilitei.Entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;

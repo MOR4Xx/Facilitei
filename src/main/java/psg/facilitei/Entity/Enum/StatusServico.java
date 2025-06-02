@@ -1,4 +1,4 @@
-package psg.facilitei.Entities.Enum;
+package psg.facilitei.Entity.Enum;
 
 public enum StatusServico {
     SOLICITADO,        // Cliente solicitou o serviço

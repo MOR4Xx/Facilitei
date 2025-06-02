@@ -1,8 +1,10 @@
-package psg.facilitei.Entities;
+package psg.facilitei.Entity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -27,6 +29,11 @@ public class Disponibilidade {
     @Column(name = "horario_fim", nullable = false)
     private LocalDateTime horarioFim;
 
+    @ManyToOne
+    @JoinColumn(name = "trabalhador_id", nullable = false)
+    @JsonIgnore
+    private Trabalhador trabalhador;
+
     @OneToMany(mappedBy = "disponibilidade")
     private List<Servico> servicos = new ArrayList<>();
 
@@ -36,11 +43,12 @@ public class Disponibilidade {
     public Disponibilidade(Long id, @NotBlank(message = "O dia da semana não pode estar em branco") LocalDateTime data,
             @NotBlank(message = "O horário de início não pode estar em branco") LocalDateTime horarioInicio,
             @NotBlank(message = "O horário de fim não pode estar em branco") LocalDateTime horarioFim,
-            List<Servico> servicos) {
+            Trabalhador trabalhador, List<Servico> servicos) {
         this.id = id;
         Data = data;
         this.horarioInicio = horarioInicio;
         this.horarioFim = horarioFim;
+        this.trabalhador = trabalhador;
         this.servicos = servicos;
     }
 
@@ -74,6 +82,18 @@ public class Disponibilidade {
 
     public void setHorarioFim(LocalDateTime horarioFim) {
         this.horarioFim = horarioFim;
+    }
+
+    public Trabalhador getTrabalhador() {
+        return trabalhador;
+    }
+    
+    public void setTrabalhador(Trabalhador trabalhador) {
+        this.trabalhador = trabalhador;
+    }
+
+    public void setServicos(List<Servico> servicos) {
+        this.servicos = servicos;
     }
 
     public List<Servico> getServicos() {

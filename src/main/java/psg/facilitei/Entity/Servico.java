@@ -1,14 +1,13 @@
-package psg.facilitei.Entities;
+package psg.facilitei.Entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import psg.facilitei.Entity.Enum.StatusServico;
+import psg.facilitei.Entity.Enum.TipoServico;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import psg.facilitei.Entities.Enum.StatusServico;
-import psg.facilitei.Entities.Enum.TipoServico;
 
 @Entity
 @Table(name = "servico")
@@ -26,9 +25,11 @@ public class Servico {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "avaliacao_id")
     private Avaliacao avaliacaoServico;
 
-    @NotBlank(message = "Informe os dias disponíveis")
+    @NotNull(message = "Informe os dias disponíveis")
     @Column(name = "dias_disponiveis", nullable = false)
     private Disponibilidade disponibilidade;
 
@@ -41,17 +42,17 @@ public class Servico {
     @Column(name = "tipo_servico", nullable = false)
     private TipoServico tipoServico;
 
-    @ManyToMany
-    @JoinTable(name = "servico_trabalhador", joinColumns = @JoinColumn(name = "servico_id"), inverseJoinColumns = @JoinColumn(name = "trabalhador_id"))
-    private List<Trabalhador> trabalhador = new ArrayList<>();
+    @ManyToOne
+    @JoinTable(name = "servico_trabalhador")
+    private Trabalhador trabalhador;
 
-    @ManyToMany
-    @JoinTable(name = "servico_cliente", joinColumns = @JoinColumn(name = "servico_id"), inverseJoinColumns = @JoinColumn(name = "cliente_id"))
-    private List<Cliente> cliente = new ArrayList<>();
+    @ManyToOne
+    @JoinTable(name = "servico_cliente")
+    private Cliente cliente;
 
     @Enumerated(EnumType.STRING)
     @NotNull(message = "O tipo do serviço é obrigatório")
-    @Column(name = "tipo_servico", nullable = false)
+    @Column(name = "status_servico", nullable = false)
     private StatusServico statusServico;
 
     public Servico() {
@@ -61,9 +62,8 @@ public class Servico {
             @NotBlank(message = "A descrição do serviço é obrigatória") String descricao, Avaliacao avaliacaoServico,
             @NotBlank(message = "Informe os dias disponíveis") Disponibilidade disponibilidade,
             SolicitacaoServico solicitacao,
-            @NotNull(message = "O tipo do serviço é obrigatório") TipoServico tipoServico,
-            List<Trabalhador> trabalhador, List<Cliente> cliente,
-            @NotNull(message = "O tipo do serviço é obrigatório") StatusServico statusServico) {
+            @NotNull(message = "O tipo do serviço é obrigatório") TipoServico tipoServico, Trabalhador trabalhador,
+            Cliente cliente, @NotNull(message = "O tipo do serviço é obrigatório") StatusServico statusServico) {
         this.id = id;
         this.titulo = titulo;
         this.descricao = descricao;
@@ -80,68 +80,76 @@ public class Servico {
         return id;
     }
 
-    public String getTitulo() {
-        return titulo;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public Avaliacao getAvaliacaoServico() {
-        return avaliacaoServico;
-    }
-
-    public Disponibilidade getDisponibilidade() {
-        return disponibilidade;
-    }
-
-    public SolicitacaoServico getSolicitacao() {
-        return solicitacao;
-    }
-
-    public TipoServico getTipoServico() {
-        return tipoServico;
-    }
-
-    public List<Trabalhador> getTrabalhador() {
-        return trabalhador;
-    }
-
-    public List<Cliente> getCliente() {
-        return cliente;
-    }
-
-    public StatusServico getStatusServico() {
-        return statusServico;
-    }
-
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getTitulo() {
+        return titulo;
     }
 
     public void setTitulo(String titulo) {
         this.titulo = titulo;
     }
 
+    public String getDescricao() {
+        return descricao;
+    }
+
     public void setDescricao(String descricao) {
         this.descricao = descricao;
+    }
+
+    public Avaliacao getAvaliacaoServico() {
+        return avaliacaoServico;
     }
 
     public void setAvaliacaoServico(Avaliacao avaliacaoServico) {
         this.avaliacaoServico = avaliacaoServico;
     }
 
+    public Disponibilidade getDisponibilidade() {
+        return disponibilidade;
+    }
+
     public void setDisponibilidade(Disponibilidade disponibilidade) {
         this.disponibilidade = disponibilidade;
+    }
+
+    public SolicitacaoServico getSolicitacao() {
+        return solicitacao;
     }
 
     public void setSolicitacao(SolicitacaoServico solicitacao) {
         this.solicitacao = solicitacao;
     }
 
+    public TipoServico getTipoServico() {
+        return tipoServico;
+    }
+
     public void setTipoServico(TipoServico tipoServico) {
         this.tipoServico = tipoServico;
+    }
+
+    public Trabalhador getTrabalhador() {
+        return trabalhador;
+    }
+
+    public void setTrabalhador(Trabalhador trabalhador) {
+        this.trabalhador = trabalhador;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public StatusServico getStatusServico() {
+        return statusServico;
     }
 
     public void setStatusServico(StatusServico statusServico) {
@@ -194,5 +202,4 @@ public class Servico {
         return true;
     }
 
-   
 }

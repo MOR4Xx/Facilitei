@@ -1,4 +1,4 @@
-package psg.facilitei.Entities.Enum;
+package psg.facilitei.Entity.Enum;
 
 public enum TipoServico {
         // Construção e Reformas
