@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 import psg.facilitei.Entity.Enum.TipoServico;
 
 @Entity
-@Table(name = "trabalhador")
 public class Trabalhador extends Usuario {
 
 

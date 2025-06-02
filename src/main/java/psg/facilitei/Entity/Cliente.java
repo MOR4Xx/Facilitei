@@ -1,4 +1,5 @@
 package psg.facilitei.Entity;
 
-public class Cliente {
+
+public class Cliente extends Usuario{
 }
