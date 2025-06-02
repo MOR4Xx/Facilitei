@@ -13,60 +13,35 @@ public class Endereco {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Rua é obrigatória")
     @Column(nullable = false)
     private String rua;
 
-    @NotBlank(message = "Número é obrigatório")
     @Column(nullable = false)
     private String numero;
 
-    @NotBlank(message = "Bairro é obrigatório")
     @Column(nullable = false)
     private String bairro;
 
-    @NotBlank(message = "Cidade é obrigatória")
     @Column(nullable = false)
     private String cidade;
 
-    @NotBlank(message = "Estado é obrigatório")
     @Column(nullable = false, length = 2)
-    @Size(min = 2, max = 2, message = "O estado deve ter 2 letras (ex: GO, SP)")
     private String estado;
 
-    @NotBlank(message = "CEP é obrigatório")
-    @Pattern(regexp = "\\d{5}-\\d{3}", message = "CEP deve estar no formato 00000-000")
     @Column(nullable = false)
     private String cep;
 
-    @OneToOne
-    @JoinColumn(name = "cliente_id", nullable = false)
-    private Cliente cliente;
-
     public Endereco() {}
 
-   
-
-    public Endereco(Long id, @NotBlank(message = "Rua é obrigatória") String rua,
-            @NotBlank(message = "Número é obrigatório") String numero,
-            @NotBlank(message = "Bairro é obrigatório") String bairro,
-            @NotBlank(message = "Cidade é obrigatória") String cidade,
-            @NotBlank(message = "Estado é obrigatório") String estado,
-            @NotBlank(message = "CEP é obrigatório") @Pattern(regexp = "\\d{5}-\\d{3}", message = "CEP deve estar no formato 00000-000") String cep,
-            Cliente cliente) {
-        this.id = id;
+    public Endereco(String rua, String numero, String bairro, String cidade, String estado, String cep) {
         this.rua = rua;
         this.numero = numero;
         this.bairro = bairro;
         this.cidade = cidade;
         this.estado = estado;
         this.cep = cep;
-        this.cliente = cliente;
     }
 
-
-
-    // Getters e setters
     public Long getId() {
         return id;
     }
@@ -122,17 +97,5 @@ public class Endereco {
     public void setCep(String cep) {
         this.cep = cep;
     }
-
-    public Cliente getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
-    }
-
-  
-
-    
    
 }

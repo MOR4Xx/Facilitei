@@ -7,26 +7,23 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.modelmapper.internal.bytebuddy.implementation.bind.annotation.SuperMethod;
 
-@Entity
-@Table(name = "cliente")
+
+@MappedSuperclass
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Usuario {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(name = "cliente_nome", nullable = false)
+    @Column(name = "nome", nullable = false)
     private String nome;
 
-    @Column(name = "cliente_email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "cliente_senha", nullable = false)
+    @Column(name = "senha", nullable = false)
     private String senha;
 
-    @Column(name = "cliente_foto_perfil")
+    @Column(name = "foto_perfil")
     private String fotoPerfil;
 
     @OneToOne(cascade = CascadeType.ALL)
@@ -35,22 +32,12 @@ public class Usuario {
 
     public Usuario() {}
 
-    public Usuario(Long id, String nome, String email, String senha, String fotoPerfil, Endereco endereco) {
-        this.id = id;
+    public Usuario( String nome, String email, String senha, String fotoPerfil, Endereco endereco) {
         this.nome = nome;
         this.email = email;
         this.senha = senha;
         this.fotoPerfil = fotoPerfil;
         this.endereco = endereco;
-    }
-
-    // Getters e Setters
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getNome() {
@@ -91,25 +78,5 @@ public class Usuario {
 
     public void setEndereco(Endereco endereco) {
         this.endereco = endereco;
-    }
-
-    // equals e hashCode
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((email == null) ? 0 : email.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null || getClass() != obj.getClass())
-            return false;
-        Usuario other = (Usuario) obj;
-        return id != null && id.equals(other.id) && email != null && email.equals(other.email);
     }
 }
