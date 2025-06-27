@@ -2,39 +2,33 @@ package psg.facilitei.Entity;
 
 import jakarta.persistence.*;
 
-import java.util.List;
-
 @Entity
 @Table(name = "avaliacao_cliente")
 public class AvaliacaoCliente extends Avaliacao {
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "trabalhador_id", nullable = false)
-    private Trabalhador avaliador;
+    @Column(name = "trabalhador_id")
+    private Long trabalhadorId;
 
-    @ManyToOne
-    @JoinColumn(name = "cliente_id")
-    private Cliente avaliado;
-
-
+    @Column(name = "cliente_id")
+    private Long clienteId;
 
     public AvaliacaoCliente() {
         super();
     }
 
-    public Trabalhador getAvaliador() {
-        return avaliador;
+    public Long getTrabalhadorId() {
+        return trabalhadorId;
     }
 
-    public void setAvaliador(Trabalhador avaliador) {
-        this.avaliador = avaliador;
+    public void setTrabalhadorId(Long trabalhadorId) {
+        this.trabalhadorId = trabalhadorId;
     }
 
-    public Cliente getAvaliado() {
-        return avaliado;
+    public Long getClienteId() {
+        return clienteId;
     }
 
-    public void setAvaliado(Cliente avaliado) {
-        this.avaliado = avaliado;
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
     }
 }

@@ -6,33 +6,29 @@ import jakarta.persistence.*;
 @Table(name = "avaliacao_trabalhador")
 public class AvaliacaoTrabalhador extends Avaliacao {
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente_id", nullable = false)
-    private Cliente avaliador;      // quem faz a avaliação
+    @Column(name = "cliente_id")
+    private Long clienteId;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "trabalhador_id", nullable = false)
-    private Trabalhador avaliado;   // quem está sendo avaliado
-
+    @Column(name = "trabalhador_id")
+    private Long trabalhadorId;
 
     public AvaliacaoTrabalhador() {
         super();
     }
 
-
-    public Cliente getAvaliador() {
-        return avaliador;
+    public Long getClienteId() {
+        return clienteId;
     }
 
-    public void setAvaliador(Cliente avaliador) {
-        this.avaliador = avaliador;
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
     }
 
-    public Trabalhador getAvaliado() {
-        return avaliado;
+    public Long getTrabalhadorId() {
+        return trabalhadorId;
     }
 
-    public void setAvaliado(Trabalhador avaliado) {
-        this.avaliado = avaliado;
+    public void setTrabalhadorId(Long trabalhadorId) {
+        this.trabalhadorId = trabalhadorId;
     }
 }

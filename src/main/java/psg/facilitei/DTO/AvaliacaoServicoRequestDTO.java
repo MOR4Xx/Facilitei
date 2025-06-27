@@ -1,37 +1,58 @@
 package psg.facilitei.DTO;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+
 import java.util.List;
 
 public class AvaliacaoServicoRequestDTO {
 
-    @NotNull @Min(1) @Max(5)
     private Integer nota;
-
-    @NotBlank
     private String comentario;
+    private List<String> fotos;
 
-    private List<@Size(max = 500) String> fotos;
+    private Long clienteId;  // ✅ necessário
+    private Long servicoId;  // ✅ necessário
 
-    @NotNull
-    private Long clienteId;
+    // Getters e Setters
+    public Integer getNota() {
+        return nota;
+    }
 
-    @NotNull
-    private Long servicoId;
+    public void setNota(Integer nota) {
+        this.nota = nota;
+    }
 
+    public String getComentario() {
+        return comentario;
+    }
 
-    public Integer getNota() { return nota; }
-    public void setNota(Integer nota) { this.nota = nota; }
+    public void setComentario(String comentario) {
+        this.comentario = comentario;
+    }
 
-    public String getComentario() { return comentario; }
-    public void setComentario(String comentario) { this.comentario = comentario; }
+    public List<String> getFotos() {
+        return fotos;
+    }
 
-    public List<String> getFotos() { return fotos; }
-    public void setFotos(List<String> fotos) { this.fotos = fotos; }
+    public void setFotos(List<String> fotos) {
+        this.fotos = fotos;
+    }
 
-    public Long getClienteId() { return clienteId; }
-    public void setClienteId(Long clienteId) { this.clienteId = clienteId; }
+    public Long getClienteId() {
+        return clienteId;
+    }
 
-    public Long getServicoId() { return servicoId; }
-    public void setServicoId(Long servicoId) { this.servicoId = servicoId; }
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
+    }
+
+    public Long getServicoId() {
+        return servicoId;
+    }
+
+    public void setServicoId(Long servicoId) {
+        this.servicoId = servicoId;
+    }
 }
+
