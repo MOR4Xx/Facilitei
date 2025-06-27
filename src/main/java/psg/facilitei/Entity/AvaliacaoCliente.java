@@ -1,43 +1,34 @@
 package psg.facilitei.Entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "avaliacao_cliente")
-public class AvaliacaoCliente extends Avaliacao{
+public class AvaliacaoCliente extends Avaliacao {
 
-    @ManyToOne
-    @JoinColumn(name = "cliente_id", nullable = false)
-    private Cliente cliente;
+    @Column(name = "trabalhador_id")
+    private Long trabalhadorId;
 
-    @ManyToOne
-    @JoinColumn(name = "trabalhador_id", nullable = false)
-    private Trabalhador trabalhador;
+    @Column(name = "cliente_id")
+    private Long clienteId;
 
     public AvaliacaoCliente() {
+        super();
     }
 
-    public AvaliacaoCliente(Cliente cliente, Trabalhador trabalhador) {
-        this.cliente = cliente;
-        this.trabalhador = trabalhador;
+    public Long getTrabalhadorId() {
+        return trabalhadorId;
     }
 
-    public Cliente getCliente() {
-        return cliente;
+    public void setTrabalhadorId(Long trabalhadorId) {
+        this.trabalhadorId = trabalhadorId;
     }
 
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
+    public Long getClienteId() {
+        return clienteId;
     }
 
-    public Trabalhador getTrabalhador() {
-        return trabalhador;
-    }
-
-    public void setTrabalhador(Trabalhador trabalhador) {
-        this.trabalhador = trabalhador;
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
     }
 }

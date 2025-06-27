@@ -16,9 +16,6 @@ public class Cliente extends Usuario{
     @Column(name = "nota_cliente", nullable = false)
     private Integer notaCliente;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<AvaliacaoCliente> avaliacoesCliente = new ArrayList<>();
-
     public Cliente() {}
 
     public Cliente(Long id, Integer notaCliente ) {
@@ -48,11 +45,4 @@ public class Cliente extends Usuario{
         this.notaCliente = notaCliente;
     }
 
-    public List<AvaliacaoCliente> getAvaliacoesCliente() {
-        return avaliacoesCliente;
-    }
-
-    public void setAvaliacoesCliente(List<AvaliacaoCliente> avaliacoesCliente) {
-        this.avaliacoesCliente = avaliacoesCliente;
-    }
 }
