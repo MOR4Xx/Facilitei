@@ -17,7 +17,7 @@ public class Trabalhador extends Usuario {
     @OneToMany(mappedBy = "trabalhador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Servico> servicos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "trabalhador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "avaliador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<AvaliacaoCliente> avaliacoesTrabalhador = new ArrayList<>();
 
     @Column(name = "nota_trabalhador")

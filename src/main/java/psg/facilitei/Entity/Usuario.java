@@ -1,18 +1,15 @@
 package psg.facilitei.Entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-import org.modelmapper.internal.bytebuddy.implementation.bind.annotation.SuperMethod;
 
-
-@MappedSuperclass
+@Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-public class Usuario {
+@Table(name = "usuarios")
+public abstract class Usuario {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "nome", nullable = false)
     private String nome;
@@ -32,12 +29,18 @@ public class Usuario {
 
     public Usuario() {}
 
-    public Usuario( String nome, String email, String senha, String fotoPerfil, Endereco endereco) {
+    public Usuario(String nome, String email, String senha, String fotoPerfil, Endereco endereco) {
         this.nome = nome;
         this.email = email;
         this.senha = senha;
         this.fotoPerfil = fotoPerfil;
         this.endereco = endereco;
+    }
+
+    // Getters e Setters
+
+    public Long getId() {
+        return id;
     }
 
     public String getNome() {

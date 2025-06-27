@@ -1,43 +1,40 @@
 package psg.facilitei.Entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
+import java.util.List;
 
 @Entity
 @Table(name = "avaliacao_cliente")
-public class AvaliacaoCliente extends Avaliacao{
+public class AvaliacaoCliente extends Avaliacao {
 
-    @ManyToOne
-    @JoinColumn(name = "cliente_id", nullable = false)
-    private Cliente cliente;
-
-    @ManyToOne
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "trabalhador_id", nullable = false)
-    private Trabalhador trabalhador;
+    private Trabalhador avaliador;
+
+    @ManyToOne
+    @JoinColumn(name = "cliente_id")
+    private Cliente avaliado;
+
+
 
     public AvaliacaoCliente() {
+        super();
     }
 
-    public AvaliacaoCliente(Cliente cliente, Trabalhador trabalhador) {
-        this.cliente = cliente;
-        this.trabalhador = trabalhador;
+    public Trabalhador getAvaliador() {
+        return avaliador;
     }
 
-    public Cliente getCliente() {
-        return cliente;
+    public void setAvaliador(Trabalhador avaliador) {
+        this.avaliador = avaliador;
     }
 
-    public void setCliente(Cliente cliente) {
-        this.cliente = cliente;
+    public Cliente getAvaliado() {
+        return avaliado;
     }
 
-    public Trabalhador getTrabalhador() {
-        return trabalhador;
-    }
-
-    public void setTrabalhador(Trabalhador trabalhador) {
-        this.trabalhador = trabalhador;
+    public void setAvaliado(Cliente avaliado) {
+        this.avaliado = avaliado;
     }
 }

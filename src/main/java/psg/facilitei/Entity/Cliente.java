@@ -16,7 +16,7 @@ public class Cliente extends Usuario{
     @Column(name = "nota_cliente", nullable = false)
     private Integer notaCliente;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "avaliado", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<AvaliacaoCliente> avaliacoesCliente = new ArrayList<>();
 
     public Cliente() {}
