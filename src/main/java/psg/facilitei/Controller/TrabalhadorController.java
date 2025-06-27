@@ -16,7 +16,6 @@ public class TrabalhadorController {
     @PostMapping(value = "/create")
     public void create(){
 
-
     }
 
 }
