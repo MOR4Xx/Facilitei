@@ -32,7 +32,7 @@ public class Servico {
     private AvaliacaoServico avaliacaoServico;
 
     @NotNull(message = "Informe os dias disponíveis")
-    @OneToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "disponibilidade_id", nullable = false)
     private Disponibilidade disponibilidade;
 

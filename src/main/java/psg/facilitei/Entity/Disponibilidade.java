@@ -17,21 +17,17 @@ public class Disponibilidade {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "O dia da semana não pode estar em branco")
     @Column(name = "dia_semana", nullable = false)
     private LocalDateTime Data;
 
-    @NotBlank(message = "O horário de início não pode estar em branco")
     @Column(name = "horario_inicio", nullable = false)
     private LocalDateTime horarioInicio;
 
-    @NotBlank(message = "O horário de fim não pode estar em branco")
     @Column(name = "horario_fim", nullable = false)
     private LocalDateTime horarioFim;
 
     @ManyToOne
     @JoinColumn(name = "trabalhador_id", nullable = false)
-    @JsonIgnore
     private Trabalhador trabalhador;
 
     @OneToMany(mappedBy = "disponibilidade")

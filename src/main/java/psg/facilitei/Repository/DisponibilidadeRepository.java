@@ -10,15 +10,4 @@ import psg.facilitei.Entity.Disponibilidade;
 @Repository
 public interface DisponibilidadeRepository extends JpaRepository<Disponibilidade, Long> {
 
-    boolean existsByTrabalhadorIdAndDataHoraInicioLessThanEqualAndDataHoraFimGreaterThanEqual(
-            Long trabalhadorId,
-            LocalDateTime dataHoraFim,
-            LocalDateTime dataHoraInicio);
-
-    boolean existsByTrabalhadorIdAndDataHoraInicioLessThanEqualAndDataHoraFimGreaterThanEqualAndIdNot(
-            Long trabalhadorId,
-            LocalDateTime dataHoraFim,
-            LocalDateTime dataHoraInicio,
-            Long id);
-
 }
