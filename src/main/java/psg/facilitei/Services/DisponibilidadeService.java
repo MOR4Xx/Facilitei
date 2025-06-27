@@ -38,17 +38,6 @@ public class DisponibilidadeService {
             throw new BusinessRuleException("Data de início deve ser antes da data de fim.");
         }
 
-        boolean existeSobreposicao = disponibilidadeRepository
-                .existsByTrabalhadorIdAndDataHoraInicioLessThanEqualAndDataHoraFimGreaterThanEqual(
-                        dto.getTrabalhadorId(),
-                        dto.getDataHoraFim(),
-                        dto.getDataHoraInicio());
-
-        if (existeSobreposicao) {
-            throw new BusinessRuleException(
-                    "Já existe uma disponibilidade nesse intervalo de tempo para o trabalhador.");
-        }
-
         Disponibilidade disponibilidade = modelMapper.map(dto, Disponibilidade.class);
         Disponibilidade saved = disponibilidadeRepository.save(disponibilidade);
         return modelMapper.map(saved, DisponibilidadeResponseDTO.class);
@@ -80,18 +69,6 @@ public class DisponibilidadeService {
 
         if (dto.getDataHoraInicio().isAfter(dto.getDataHoraFim())) {
             throw new BusinessRuleException("Data de início deve ser antes da data de fim.");
-        }
-
-        boolean existeSobreposicao = disponibilidadeRepository
-                .existsByTrabalhadorIdAndDataHoraInicioLessThanEqualAndDataHoraFimGreaterThanEqualAndIdNot(
-                        dto.getTrabalhadorId(),
-                        dto.getDataHoraFim(),
-                        dto.getDataHoraInicio(),
-                        id);
-
-        if (existeSobreposicao) {
-            throw new BusinessRuleException(
-                    "Já existe uma disponibilidade nesse intervalo de tempo para o trabalhador.");
         }
 
         disponibilidade.setHorarioInicio(dto.getDataHoraInicio());
