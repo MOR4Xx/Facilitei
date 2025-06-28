@@ -1,0 +1,209 @@
+body {
+    background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3a 100%);
+    color: #e0e0e0;
+    font-family: 'Montserrat', sans-serif;
+    line-height: 1.7;
+}
+
+#main-content {
+    margin-top: 60px;
+    background-color: rgba(30, 30, 50, 0.9);
+    border-radius: 20px;
+    box-shadow: 0px 10px 40px rgba(0, 0, 0, 0.3);
+    padding: 40px;
+    border: 1px solid rgba(70, 70, 100, 0.5);
+}
+
+h2 {
+    color: #4CAF50;
+    text-align: center;
+    margin-bottom: 35px;
+    font-size: 2.5em;
+    font-weight: 800;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.form-inline {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 20px 0;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.form-control {
+    border-radius: 30px;
+    padding: 14px 25px;
+    width: 100%;
+    max-width: 380px;
+    border: 2px solid #4CAF50;
+    background-color: rgba(40, 40, 60, 0.7);
+    color: #e0e0e0;
+    transition: all 0.4s ease-in-out;
+    font-size: 1.1em;
+}
+
+.form-control:focus {
+    border-color: #00bcd4;
+    box-shadow: 0 0 15px rgba(0, 188, 212, 0.5);
+    background-color: rgba(50, 50, 70, 0.9);
+}
+
+.form-control::placeholder {
+    color: #a0a0a0;
+}
+
+.btn {
+    border-radius: 30px;
+    padding: 14px 30px;
+    font-size: 1.1em;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.btn-connect {
+    background: linear-gradient(45deg, #4CAF50 0%, #8BC34A 100%);
+    color: white;
+}
+
+.btn-connect:hover {
+    background: linear-gradient(45deg, #388E3C 0%, #689F38 100%);
+}
+
+.btn-disconnect {
+    background: linear-gradient(45deg, #f44336 0%, #ff7043 100%);
+    color: white;
+}
+
+.btn-disconnect:hover {
+    background: linear-gradient(45deg, #d32f2f 0%, #f4511e 100%);
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #00BCD4 0%, #26C6DA 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(45deg, #0097A7 0%, #00acc1 100%);
+}
+
+.btn:disabled {
+    background-color: #555555;
+    color: #aaaaaa;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+#message-input {
+    margin-top: 35px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+#message-input input {
+    flex-grow: 1;
+    max-width: none;
+}
+
+#message-input button {
+    padding: 14px 30px;
+}
+
+#conversation {
+    border-radius: 20px;
+    box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    margin-top: 35px;
+    background-color: rgba(35, 35, 55, 0.8);
+    border: 1px solid rgba(70, 70, 100, 0.5);
+}
+
+#conversation table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+#conversation th {
+    background-color: #00BCD4;
+    color: white;
+    text-align: center;
+    padding: 18px 25px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+#conversation td {
+    background-color: #2a2a4a;
+    color: #e0e0e0;
+    padding: 18px 25px;
+    border-radius: 10px;
+}
+
+#conversation tr:nth-child(even) td {
+    background-color: #353555;
+}
+
+#conversation tr:hover td {
+    background-color: #404060;
+    cursor: pointer;
+}
+
+#livechat {
+    font-size: 1.2em;
+    padding-top: 25px;
+}
+
+.message-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.message-text {
+    font-size: 1.05em;
+    color: #e0e0e0;
+    background: linear-gradient(to right, #4a4a7a, #5a5a8a);
+    padding: 12px 20px;
+    border-radius: 20px 20px 20px 5px;
+    max-width: 75%;
+    word-wrap: break-word;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.message-time {
+    font-size: 0.85em;
+    color: #a0a0a0;
+    margin-top: 6px;
+    text-align: left;
+}
+
+/* Estilo para mensagens enviadas pelo usuário */
+.message-container.sent {
+    align-items: flex-end;
+}
+
+.message-container.sent .message-text {
+    background: linear-gradient(to left, #4CAF50, #8BC34A);
+    border-radius: 20px 20px 5px 20px;
+}
+
+.message-container.sent .message-time {
+    text-align: right;
+}
