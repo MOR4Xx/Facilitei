@@ -32,8 +32,6 @@ public class AvaliacaoController {
     @Autowired
     private AvaliacaoTrabalhadorRepository avaliacaoTrabalhadorRepo;
 
-    // ------------------ POSTs ------------------
-
     @PostMapping("/servico")
     @Operation(summary = "Avaliar Serviço", description = "Cliente avalia um serviço prestado com nota, comentário e fotos (até 3)")
     public ResponseEntity<AvaliacaoServico> avaliarServico(
@@ -58,8 +56,6 @@ public class AvaliacaoController {
         return ResponseEntity.ok(avaliacao);
     }
 
-    // ------------------ SERVIÇO ------------------
-
     @GetMapping("/servico")
     @Operation(summary = "Listar avaliações de serviço", description = "Retorna todas as avaliações feitas sobre serviços")
     public ResponseEntity<List<AvaliacaoServico>> listarAvaliacoesServico() {
@@ -73,8 +69,6 @@ public class AvaliacaoController {
         return ResponseEntity.noContent().build();
     }
 
-    // ------------------ CLIENTE ------------------
-
     @GetMapping("/cliente")
     @Operation(summary = "Listar avaliações de cliente", description = "Retorna todas as avaliações feitas sobre clientes")
     public ResponseEntity<List<AvaliacaoCliente>> listarAvaliacoesCliente() {
@@ -87,8 +81,6 @@ public class AvaliacaoController {
         avaliacaoClienteRepo.deleteById(id);
         return ResponseEntity.noContent().build();
     }
-
-    // ------------------ TRABALHADOR ------------------
 
     @GetMapping("/trabalhador")
     @Operation(summary = "Listar avaliações de trabalhador", description = "Retorna todas as avaliações feitas sobre trabalhadores")
