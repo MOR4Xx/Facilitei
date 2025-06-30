@@ -22,7 +22,7 @@ public class Endereco {
     @Column(nullable = false)
     private String cidade;
 
-    @Column(nullable = false, length = 2)
+    @Column(nullable = false, length = 20)
     private String estado;
 
     @Column(nullable = false)
