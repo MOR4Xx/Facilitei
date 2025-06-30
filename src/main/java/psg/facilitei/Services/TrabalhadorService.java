@@ -30,7 +30,6 @@ public class TrabalhadorService {
     private ServicoRepository servicoRepository;
     @Autowired
     private AvaliacaoTrabalhadorRepository avaliacaoTrabalhadorRepository;
-    private TrabalhadorResponseDTO TrabalhadorResponseDTO;
 
     public TrabalhadorRequestDTO createTrabalhador(TrabalhadorRequestDTO trabalhadorRequestDTO) {
         repository.save(toEntity(trabalhadorRequestDTO));
@@ -38,44 +37,40 @@ public class TrabalhadorService {
     }
 
     public List<TrabalhadorResponseDTO> findAll() {
-    List<Trabalhador> trabalhadores = repository.findAll();
+        List<Trabalhador> trabalhadores = repository.findAll();
 
-    return trabalhadores.stream()
-        .map(this::toResponseDTO) // ou usar ModelMapper se preferir
-        .collect(Collectors.toList());
-}
+        return trabalhadores.stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
 
+    public TrabalhadorResponseDTO atualizar(Long id, TrabalhadorRequestDTO dto) {
+        Trabalhador trabalhador = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
 
-public TrabalhadorResponseDTO atualizar(Long id, TrabalhadorRequestDTO dto) {
-    Trabalhador trabalhador = repository.findById(id)
-        .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
+        trabalhador.setNome(dto.getNome());
+        trabalhador.setEmail(dto.getEmail());
+        trabalhador.setSenha((dto.getSenha()));
 
-    trabalhador.setNome(dto.getNome());
-    trabalhador.setEmail(dto.getEmail());
-    trabalhador.setSenha((dto.getSenha()));
+        Endereco endereco = trabalhador.getEndereco();
+        endereco.setRua(dto.getEndereco().getRua());
+        endereco.setNumero(dto.getEndereco().getNumero());
+        endereco.setBairro(dto.getEndereco().getBairro());
+        endereco.setCidade(dto.getEndereco().getCidade());
+        endereco.setEstado(dto.getEndereco().getEstado());
+        endereco.setCep(dto.getEndereco().getCep());
 
-    Endereco endereco = trabalhador.getEndereco();
-    endereco.setRua(dto.getEndereco().getRua());
-    endereco.setNumero(dto.getEndereco().getNumero());
-    endereco.setBairro(dto.getEndereco().getBairro());
-    endereco.setCidade(dto.getEndereco().getCidade());
-    endereco.setEstado(dto.getEndereco().getEstado());
-    endereco.setCep(dto.getEndereco().getCep());
+        trabalhador.setNotaTrabalhador(dto.getNotaTrabalhador());
 
-    trabalhador.setNotaTrabalhador(dto.getNotaTrabalhador());
+        return toResponseDTO(repository.save(trabalhador));
+    }
 
-    return toResponseDTO(repository.save(trabalhador));
-}
+    public void delete(Long id) {
+        Trabalhador trabalhador = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
 
-
-public void delete(Long id) {
-    Trabalhador trabalhador = repository.findById(id)
-        .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
-
-    repository.delete(trabalhador);
-}
-
-
+        repository.delete(trabalhador);
+    }
 
     public Trabalhador toEntity(TrabalhadorRequestDTO dto) {
         Trabalhador trabalhador = new Trabalhador();
