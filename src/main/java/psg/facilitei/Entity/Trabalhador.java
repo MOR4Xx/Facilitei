@@ -16,8 +16,8 @@ public class Trabalhador extends Usuario {
     @OneToMany(mappedBy = "trabalhador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Servico> servicos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "avaliador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<AvaliacaoCliente> avaliacoesTrabalhador = new ArrayList<>();
+    @OneToMany(mappedBy = "trabalhador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    private List<AvaliacaoTrabalhador> avaliacoesTrabalhador = new ArrayList<>();
 
     @Column(name = "nota_trabalhador")
     private Integer notaTrabalhador;
@@ -25,14 +25,14 @@ public class Trabalhador extends Usuario {
     public Trabalhador() {
     }
 
-    public Trabalhador(List<Servico> servicos, List<AvaliacaoCliente> avaliacoesTrabalhador, Integer notaTrabalhador) {
+    public Trabalhador(List<Servico> servicos, List<AvaliacaoTrabalhador> avaliacoesTrabalhador, Integer notaTrabalhador) {
         this.servicos = servicos;
         this.avaliacoesTrabalhador = avaliacoesTrabalhador;
         this.notaTrabalhador = notaTrabalhador;
     }
 
     public Trabalhador(String nome, String email, String senha, String fotoPerfil, Endereco endereco,
-            List<Servico> servicos, List<AvaliacaoCliente> avaliacoesTrabalhador, Integer notaTrabalhador) {
+            List<Servico> servicos, List<AvaliacaoTrabalhador> avaliacoesTrabalhador, Integer notaTrabalhador) {
         super(nome, email, senha, fotoPerfil, endereco);
         this.servicos = servicos;
         this.avaliacoesTrabalhador = avaliacoesTrabalhador;
@@ -47,11 +47,11 @@ public class Trabalhador extends Usuario {
         this.servicos = servicos;
     }
 
-    public List<AvaliacaoCliente> getAvaliacoesTrabalhador() {
+    public List<AvaliacaoTrabalhador> getAvaliacoesTrabalhador() {
         return avaliacoesTrabalhador;
     }
 
-    public void setAvaliacoesTrabalhador(List<AvaliacaoCliente> avaliacoesTrabalhador) {
+    public void setAvaliacoesTrabalhador(List<AvaliacaoTrabalhador> avaliacoesTrabalhador) {
         this.avaliacoesTrabalhador = avaliacoesTrabalhador;
     }
 

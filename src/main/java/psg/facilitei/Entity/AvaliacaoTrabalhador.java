@@ -1,34 +1,23 @@
 package psg.facilitei.Entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "avaliacao_trabalhador")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AvaliacaoTrabalhador extends Avaliacao {
 
-    @Column(name = "cliente_id")
-    private Long clienteId;
+    @ManyToOne
+    @JoinColumn(name = "cliente_id")
+    private Cliente cliente;
 
-    @Column(name = "trabalhador_id")
-    private Long trabalhadorId;
+    @ManyToOne
+    @JoinColumn(name = "trabalhador_id")
+    private Trabalhador trabalhador;
 
-    public AvaliacaoTrabalhador() {
-        super();
-    }
-
-    public Long getClienteId() {
-        return clienteId;
-    }
-
-    public void setClienteId(Long clienteId) {
-        this.clienteId = clienteId;
-    }
-
-    public Long getTrabalhadorId() {
-        return trabalhadorId;
-    }
-
-    public void setTrabalhadorId(Long trabalhadorId) {
-        this.trabalhadorId = trabalhadorId;
-    }
 }

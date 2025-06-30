@@ -11,6 +11,7 @@ import psg.facilitei.Repository.*;
 public class AvaliacaoService {
 
     @Autowired
+    private ClienteService clienteService;
     private AvaliacaoServicoRepository avaliacaoServicoRepo;
 
     @Autowired
@@ -47,8 +48,17 @@ public class AvaliacaoService {
         avaliacao.setNota(dto.getNota());
         avaliacao.setComentario(dto.getComentario());
         avaliacao.setFotos(dto.getFotos());
-        avaliacao.setClienteId(dto.getClienteId());
-        avaliacao.setTrabalhadorId(dto.getTrabalhadorId());
+        Cliente cliente;
+        if (clienteService.findById(dto.getClienteId()) != null) {
+            cliente = new Cliente();
+        } else {
+            throw new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId());
+        }
+
+        avaliacao.setCliente(cliente);
+        Trabalhador trabalhador = new Trabalhador();
+        trabalhador.setId(dto.getTrabalhadorId());
+        avaliacao.setTrabalhador(trabalhador);
         return avaliacaoTrabalhadorRepo.save(avaliacao);
     }
 }
