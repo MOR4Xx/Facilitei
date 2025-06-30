@@ -1,35 +1,24 @@
 package psg.facilitei.Entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "avaliacao_servico")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class AvaliacaoServico extends Avaliacao {
 
-    @Column(name = "cliente_id")
-    private Long clienteId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id")
+    private Cliente cliente;
 
-    @Column(name = "servico_id")
-    private Long servicoId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "servico_id")
+    private Servico servico;
 
-    public AvaliacaoServico() {
-        super();
-    }
-
-    public Long getClienteId() {
-        return clienteId;
-    }
-
-    public void setClienteId(Long clienteId) {
-        this.clienteId = clienteId;
-    }
-
-    public Long getServicoId() {
-        return servicoId;
-    }
-
-    public void setServicoId(Long servicoId) {
-        this.servicoId = servicoId;
-    }
 }
 

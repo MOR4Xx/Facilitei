@@ -3,6 +3,7 @@ package psg.facilitei.Services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +43,12 @@ public class TrabalhadorService {
         return trabalhadores.stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    public TrabalhadorResponseDTO findById(Long id) {
+
+        ModelMapper modelMapper = new ModelMapper();
+        return modelMapper.map(repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id)), TrabalhadorResponseDTO.class);
     }
 
     public TrabalhadorResponseDTO atualizar(Long id, TrabalhadorRequestDTO dto) {

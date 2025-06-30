@@ -7,11 +7,27 @@ import psg.facilitei.DTO.*;
 import psg.facilitei.Entity.*;
 import psg.facilitei.Repository.*;
 
+import java.util.Optional;
+import org.springframework.stereotype.Component;
+
 @Service
 public class AvaliacaoService {
 
+    public AvaliacaoService(TrabalhadorService trabalhadorService, ClienteService clienteService,
+                            AvaliacaoServicoRepository avaliacaoServicoRepo,
+                            AvaliacaoClienteRepository avaliacaoClienteRepo,
+                            AvaliacaoTrabalhadorRepository avaliacaoTrabalhadorRepo) {
+        this.trabalhadorService = trabalhadorService;
+        this.clienteService = clienteService;
+        this.avaliacaoServicoRepo = avaliacaoServicoRepo;
+        this.avaliacaoClienteRepo = avaliacaoClienteRepo;
+        this.avaliacaoTrabalhadorRepo = avaliacaoTrabalhadorRepo;
+    }
+
     @Autowired
     private ClienteService clienteService;
+
+    @Autowired
     private AvaliacaoServicoRepository avaliacaoServicoRepo;
 
     @Autowired
@@ -20,29 +36,41 @@ public class AvaliacaoService {
     @Autowired
     private AvaliacaoTrabalhadorRepository avaliacaoTrabalhadorRepo;
 
-    @Transactional
+    @Autowired
+    private final TrabalhadorService trabalhadorService;
+
     public AvaliacaoServico avaliarServico(AvaliacaoServicoRequestDTO dto) {
         AvaliacaoServico avaliacao = new AvaliacaoServico();
         avaliacao.setNota(dto.getNota());
         avaliacao.setComentario(dto.getComentario());
-        avaliacao.setFotos(dto.getFotos());
-        avaliacao.setClienteId(dto.getClienteId());
-        avaliacao.setServicoId(dto.getServicoId());
+        // Ensure AvaliacaoCliente has a fotos field and a corresponding setter
+        Cliente cliente;
+        if (clienteService.findById(dto.getClienteId()) != null) {
+            cliente = new Cliente();
+        } else {
+            throw new RuntimeException("Cliente não encontrado com ID: " + dto.getClienteId());
+        }
+        avaliacao.setCliente(cliente);;
         return avaliacaoServicoRepo.save(avaliacao);
     }
 
-    @Transactional
     public AvaliacaoCliente avaliarCliente(AvaliacaoClienteRequestDTO dto) {
         AvaliacaoCliente avaliacao = new AvaliacaoCliente();
         avaliacao.setNota(dto.getNota());
         avaliacao.setComentario(dto.getComentario());
         avaliacao.setFotos(dto.getFotos());
-        avaliacao.setClienteId(dto.getClienteId());
-        avaliacao.setTrabalhadorId(dto.getTrabalhadorId());
+        Trabalhador trabalhador = null;
+        if (trabalhadorService.findById(dto.getTrabalhadorId()) != null) {
+            trabalhador = new Trabalhador();
+            trabalhador.setId(dto.getTrabalhadorId());
+        } else {
+            throw new RuntimeException("Trabalhador não encontrado com ID: " + dto.getTrabalhadorId());
+        }
+
+        avaliacao.setTrabalhador(trabalhador);
         return avaliacaoClienteRepo.save(avaliacao);
     }
 
-    @Transactional
     public AvaliacaoTrabalhador avaliarTrabalhador(AvaliacaoTrabalhadorRequestDTO dto) {
         AvaliacaoTrabalhador avaliacao = new AvaliacaoTrabalhador();
         avaliacao.setNota(dto.getNota());
@@ -62,3 +90,4 @@ public class AvaliacaoService {
         return avaliacaoTrabalhadorRepo.save(avaliacao);
     }
 }
+
