@@ -2,7 +2,6 @@ package psg.facilitei.DTO;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import psg.facilitei.Entity.Endereco;
 
 @Data
 @NoArgsConstructor

@@ -4,7 +4,6 @@ package psg.facilitei.Controller;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.HtmlUtils;
 import psg.facilitei.Controller.domain.ChatInput;
 import psg.facilitei.Controller.domain.ChatOutput;

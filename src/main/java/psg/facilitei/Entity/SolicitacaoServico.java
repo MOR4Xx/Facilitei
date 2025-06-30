@@ -2,7 +2,6 @@ package psg.facilitei.Entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import psg.facilitei.Entity.Enum.StatusServico;
 import psg.facilitei.Entity.Enum.StatusSolicitacao;
 
 import java.time.LocalDateTime;

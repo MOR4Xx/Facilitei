@@ -2,8 +2,6 @@ package psg.facilitei.Entity;
 
 import jakarta.persistence.*;
 
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "cliente")

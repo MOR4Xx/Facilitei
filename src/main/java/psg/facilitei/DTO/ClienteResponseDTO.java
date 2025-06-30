@@ -1,6 +1,5 @@
 package psg.facilitei.DTO;
 
-import jakarta.persistence.Column;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

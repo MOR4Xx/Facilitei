@@ -1,7 +1,6 @@
 package psg.facilitei.DTO;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+
 
 import java.util.List;
 

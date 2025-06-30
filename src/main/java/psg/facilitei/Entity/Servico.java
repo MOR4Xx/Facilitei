@@ -7,8 +7,7 @@ import lombok.Data;
 import psg.facilitei.Entity.Enum.StatusServico;
 import psg.facilitei.Entity.Enum.TipoServico;
 
-import java.util.ArrayList;
-import java.util.List;
+
 
 @Entity
 @Table(name = "servico")
