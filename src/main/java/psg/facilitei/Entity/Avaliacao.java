@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import java.util.List;
 
 @Entity
@@ -20,8 +22,7 @@ public abstract class Avaliacao {
     @Column(name = "nota", nullable = false)
     private int nota;
 
-    @NotBlank
-    @Column(name = "comentario", nullable = false, length = 1000)
+    @Column(name = "comentario", nullable = true, length = 1000)
     private String comentario;
 
     @ElementCollection

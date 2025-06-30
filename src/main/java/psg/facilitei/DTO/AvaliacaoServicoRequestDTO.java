@@ -10,8 +10,8 @@ public class AvaliacaoServicoRequestDTO {
     private String comentario;
     private List<String> fotos;
 
-    private Long clienteId;  // ✅ necessário
-    private Long servicoId;  // ✅ necessário
+    private Long clienteId;
+    private Long servicoId;
 
     // Getters e Setters
     public Integer getNota() {

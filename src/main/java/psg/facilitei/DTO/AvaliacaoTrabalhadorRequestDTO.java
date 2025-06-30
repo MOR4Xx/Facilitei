@@ -8,7 +8,7 @@ public class AvaliacaoTrabalhadorRequestDTO {
     @NotNull @Min(1) @Max(5)
     private Integer nota;
 
-    @NotBlank
+    
     private String comentario;
 
     private List<@Size(max = 500) String> fotos;

@@ -7,7 +7,6 @@ import lombok.Data;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @Data
-
 public abstract class Usuario {
 
     @Id
