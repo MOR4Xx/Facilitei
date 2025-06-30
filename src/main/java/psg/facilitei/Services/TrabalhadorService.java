@@ -72,6 +72,16 @@ public class TrabalhadorService {
         repository.delete(trabalhador);
     }
 
+
+    public TrabalhadorResponseDTO findById(Long id) {
+    Trabalhador trabalhador = repository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
+
+    return toResponseDTO(trabalhador);
+}
+
+
+
     public Trabalhador toEntity(TrabalhadorRequestDTO dto) {
         Trabalhador trabalhador = new Trabalhador();
 

@@ -70,4 +70,23 @@ public class TrabalhadorController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(
+    summary = "Buscar trabalhador por ID",
+    description = "Retorna os dados de um trabalhador específico com base no ID fornecido."
+)
+@ApiResponses(value = {
+    @ApiResponse(
+        responseCode = "200",
+        description = "Trabalhador encontrado com sucesso",
+        content = @Content(mediaType = "application/json",
+                           schema = @Schema(implementation = TrabalhadorResponseDTO.class))
+    ),
+    @ApiResponse(responseCode = "404", description = "Trabalhador não encontrado")
+})
+@GetMapping("buscarPorId/{id}")
+public ResponseEntity<TrabalhadorResponseDTO> buscarPorId(@PathVariable Long id) {
+    TrabalhadorResponseDTO dto = service.findById(id);
+    return ResponseEntity.ok(dto);
+}
+
 }
