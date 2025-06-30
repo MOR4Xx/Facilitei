@@ -13,7 +13,6 @@ import psg.facilitei.DTO.*;
 import psg.facilitei.Exceptions.ErrorResponseDTO;
 import psg.facilitei.Services.ClienteService;
 
-import javax.swing.text.html.parser.Entity;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -101,6 +100,19 @@ public class ClienteController {
         return ResponseEntity.ok(clienteService.getAvaliacoesServico(id));
     }
 
+    @PutMapping(value = "/editar/{id}", consumes = "application/json", produces = "application/json")
+    @Operation(summary = "Edita os dados do cliente", description = "Edita os dados do cliente sem que seja modificado completamente",
+            responses = {@ApiResponse(responseCode = "404", description = "Cliente não encontrado para edição"),
+                    @ApiResponse(responseCode = "500", description = "Erro interno do servidor.",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponseDTO.class)))
+            })
+
+    public ResponseEntity<ClienteResponseDTO> editar(@PathVariable Long id, @RequestBody ClienteRequestDTO dto) {
+        logger.info("Editando cliente");
+
+        return clienteService.update(id, dto);
+    }
 
 
     @DeleteMapping(value = "/delete/{id}", produces = "application/json")

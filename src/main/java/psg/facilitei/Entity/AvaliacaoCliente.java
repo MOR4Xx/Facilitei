@@ -24,7 +24,4 @@ public class AvaliacaoCliente extends Avaliacao {
     @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<AvaliacaoTrabalhador> avaliacoesTrabalhador;
-
 }
