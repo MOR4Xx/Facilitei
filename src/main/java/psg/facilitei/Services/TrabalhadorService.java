@@ -90,8 +90,6 @@ public Trabalhador buscarEntidadePorId(Long id) {
 }
 
 
-
-
     public Trabalhador toEntity(TrabalhadorRequestDTO dto) {
         Trabalhador trabalhador = new Trabalhador();
 

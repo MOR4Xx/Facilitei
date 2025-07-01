@@ -5,7 +5,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import psg.facilitei.Repository.DisponibilidadeRepository;
-import psg.facilitei.Repository.TrabalhadorRepository;
+
+
 import psg.facilitei.DTO.DisponibilidadeRequestDTO;
 import psg.facilitei.DTO.DisponibilidadeResponseDTO;
 import psg.facilitei.Entity.Disponibilidade;
@@ -24,8 +25,9 @@ public class DisponibilidadeService {
     @Autowired
     private DisponibilidadeRepository disponibilidadeRepository;
 
+
     @Autowired
-    private TrabalhadorRepository trabalhadorRepository;
+    private TrabalhadorService trabalhadorService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -39,6 +41,11 @@ public class DisponibilidadeService {
         }
 
         Disponibilidade disponibilidade = modelMapper.map(dto, Disponibilidade.class);
+
+        
+        Trabalhador trabalhador = trabalhadorService.buscarEntidadePorId(dto.getTrabalhadorId());
+        disponibilidade.setTrabalhador(trabalhador);
+
         Disponibilidade saved = disponibilidadeRepository.save(disponibilidade);
         return modelMapper.map(saved, DisponibilidadeResponseDTO.class);
     }
@@ -71,12 +78,15 @@ public class DisponibilidadeService {
             throw new BusinessRuleException("Data de início deve ser antes da data de fim.");
         }
 
-        disponibilidade.setHorarioInicio(dto.getDataHoraInicio());
-        disponibilidade.setHorarioFim(dto.getDataHoraFim());
-        Trabalhador trabalhador = trabalhadorRepository.findById(dto.getTrabalhadorId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Trabalhador não encontrado com ID: " + dto.getTrabalhadorId()));
-        disponibilidade.setTrabalhador(trabalhador);
+       
+        modelMapper.map(dto, disponibilidade);
+
+        
+        if (dto.getTrabalhadorId() != null && !disponibilidade.getTrabalhador().getId().equals(dto.getTrabalhadorId())) {
+            Trabalhador novoTrabalhador = trabalhadorService.buscarEntidadePorId(dto.getTrabalhadorId());
+            disponibilidade.setTrabalhador(novoTrabalhador);
+        }
+
         Disponibilidade updated = disponibilidadeRepository.save(disponibilidade);
         return modelMapper.map(updated, DisponibilidadeResponseDTO.class);
     }

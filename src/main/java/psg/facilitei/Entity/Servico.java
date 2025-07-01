@@ -45,11 +45,11 @@ public class Servico {
     private TipoServico tipoServico;
 
     @ManyToOne
-    @JoinTable(name = "servico_trabalhador")
+    @JoinTable(name = "trabalhador_id")
     private Trabalhador trabalhador;
 
     @ManyToOne
-    @JoinTable(name = "servico_cliente")
+    @JoinTable(name = "cliente_id")
     private Cliente cliente;
 
     @Enumerated(EnumType.STRING)

@@ -3,6 +3,7 @@ package psg.facilitei.DTO;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import psg.facilitei.Entity.Enum.StatusSolicitacao;
 import io.swagger.v3.oas.annotations.media.Schema; 
 
 @Schema(description = "DTO para requisição de criação/atualização de Solicitação de Serviço")
@@ -20,6 +21,8 @@ public class SolicitacaoServicoRequestDTO {
     @Size(max = 500, message = "A descrição deve ter no máximo 500 caracteres.")
     @Schema(description = "Descrição detalhada da solicitação do serviço", example = "Preciso de um eletricista para instalar um chuveiro novo.")
     private String descricao;
+
+     private StatusSolicitacao statusSolicitacao;
 
     public Long getClienteId() {
         return clienteId;
@@ -44,4 +47,14 @@ public class SolicitacaoServicoRequestDTO {
     public void setDescricao(String descricao) {
         this.descricao = descricao;
     }
+
+    public StatusSolicitacao getStatusSolicitacao() {
+        return statusSolicitacao;
+    }
+
+    public void setStatusSolicitacao(StatusSolicitacao statusSolicitacao) {
+        this.statusSolicitacao = statusSolicitacao;
+    }
+
+    
 }
