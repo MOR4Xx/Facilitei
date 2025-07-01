@@ -17,6 +17,7 @@ import psg.facilitei.Entity.AvaliacaoTrabalhador;
 import psg.facilitei.Entity.Endereco;
 import psg.facilitei.Entity.Servico;
 import psg.facilitei.Entity.Trabalhador;
+import psg.facilitei.Repository.AvaliacaoClienteRepository;
 import psg.facilitei.Repository.AvaliacaoTrabalhadorRepository;
 import psg.facilitei.Repository.ServicoRepository;
 import psg.facilitei.Repository.TrabalhadorRepository;
@@ -31,6 +32,8 @@ public class TrabalhadorService {
     private ServicoRepository servicoRepository;
     @Autowired
     private AvaliacaoTrabalhadorRepository avaliacaoTrabalhadorRepository;
+    @Autowired
+    private AvaliacaoClienteRepository avaliacaoClienteRepository;
 
     public TrabalhadorRequestDTO createTrabalhador(TrabalhadorRequestDTO trabalhadorRequestDTO) {
         repository.save(toEntity(trabalhadorRequestDTO));
@@ -44,8 +47,6 @@ public class TrabalhadorService {
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
-
-    
 
     public TrabalhadorResponseDTO atualizar(Long id, TrabalhadorRequestDTO dto) {
         Trabalhador trabalhador = repository.findById(id)
@@ -72,25 +73,24 @@ public class TrabalhadorService {
         Trabalhador trabalhador = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
 
+        
+        avaliacaoClienteRepository.deleteByTrabalhadorId(id);
+        avaliacaoTrabalhadorRepository.deleteByTrabalhadorId(id);
+
         repository.delete(trabalhador);
     }
 
-
     public TrabalhadorResponseDTO findById(Long id) {
-    Trabalhador trabalhador = repository.findById(id)
-        .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
+        Trabalhador trabalhador = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
 
-    return toResponseDTO(trabalhador);
-}
+        return toResponseDTO(trabalhador);
+    }
 
-
-public Trabalhador buscarEntidadePorId(Long id) {
-    return repository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Trabalhador não encontrado com ID: " + id));
-}
-
-
-
+    public Trabalhador buscarEntidadePorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trabalhador não encontrado com ID: " + id));
+    }
 
     public Trabalhador toEntity(TrabalhadorRequestDTO dto) {
         Trabalhador trabalhador = new Trabalhador();

@@ -1,6 +1,5 @@
 package psg.facilitei.Services;
 
-import jakarta.persistence.Entity;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
@@ -8,10 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import psg.facilitei.Controller.ClienteController;
 import psg.facilitei.DTO.*;
-import psg.facilitei.Entity.AvaliacaoCliente;
-import psg.facilitei.Entity.AvaliacaoServico;
-import psg.facilitei.Entity.AvaliacaoTrabalhador;
-import psg.facilitei.Entity.Cliente;
+import psg.facilitei.Entity.*;
 import psg.facilitei.Repository.AvaliacaoClienteRepository;
 import psg.facilitei.Repository.AvaliacaoServicoRepository;
 import psg.facilitei.Repository.AvaliacaoTrabalhadorRepository;
@@ -56,7 +52,7 @@ public class ClienteService {
                 linkTo(methodOn(ClienteController.class).getAvaliacoesTrabalhador(id)).withRel("Busca pelas avaliações que o cliente fez ao trabalhador"),
                 linkTo(methodOn(ClienteController.class).getAvaliacoesServico(id)).withRel("Busca pelas avaliações que o cliente fez ao serviço"),
                 linkTo(methodOn(ClienteController.class).deletar(id)).withRel("Delete o cliente em caso de exclusão de conta")
-                );
+        );
 
         return cliente;
     }
@@ -83,7 +79,7 @@ public class ClienteService {
     }
 
     //Avaliações que o cliente fez aos serviçoes
-    public List<AvaliacaoServicoResponseDTO> getAvaliacoesServico(Long id){
+    public List<AvaliacaoServicoResponseDTO> getAvaliacoesServico(Long id) {
 
         List<AvaliacaoServico> avaliacaoServicos = avaliacaoServicoRepository.findByClienteId(id);
         List<AvaliacaoServicoResponseDTO> avaliacoes = avaliacaoServicos.stream()
@@ -94,9 +90,20 @@ public class ClienteService {
     }
 
     public Cliente buscarEntidadePorId(Long id) {
-    return repository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + id));
-}
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com ID: " + id));
+    }
+
+    public ResponseEntity<ClienteResponseDTO> update(Long id, ClienteRequestDTO dto) {
+        Cliente clienteAntigo = buscarEntidadePorId(id);
+
+        if (dto.getNome() != null) clienteAntigo.setNome(dto.getNome());
+        if (dto.getEmail() != null) clienteAntigo.setEmail(dto.getEmail());
+        if (dto.getEndereco() != null) clienteAntigo.setEndereco(modelMapper.map(dto.getEndereco(), Endereco.class));
+        if (dto.getSenha() != null) clienteAntigo.setSenha(dto.getSenha());
+
+        return ResponseEntity.ok(modelMapper.map(repository.save(clienteAntigo), ClienteResponseDTO.class));
+    }
 
 
     public ResponseEntity<ClienteResponseDTO> delete(Long id) {
