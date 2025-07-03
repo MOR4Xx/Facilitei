@@ -2,9 +2,13 @@ package psg.facilitei.DTO;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class EnderecoRequestDTO {
 
     @NotBlank(message = "Rua é obrigatória.")
@@ -25,15 +29,4 @@ public class EnderecoRequestDTO {
     @NotBlank(message = "CEP é obrigatório.")
     @Pattern(regexp = "\\d{5}-\\d{3}|\\d{8}", message = "CEP inválido. Use o formato 12345-678 ou 12345678")
     private String cep;
-
-    public EnderecoRequestDTO() {}
-
-    public EnderecoRequestDTO(String rua, String numero, String bairro, String cidade, String estado, String cep) {
-        this.rua = rua;
-        this.numero = numero;
-        this.bairro = bairro;
-        this.cidade = cidade;
-        this.estado = estado;
-        this.cep = cep;
-    }
 }

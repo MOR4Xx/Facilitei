@@ -14,7 +14,7 @@ import psg.facilitei.Entity.Enum.StatusSolicitacao;
 import psg.facilitei.Exceptions.ResourceNotFoundException;
 
 import psg.facilitei.Repository.SolicitacaoServicoRepository;
-import psg.facilitei.Repository.ServicoRepository; 
+import psg.facilitei.Repository.ServicoRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,10 +27,10 @@ public class SolicitacaoServicoService {
     private SolicitacaoServicoRepository solicitacaoServicoRepository;
 
     @Autowired
-    private ClienteService clienteService; 
+    private ClienteService clienteService;
 
     @Autowired
-    private ServicoRepository servicoRepository; 
+    private ServicoRepository servicoRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -88,7 +88,7 @@ public class SolicitacaoServicoService {
                     .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado com ID: " + dto.getServicoId()));
             existente.setServico(novoServico);
         }
-        
+
         if (dto.getStatusSolicitacao() != null) {
             existente.setStatusSolicitacao(dto.getStatusSolicitacao());
         }

@@ -9,6 +9,6 @@ public enum StatusServico {
     PAUSADO,            // Serviço temporariamente interrompido
     FINALIZADO,         // Serviço concluído
     CANCELADO,          // Serviço cancelado pelo cliente ou prestador
-    NAO_COMPARECEU      // Prestador ou cliente não compareceu
-
+    NAO_COMPARECEU,     // Prestador ou cliente não compareceu
+    PENDENTE
 }

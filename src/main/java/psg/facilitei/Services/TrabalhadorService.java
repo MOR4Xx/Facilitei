@@ -7,8 +7,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import jakarta.persistence.EntityNotFoundException;
-import psg.facilitei.DTO.AvaliacaoTrabalhadorRequestDTO;
+import org.springframework.transaction.annotation.Transactional; 
+import psg.facilitei.DTO.AvaliacaoTrabalhadorReponseDTO;
+import psg.facilitei.DTO.EnderecoRequestDTO;
 import psg.facilitei.DTO.EnderecoResponseDTO;
 import psg.facilitei.DTO.ServicoResponseDTO;
 import psg.facilitei.DTO.TrabalhadorRequestDTO;
@@ -17,6 +18,7 @@ import psg.facilitei.Entity.AvaliacaoTrabalhador;
 import psg.facilitei.Entity.Endereco;
 import psg.facilitei.Entity.Servico;
 import psg.facilitei.Entity.Trabalhador;
+import psg.facilitei.Exceptions.ResourceNotFoundException;
 import psg.facilitei.Repository.AvaliacaoTrabalhadorRepository;
 import psg.facilitei.Repository.ServicoRepository;
 import psg.facilitei.Repository.TrabalhadorRepository;
@@ -32,80 +34,52 @@ public class TrabalhadorService {
     @Autowired
     private AvaliacaoTrabalhadorRepository avaliacaoTrabalhadorRepository;
 
-    public TrabalhadorRequestDTO createTrabalhador(TrabalhadorRequestDTO trabalhadorRequestDTO) {
-        repository.save(toEntity(trabalhadorRequestDTO));
-        return trabalhadorRequestDTO;
+    @Autowired
+    private ModelMapper modelMapper;
+
+    @Transactional
+    public TrabalhadorResponseDTO createTrabalhador(TrabalhadorRequestDTO trabalhadorRequestDTO) {
+        Trabalhador trabalhador = modelMapper.map(trabalhadorRequestDTO, Trabalhador.class);
+
+        if (trabalhadorRequestDTO.getEndereco() != null) {
+            trabalhador.setEndereco(modelMapper.map(trabalhadorRequestDTO.getEndereco(), Endereco.class));
+        }
+
+        if (trabalhadorRequestDTO.getServicosIds() != null && !trabalhadorRequestDTO.getServicosIds().isEmpty()) {
+            List<Servico> servicos = servicoRepository.findAllById(trabalhadorRequestDTO.getServicosIds());
+            trabalhador.setServicos(servicos);
+        }
+
+        if (trabalhadorRequestDTO.getAvaliacoesIds() != null && !trabalhadorRequestDTO.getAvaliacoesIds().isEmpty()) {
+            List<AvaliacaoTrabalhador> avaliacoes = avaliacaoTrabalhadorRepository.findAllById(trabalhadorRequestDTO.getAvaliacoesIds());
+            trabalhador.setAvaliacoesTrabalhador(avaliacoes);
+        }
+
+        Trabalhador savedTrabalhador = repository.save(trabalhador);
+        return modelMapper.map(savedTrabalhador, TrabalhadorResponseDTO.class);
     }
 
+    @Transactional(readOnly = true)
     public List<TrabalhadorResponseDTO> findAll() {
-        List<Trabalhador> trabalhadores = repository.findAll();
-
-        return trabalhadores.stream()
-                .map(this::toResponseDTO)
+        return repository.findAll()
+                .stream()
+                .map(trabalhador -> modelMapper.map(trabalhador, TrabalhadorResponseDTO.class))
                 .collect(Collectors.toList());
     }
 
-    
-
+    @Transactional
     public TrabalhadorResponseDTO atualizar(Long id, TrabalhadorRequestDTO dto) {
         Trabalhador trabalhador = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Trabalhador não encontrado com ID: " + id));
 
-        trabalhador.setNome(dto.getNome());
-        trabalhador.setEmail(dto.getEmail());
-        trabalhador.setSenha((dto.getSenha()));
+        modelMapper.map(dto, trabalhador);
 
-        Endereco endereco = trabalhador.getEndereco();
-        endereco.setRua(dto.getEndereco().getRua());
-        endereco.setNumero(dto.getEndereco().getNumero());
-        endereco.setBairro(dto.getEndereco().getBairro());
-        endereco.setCidade(dto.getEndereco().getCidade());
-        endereco.setEstado(dto.getEndereco().getEstado());
-        endereco.setCep(dto.getEndereco().getCep());
-
-        trabalhador.setNotaTrabalhador(dto.getNotaTrabalhador());
-
-        return toResponseDTO(repository.save(trabalhador));
-    }
-
-    public void delete(Long id) {
-        Trabalhador trabalhador = repository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
-
-        repository.delete(trabalhador);
-    }
-
-
-    public TrabalhadorResponseDTO findById(Long id) {
-    Trabalhador trabalhador = repository.findById(id)
-        .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
-
-    return toResponseDTO(trabalhador);
-}
-
-
-public Trabalhador buscarEntidadePorId(Long id) {
-    return repository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Trabalhador não encontrado com ID: " + id));
-}
-
-
-    public Trabalhador toEntity(TrabalhadorRequestDTO dto) {
-        Trabalhador trabalhador = new Trabalhador();
-
-        trabalhador.setNome(dto.getNome());
-        trabalhador.setEmail(dto.getEmail());
-        trabalhador.setNotaTrabalhador(dto.getNotaTrabalhador());
-        trabalhador.setSenha(dto.getSenha());
-
-        Endereco endereco = new Endereco();
-        endereco.setRua(dto.getEndereco().getRua());
-        endereco.setBairro(dto.getEndereco().getBairro());
-        endereco.setCidade(dto.getEndereco().getCidade());
-        endereco.setEstado(dto.getEndereco().getEstado());
-        endereco.setCep(dto.getEndereco().getCep());
-        endereco.setNumero(dto.getEndereco().getNumero());
-        trabalhador.setEndereco(endereco);
+        if (dto.getEndereco() != null) {
+            if (trabalhador.getEndereco() == null) {
+                trabalhador.setEndereco(new Endereco());
+            }
+            modelMapper.map(dto.getEndereco(), trabalhador.getEndereco());
+        }
 
         if (dto.getServicosIds() != null) {
             List<Servico> servicos = servicoRepository.findAllById(dto.getServicosIds());
@@ -117,49 +91,26 @@ public Trabalhador buscarEntidadePorId(Long id) {
             trabalhador.setAvaliacoesTrabalhador(avaliacoes);
         }
 
-        return trabalhador;
+        return modelMapper.map(repository.save(trabalhador), TrabalhadorResponseDTO.class);
     }
 
-    public TrabalhadorResponseDTO toResponseDTO(Trabalhador entity) {
-        TrabalhadorResponseDTO dto = new TrabalhadorResponseDTO();
-
-        dto.setId(entity.getId());
-        dto.setNome(entity.getNome());
-        dto.setEmail(entity.getEmail());
-        dto.setNotaTrabalhador(entity.getNotaTrabalhador());
-
-        Endereco endereco = entity.getEndereco();
-        if (endereco != null) {
-            EnderecoResponseDTO enderecoDTO = new EnderecoResponseDTO();
-            enderecoDTO.setRua(endereco.getRua());
-            enderecoDTO.setCidade(endereco.getCidade());
-            enderecoDTO.setEstado(endereco.getEstado());
-            enderecoDTO.setCep(endereco.getCep());
-            dto.setEndereco(enderecoDTO);
+    @Transactional
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new ResourceNotFoundException("Trabalhador não encontrado com ID: " + id);
         }
-
-        if (entity.getServicos() != null) {
-            List<ServicoResponseDTO> servicosDTO = entity.getServicos().stream().map(servico -> {
-                ServicoResponseDTO s = new ServicoResponseDTO();
-                s.setId(servico.getId());
-                s.setNome(servico.getTitulo());
-                s.setDescricao(servico.getDescricao());
-                return s;
-            }).toList();
-            dto.setServicos(servicosDTO);
-        }
-
-        if (entity.getAvaliacoesTrabalhador() != null) {
-            List<AvaliacaoTrabalhadorRequestDTO> avaliacoesDTO = entity.getAvaliacoesTrabalhador().stream().map(av -> {
-                AvaliacaoTrabalhadorRequestDTO a = new AvaliacaoTrabalhadorRequestDTO();
-                a.setComentario(av.getComentario());
-                a.setNota(av.getNota());
-                return a;
-            }).toList();
-            dto.setAvaliacoesTrabalhador(avaliacoesDTO);
-        }
-
-        return dto;
+        repository.deleteById(id);
     }
 
+    @Transactional(readOnly = true)
+    public TrabalhadorResponseDTO findById(Long id) {
+        Trabalhador trabalhador = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Trabalhador não encontrado com ID: " + id));
+        return modelMapper.map(trabalhador, TrabalhadorResponseDTO.class);
+    }
+
+    public Trabalhador buscarEntidadePorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Trabalhador não encontrado com ID: " + id));
+    }
 }

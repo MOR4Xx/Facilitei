@@ -1,9 +1,15 @@
 package psg.facilitei.DTO;
 
 import java.time.LocalDateTime;
-import io.swagger.v3.oas.annotations.media.Schema; 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Schema(description = "DTO para resposta de informações de Disponibilidade")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class DisponibilidadeResponseDTO {
     @Schema(description = "ID único da disponibilidade", example = "1")
     private Long id;
@@ -13,29 +19,4 @@ public class DisponibilidadeResponseDTO {
     private LocalDateTime dataHoraFim;
     @Schema(description = "ID do trabalhador associado a esta disponibilidade", example = "1")
     private Long trabalhadorId;
-
-    public Long getId() {
-        return id;
-    }
-    public void setId(Long id) {
-        this.id = id;
-    }
-    public LocalDateTime getDataHoraInicio() {
-        return dataHoraInicio;
-    }
-    public void setDataHoraInicio(LocalDateTime dataHoraInicio) {
-        this.dataHoraInicio = dataHoraInicio;
-    }
-    public LocalDateTime getDataHoraFim() {
-        return dataHoraFim;
-    }
-    public void setDataHoraFim(LocalDateTime dataHoraFim) {
-        this.dataHoraFim = dataHoraFim;
-    }
-    public Long getTrabalhadorId() {
-        return trabalhadorId;
-    }
-    public void setTrabalhadorId(Long trabalhadorId) {
-        this.trabalhadorId = trabalhadorId;
-    }
 }

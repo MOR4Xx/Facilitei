@@ -2,9 +2,16 @@ package psg.facilitei.DTO;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import io.swagger.v3.oas.annotations.media.Schema; 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data; // Added Lombok Data annotation
+import lombok.NoArgsConstructor; // Added Lombok NoArgsConstructor annotation
+import lombok.AllArgsConstructor; // Added Lombok AllArgsConstructor annotation
+
 
 @Schema(description = "DTO para requisição de criação/atualização de Disponibilidade")
+@Data // Generates getters, setters, toString, equals, and hashCode
+@NoArgsConstructor // Generates a no-argument constructor
+@AllArgsConstructor // Generates a constructor with all fields
 public class DisponibilidadeRequestDTO {
 
     @NotNull(message = "A data e hora de início são obrigatórias.")
@@ -18,28 +25,4 @@ public class DisponibilidadeRequestDTO {
     @NotNull(message = "O ID do trabalhador é obrigatório.")
     @Schema(description = "ID do trabalhador a quem a disponibilidade pertence", example = "1")
     private Long trabalhadorId;
-
-    public LocalDateTime getDataHoraInicio() {
-        return dataHoraInicio;
-    }
-
-    public void setDataHoraInicio(LocalDateTime dataHoraInicio) {
-        this.dataHoraInicio = dataHoraInicio;
-    }
-
-    public LocalDateTime getDataHoraFim() {
-        return dataHoraFim;
-    }
-
-    public void setDataHoraFim(LocalDateTime dataHoraFim) {
-        this.dataHoraFim = dataHoraFim;
-    }
-
-    public Long getTrabalhadorId() {
-        return trabalhadorId;
-    }
-
-    public void setTrabalhadorId(Long trabalhadorId) {
-        this.trabalhadorId = trabalhadorId;
-    }
 }

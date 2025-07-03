@@ -4,9 +4,15 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import psg.facilitei.Entity.Enum.StatusSolicitacao;
-import io.swagger.v3.oas.annotations.media.Schema; 
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Schema(description = "DTO para requisição de criação/atualização de Solicitação de Serviço")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class SolicitacaoServicoRequestDTO {
 
     @NotNull(message = "O ID do cliente é obrigatório.")
@@ -22,39 +28,5 @@ public class SolicitacaoServicoRequestDTO {
     @Schema(description = "Descrição detalhada da solicitação do serviço", example = "Preciso de um eletricista para instalar um chuveiro novo.")
     private String descricao;
 
-     private StatusSolicitacao statusSolicitacao;
-
-    public Long getClienteId() {
-        return clienteId;
-    }
-
-    public void setClienteId(Long clienteId) {
-        this.clienteId = clienteId;
-    }
-
-    public Long getServicoId() {
-        return servicoId;
-    }
-
-    public void setServicoId(Long servicoId) {
-        this.servicoId = servicoId;
-    }
-
-    public String getDescricao() {
-        return descricao;
-    }
-
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
-    }
-
-    public StatusSolicitacao getStatusSolicitacao() {
-        return statusSolicitacao;
-    }
-
-    public void setStatusSolicitacao(StatusSolicitacao statusSolicitacao) {
-        this.statusSolicitacao = statusSolicitacao;
-    }
-
-    
+    private StatusSolicitacao statusSolicitacao;
 }

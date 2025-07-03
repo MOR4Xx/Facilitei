@@ -1,3 +1,4 @@
+// mor4xx/facilitei/Facilitei-d427a563d4621b17bc84b9d2a9232fff512c93a8/src/main/java/psg/facilitei/Services/ServicoService.java
 package psg.facilitei.Services;
 
 import jakarta.transaction.Transactional;
@@ -8,8 +9,11 @@ import psg.facilitei.DTO.ServicoRequestDTO;
 import psg.facilitei.DTO.ServicoResponseDTO;
 import psg.facilitei.Entity.Cliente;
 import psg.facilitei.Entity.Servico;
-import psg.facilitei.Entity.Trabalhador; 
+import psg.facilitei.Entity.Trabalhador;
+import psg.facilitei.Entity.Disponibilidade; // Import Disponibilidade entity
+import psg.facilitei.Entity.Enum.StatusServico;
 import psg.facilitei.Exceptions.ResourceNotFoundException;
+import psg.facilitei.Repository.ClienteRepository;
 import psg.facilitei.Repository.ServicoRepository;
 
 import java.util.List;
@@ -25,10 +29,13 @@ public class ServicoService {
     private ModelMapper modelMapper;
 
     @Autowired
-    private TrabalhadorService trabalhadorService; 
+    private TrabalhadorService trabalhadorService;
 
     @Autowired
-    private ClienteService clienteService; 
+    private ClienteRepository clienteRepository;
+
+    @Autowired // 💡 NOVO: Injetar DisponibilidadeService
+    private DisponibilidadeService disponibilidadeService;
 
     public List<ServicoResponseDTO> listarTodos() {
         return servicoRepository.findAll()
@@ -43,17 +50,29 @@ public class ServicoService {
         return modelMapper.map(servico, ServicoResponseDTO.class);
     }
 
+    public Servico buscarEntidadePorId(Long id) {
+        return servicoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado com ID: " + id));
+    }
+
     @Transactional
     public ServicoResponseDTO criar(ServicoRequestDTO dto) {
         Servico servico = modelMapper.map(dto, Servico.class);
 
-        
         Trabalhador trabalhador = trabalhadorService.buscarEntidadePorId(dto.getTrabalhadorId());
         servico.setTrabalhador(trabalhador);
 
-      
-        Cliente cliente = clienteService.buscarEntidadePorId(dto.getClienteId());
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+            .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + dto.getClienteId()));
         servico.setCliente(cliente);
+
+        // 💡 NOVO: Buscar e definir a entidade Disponibilidade
+        Disponibilidade disponibilidade = disponibilidadeService.buscarEntidadePorId(dto.getDisponibilidadeId());
+        servico.setDisponibilidade(disponibilidade);
+
+        if (servico.getStatusServico() == null) {
+            servico.setStatusServico(StatusServico.PENDENTE);
+        }
 
         Servico salvo = servicoRepository.save(servico);
         return modelMapper.map(salvo, ServicoResponseDTO.class);
@@ -64,19 +83,24 @@ public class ServicoService {
         Servico existente = servicoRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado para atualização."));
 
-        
         modelMapper.map(dto, existente);
+        existente.setTitulo(dto.getTitulo());
 
-        
         if (dto.getTrabalhadorId() != null && !existente.getTrabalhador().getId().equals(dto.getTrabalhadorId())) {
             Trabalhador novoTrabalhador = trabalhadorService.buscarEntidadePorId(dto.getTrabalhadorId());
             existente.setTrabalhador(novoTrabalhador);
         }
 
-        
         if (dto.getClienteId() != null && !existente.getCliente().getId().equals(dto.getClienteId())) {
-            Cliente novoCliente = clienteService.buscarEntidadePorId(dto.getClienteId());
+            Cliente novoCliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + dto.getClienteId()));
             existente.setCliente(novoCliente);
+        }
+
+        // 💡 NOVO: Atualizar Disponibilidade se o ID mudar
+        if (dto.getDisponibilidadeId() != null && (existente.getDisponibilidade() == null || !existente.getDisponibilidade().getId().equals(dto.getDisponibilidadeId()))) {
+            Disponibilidade novaDisponibilidade = disponibilidadeService.buscarEntidadePorId(dto.getDisponibilidadeId());
+            existente.setDisponibilidade(novaDisponibilidade);
         }
 
         Servico atualizado = servicoRepository.save(existente);

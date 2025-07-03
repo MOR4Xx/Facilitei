@@ -1,3 +1,4 @@
+// mor4xx/facilitei/Facilitei-d427a563d4621b17bc84b9d2a9232fff512c93a8/src/main/java/psg/facilitei/Services/DisponibilidadeService.java
 package psg.facilitei.Services;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ public class DisponibilidadeService {
 
         Disponibilidade disponibilidade = modelMapper.map(dto, Disponibilidade.class);
 
-        
+        // Set Trabalhador entity
         Trabalhador trabalhador = trabalhadorService.buscarEntidadePorId(dto.getTrabalhadorId());
         disponibilidade.setTrabalhador(trabalhador);
 
@@ -67,6 +68,12 @@ public class DisponibilidadeService {
         return modelMapper.map(disponibilidade, DisponibilidadeResponseDTO.class);
     }
 
+    // 💡 NOVO MÉTODO: Para retornar a entidade Disponibilidade diretamente
+    public Disponibilidade buscarEntidadePorId(Long id) {
+        return disponibilidadeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Disponibilidade não encontrada com ID: " + id));
+    }
+
 
     @Transactional
     public DisponibilidadeResponseDTO update(Long id, DisponibilidadeRequestDTO dto) {
@@ -78,10 +85,10 @@ public class DisponibilidadeService {
             throw new BusinessRuleException("Data de início deve ser antes da data de fim.");
         }
 
-       
+        // Map DTO to existing entity
         modelMapper.map(dto, disponibilidade);
 
-        
+        // Update Trabalhador if ID changes
         if (dto.getTrabalhadorId() != null && !disponibilidade.getTrabalhador().getId().equals(dto.getTrabalhadorId())) {
             Trabalhador novoTrabalhador = trabalhadorService.buscarEntidadePorId(dto.getTrabalhadorId());
             disponibilidade.setTrabalhador(novoTrabalhador);
@@ -94,7 +101,7 @@ public class DisponibilidadeService {
     @Transactional
     public void delete(Long id) {
         Disponibilidade disponibilidade = disponibilidadeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Disponibilidade não encontrada com ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Disponibilidade não encontrada para exclusão com ID: " + id));
         disponibilidadeRepository.delete(disponibilidade);
     }
 }

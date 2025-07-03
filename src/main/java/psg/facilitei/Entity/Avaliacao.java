@@ -3,14 +3,18 @@ package psg.facilitei.Entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor; // Added
+import lombok.Data; // Added
+import lombok.NoArgsConstructor; // Added
 
 import java.util.List;
 
 @Entity
 @Table(name = "avaliacoes")
 @Inheritance(strategy = InheritanceType.JOINED)
+@Data // Generates getters, setters, toString, equals, and hashCode
+@NoArgsConstructor // Generates a no-argument constructor
+@AllArgsConstructor // Generates a constructor with all fields
 public abstract class Avaliacao {
 
     @Id
@@ -22,7 +26,7 @@ public abstract class Avaliacao {
     @Column(name = "nota", nullable = false)
     private int nota;
 
-    @Column(name = "comentario", nullable = true, length = 1000)
+    @Column(name = "comentario", length = 1000) // nullable = true is default, can be omitted
     private String comentario;
 
     @ElementCollection
@@ -31,35 +35,6 @@ public abstract class Avaliacao {
             joinColumns = @JoinColumn(name = "avaliacao_id")
     )
     @Column(name = "url_foto", length = 500)
-    private List<@NotBlank String> fotos;
+    private List<String> fotos; // Removed @NotBlank as it's meant for String fields, not List elements.
 
-
-
-    public Long getId() {
-        return id;
-    }
-
-    public int getNota() {
-        return nota;
-    }
-
-    public void setNota(int nota) {
-        this.nota = nota;
-    }
-
-    public String getComentario() {
-        return comentario;
-    }
-
-    public void setComentario(String comentario) {
-        this.comentario = comentario;
-    }
-
-    public List<String> getFotos() {
-        return fotos;
-    }
-
-    public void setFotos(List<String> fotos) {
-        this.fotos = fotos;
-    }
 }

@@ -1,17 +1,22 @@
+// mor4xx/facilitei/Facilitei-d427a563d4621b17bc84b9d2a9232fff512c93a8/src/main/java/psg/facilitei/Entity/Servico.java
 package psg.facilitei.Entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import psg.facilitei.Entity.Enum.StatusServico;
 import psg.facilitei.Entity.Enum.TipoServico;
-
-
 
 @Entity
 @Table(name = "servico")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Servico {
 
     @Id
@@ -28,15 +33,21 @@ public class Servico {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "avaliacao_id")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private AvaliacaoServico avaliacaoServico;
 
     @NotNull(message = "Informe os dias disponíveis")
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "disponibilidade_id", nullable = false)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Disponibilidade disponibilidade;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "solicitacao_id")
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private SolicitacaoServico solicitacao;
 
     @Enumerated(EnumType.STRING)
@@ -45,38 +56,19 @@ public class Servico {
     private TipoServico tipoServico;
 
     @ManyToOne
-    @JoinTable(name = "trabalhador_id")
+    @JoinColumn(name = "trabalhador_id", nullable = false)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Trabalhador trabalhador;
 
     @ManyToOne
-    @JoinTable(name = "cliente_id")
+    @JoinColumn(name = "cliente_id", nullable = false)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Cliente cliente;
 
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "O tipo do serviço é obrigatório")
-    @Column(name = "status_servico", nullable = false)
+    @NotNull(message = "O status do serviço é obrigatório.") // ✏️ Mensagem corrigida
+    @Column(name = "status_servico", nullable = false, length = 20) // 💡 NOVO: Adicionado length = 20
     private StatusServico statusServico;
-
-    public Servico() {
-    }
-
-    public Servico(Long id, @NotBlank(message = "O título do serviço é obrigatório") String titulo,
-            @NotBlank(message = "A descrição do serviço é obrigatória") String descricao, AvaliacaoServico avaliacaoServico,
-            @NotBlank(message = "Informe os dias disponíveis") Disponibilidade disponibilidade,
-            SolicitacaoServico solicitacao,
-            @NotNull(message = "O tipo do serviço é obrigatório") TipoServico tipoServico, Trabalhador trabalhador,
-            Cliente cliente, @NotNull(message = "O tipo do serviço é obrigatório") StatusServico statusServico) {
-        this.id = id;
-        this.titulo = titulo;
-        this.descricao = descricao;
-        this.avaliacaoServico = avaliacaoServico;
-        this.disponibilidade = disponibilidade;
-        this.solicitacao = solicitacao;
-        this.tipoServico = tipoServico;
-        this.trabalhador = trabalhador;
-        this.cliente = cliente;
-        this.statusServico = statusServico;
-    }
-
-
 }
