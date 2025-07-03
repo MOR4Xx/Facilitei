@@ -4,6 +4,7 @@ package psg.facilitei.Entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,6 +31,11 @@ public class Servico {
     @NotBlank(message = "A descrição do serviço é obrigatória")
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
+
+    @NotNull(message = "O preço do serviço é obrigatório.")
+    @Positive(message = "O preço deve ser um valor positivo.")
+    @Column(name = "preco", nullable = false) 
+    private Double preco;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "avaliacao_id")
@@ -71,4 +77,6 @@ public class Servico {
     @NotNull(message = "O status do serviço é obrigatório.") // ✏️ Mensagem corrigida
     @Column(name = "status_servico", nullable = false, length = 20) // 💡 NOVO: Adicionado length = 20
     private StatusServico statusServico;
+
+    
 }
