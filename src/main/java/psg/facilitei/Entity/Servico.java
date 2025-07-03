@@ -1,4 +1,4 @@
-// mor4xx/facilitei/Facilitei-d427a563d4621b17bc84b9d2a9232fff512c93a8/src/main/java/psg/facilitei/Entity/Servico.java
+
 package psg.facilitei.Entity;
 
 import jakarta.persistence.*;
@@ -74,8 +74,8 @@ public class Servico {
     private Cliente cliente;
 
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "O status do serviço é obrigatório.") // ✏️ Mensagem corrigida
-    @Column(name = "status_servico", nullable = false, length = 20) // 💡 NOVO: Adicionado length = 20
+    @NotNull(message = "O status do serviço é obrigatório.")
+    @Column(name = "status_servico", nullable = false, length = 20)
     private StatusServico statusServico;
 
     

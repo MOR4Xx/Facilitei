@@ -3,18 +3,18 @@ package psg.facilitei.Entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import lombok.AllArgsConstructor; // Added
-import lombok.Data; // Added
-import lombok.NoArgsConstructor; // Added
+import lombok.AllArgsConstructor; 
+import lombok.Data; 
+import lombok.NoArgsConstructor; 
 
 import java.util.List;
 
 @Entity
 @Table(name = "avaliacoes")
 @Inheritance(strategy = InheritanceType.JOINED)
-@Data // Generates getters, setters, toString, equals, and hashCode
-@NoArgsConstructor // Generates a no-argument constructor
-@AllArgsConstructor // Generates a constructor with all fields
+@Data 
+@NoArgsConstructor 
+@AllArgsConstructor 
 public abstract class Avaliacao {
 
     @Id
@@ -26,7 +26,7 @@ public abstract class Avaliacao {
     @Column(name = "nota", nullable = false)
     private int nota;
 
-    @Column(name = "comentario", length = 1000) // nullable = true is default, can be omitted
+    @Column(name = "comentario", length = 1000) 
     private String comentario;
 
     @ElementCollection
@@ -35,6 +35,6 @@ public abstract class Avaliacao {
             joinColumns = @JoinColumn(name = "avaliacao_id")
     )
     @Column(name = "url_foto", length = 500)
-    private List<String> fotos; // Removed @NotBlank as it's meant for String fields, not List elements.
+    private List<String> fotos; 
 
 }

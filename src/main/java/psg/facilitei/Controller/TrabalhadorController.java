@@ -1,4 +1,4 @@
-// mor4xx/facilitei/Facilitei-d427a563d4621b17bc84b9d2a9232fff512c93a8/src/main/java/psg/facilitei/Controller/TrabalhadorController.java
+
 package psg.facilitei.Controller;
 
 import java.util.List;
@@ -18,7 +18,7 @@ import jakarta.validation.Valid;
 import psg.facilitei.DTO.TrabalhadorRequestDTO;
 import psg.facilitei.DTO.TrabalhadorResponseDTO;
 import psg.facilitei.Services.TrabalhadorService;
-import psg.facilitei.Exceptions.ErrorResponseDTO; // Added for error response schemas
+import psg.facilitei.Exceptions.ErrorResponseDTO;
 
 @RestController
 @RequestMapping("/trabalhador")
@@ -32,13 +32,13 @@ public class TrabalhadorController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Trabalhador criado com sucesso",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = TrabalhadorResponseDTO.class))), // Changed to ResponseDTO
+                            schema = @Schema(implementation = TrabalhadorResponseDTO.class))), 
             @ApiResponse(responseCode = "400", description = "Dados inválidos ou incompletos",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class))) // Added ErrorResponseDTO
+                            schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     @PostMapping("/criar")
-    public ResponseEntity<TrabalhadorResponseDTO> CreateTrabalhador(@Valid @RequestBody TrabalhadorRequestDTO trabalhadorRequestDTO) { // Changed return type to ResponseEntity<TrabalhadorResponseDTO> and added @Valid
+    public ResponseEntity<TrabalhadorResponseDTO> CreateTrabalhador(@Valid @RequestBody TrabalhadorRequestDTO trabalhadorRequestDTO) {
         TrabalhadorResponseDTO createdTrabalhador = service.createTrabalhador(trabalhadorRequestDTO);
         return ResponseEntity.status(201).body(createdTrabalhador);
     }
@@ -62,10 +62,10 @@ public class TrabalhadorController {
             @ApiResponse(responseCode = "404", description = "Trabalhador não encontrado"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class))) // Added ErrorResponseDTO
+                            schema = @Schema(implementation = ErrorResponseDTO.class))) 
     })
     @PutMapping("/atualizar/{id}")
-    public TrabalhadorResponseDTO atualizarTrabalhador(@PathVariable Long id, @Valid @RequestBody TrabalhadorRequestDTO dto) { // Added @Valid
+    public TrabalhadorResponseDTO atualizarTrabalhador(@PathVariable Long id, @Valid @RequestBody TrabalhadorRequestDTO dto) {
         return service.atualizar(id, dto);
     }
 
@@ -75,7 +75,7 @@ public class TrabalhadorController {
             @ApiResponse(responseCode = "404", description = "Trabalhador não encontrado"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor.",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class))) // Added ErrorResponseDTO
+                            schema = @Schema(implementation = ErrorResponseDTO.class))) 
     })
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> deletarTrabalhador(@PathVariable Long id) {
@@ -97,7 +97,7 @@ public class TrabalhadorController {
             @ApiResponse(responseCode = "404", description = "Trabalhador não encontrado"),
             @ApiResponse(responseCode = "500", description = "Erro interno do servidor.",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = ErrorResponseDTO.class))) // Added ErrorResponseDTO
+                            schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     @GetMapping("buscarPorId/{id}")
     public ResponseEntity<TrabalhadorResponseDTO> buscarPorId(@PathVariable Long id) {

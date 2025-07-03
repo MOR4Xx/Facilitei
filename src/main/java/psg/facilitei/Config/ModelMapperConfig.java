@@ -5,11 +5,11 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import psg.facilitei.DTO.DisponibilidadeResponseDTO; // <-- IMPORT ADICIONADO
+import psg.facilitei.DTO.DisponibilidadeResponseDTO;
 import psg.facilitei.DTO.ServicoRequestDTO;
 import psg.facilitei.DTO.ServicoResponseDTO;
 import psg.facilitei.DTO.SolicitacaoServicoResponseDTO;
-import psg.facilitei.Entity.Disponibilidade; // <-- IMPORT ADICIONADO
+import psg.facilitei.Entity.Disponibilidade;
 import psg.facilitei.Entity.Servico;
 import psg.facilitei.Entity.SolicitacaoServico;
 
@@ -21,7 +21,7 @@ public class ModelMapperConfig {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
-        // --- CONVERSORES SEGUROS PARA EVITAR NULLPOINTEREXCEPTION ---
+
 
         Converter<Servico, Long> servicoToTrabalhadorIdConverter = context ->
                 context.getSource() == null || context.getSource().getTrabalhador() == null
@@ -47,13 +47,13 @@ public class ModelMapperConfig {
                 context.getSource() == null || context.getSource().getStatusSolicitacao() == null
                         ? null : context.getSource().getStatusSolicitacao().name();
         
-        // NOVO CONVERSOR PARA DISPONIBILIDADE
+
         Converter<Disponibilidade, Long> disponibilidadeToTrabalhadorIdConverter = context ->
                 context.getSource() == null || context.getSource().getTrabalhador() == null
                         ? null : context.getSource().getTrabalhador().getId();
 
 
-        // --- APLICAÇÃO DOS MAPEAMENTOS ---
+
 
         modelMapper.createTypeMap(ServicoRequestDTO.class, Servico.class)
                 .addMappings(mapper -> {
@@ -76,14 +76,12 @@ public class ModelMapperConfig {
                     mapper.using(solicitacaoToStatusConverter).map(source -> source, SolicitacaoServicoResponseDTO::setStatus);
                 });
 
-        // ===================================================================
-        // NOVO BLOCO DE MAPEAMENTO PARA DISPONIBILIDADE
-        // ===================================================================
+
         modelMapper.createTypeMap(Disponibilidade.class, DisponibilidadeResponseDTO.class)
                 .addMappings(mapper -> {
                     mapper.using(disponibilidadeToTrabalhadorIdConverter).map(source -> source, DisponibilidadeResponseDTO::setTrabalhadorId);
                 });
-        // ===================================================================
+
 
         return modelMapper;
     }

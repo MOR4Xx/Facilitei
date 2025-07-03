@@ -14,7 +14,7 @@ public class AvaliacaoClienteRequestDTO {
     @NotNull @Min(1) @Max(5)
     private Integer nota;
 
-    @NotBlank(message = "O comentário é obrigatório.") // REQ-AVAL-04 and UC11-Avaliar Cliente specify comment is mandatory
+    @NotBlank(message = "O comentário é obrigatório.") 
     private String comentario;
 
     private List<@Size(max = 500) String> fotos;

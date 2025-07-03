@@ -13,12 +13,12 @@ import java.util.List;
 public class AvaliacaoTrabalhadorReponseDTO {
 
     @Schema(description = "Cliente que avaliou")
-    private ClienteResponseDTO cliente; // Changed from Cliente entity to ClienteResponseDTO
+    private ClienteResponseDTO cliente; 
 
     @Schema(description = "Nota deixada")
     private int nota;
 
-    @Schema(description = "Comentario deixado") // Corrected typo: "deixdo" -> "deixado"
+    @Schema(description = "Comentario deixado") 
     private String comentario;
 
     @Schema(description = "Lista de URLs das fotos")

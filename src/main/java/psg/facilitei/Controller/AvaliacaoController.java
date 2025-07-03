@@ -1,4 +1,4 @@
-// mor4xx/facilitei/Facilitei-d427a563d4621b17bc84b9d2a9232fff512c93a8/src/main/java/psg/facilitei/Controller/AvaliacaoController.java
+
 package psg.facilitei.Controller;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,12 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import psg.facilitei.DTO.*;
-import psg.facilitei.Entity.*; // Still importing entities, but will map to DTOs for responses.
-import psg.facilitei.Repository.AvaliacaoClienteRepository; // Still directly using repos here for list/delete
+import psg.facilitei.Entity.*;
+import psg.facilitei.Repository.AvaliacaoClienteRepository;
 import psg.facilitei.Repository.AvaliacaoServicoRepository;
 import psg.facilitei.Repository.AvaliacaoTrabalhadorRepository;
 import psg.facilitei.Services.AvaliacaoService;
-import org.modelmapper.ModelMapper; // Added for mapping in controller
+import org.modelmapper.ModelMapper;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,34 +27,34 @@ public class AvaliacaoController {
     private AvaliacaoService avaliacaoService;
 
     @Autowired
-    private AvaliacaoServicoRepository avaliacaoServicoRepo; // Used for listing/deleting
+    private AvaliacaoServicoRepository avaliacaoServicoRepo;
     @Autowired
-    private AvaliacaoClienteRepository avaliacaoClienteRepo; // Used for listing/deleting
+    private AvaliacaoClienteRepository avaliacaoClienteRepo;
     @Autowired
-    private AvaliacaoTrabalhadorRepository avaliacaoTrabalhadorRepo; // Used for listing/deleting
+    private AvaliacaoTrabalhadorRepository avaliacaoTrabalhadorRepo;
 
     @Autowired
-    private ModelMapper modelMapper; // Injected ModelMapper for DTO conversion
+    private ModelMapper modelMapper;
 
     @PostMapping("/servico")
     @Operation(summary = "Avaliar Serviço", description = "Cliente avalia um serviço prestado com nota, comentário e fotos (até 3)")
     public ResponseEntity<AvaliacaoServicoResponseDTO> avaliarServico(@Valid @RequestBody AvaliacaoServicoRequestDTO dto) {
         AvaliacaoServico avaliacao = avaliacaoService.avaliarServico(dto);
-        return ResponseEntity.ok(modelMapper.map(avaliacao, AvaliacaoServicoResponseDTO.class)); // Return DTO
+        return ResponseEntity.ok(modelMapper.map(avaliacao, AvaliacaoServicoResponseDTO.class));
     }
 
     @PostMapping("/cliente")
     @Operation(summary = "Avaliar Cliente", description = "Trabalhador avalia o cliente após finalização do serviço")
     public ResponseEntity<AvaliacaoClienteResponseDTO> avaliarCliente(@Valid @RequestBody AvaliacaoClienteRequestDTO dto) {
         AvaliacaoCliente avaliacao = avaliacaoService.avaliarCliente(dto);
-        return ResponseEntity.ok(modelMapper.map(avaliacao, AvaliacaoClienteResponseDTO.class)); // Return DTO
+        return ResponseEntity.ok(modelMapper.map(avaliacao, AvaliacaoClienteResponseDTO.class));
     }
 
     @PostMapping("/trabalhador")
     @Operation(summary = "Avaliar Trabalhador", description = "Cliente avalia o trabalhador após a prestação do serviço")
     public ResponseEntity<AvaliacaoTrabalhadorReponseDTO> avaliarTrabalhador(@Valid @RequestBody AvaliacaoTrabalhadorRequestDTO dto) {
         AvaliacaoTrabalhador avaliacao = avaliacaoService.avaliarTrabalhador(dto);
-        return ResponseEntity.ok(modelMapper.map(avaliacao, AvaliacaoTrabalhadorReponseDTO.class)); // Return DTO
+        return ResponseEntity.ok(modelMapper.map(avaliacao, AvaliacaoTrabalhadorReponseDTO.class));
     }
 
     @GetMapping("/servico")
@@ -78,7 +78,6 @@ public class AvaliacaoController {
     @GetMapping("/cliente")
     @Operation(summary = "Listar avaliações de cliente", description = "Retorna todas as avaliações feitas sobre clientes")
     public ResponseEntity<List<AvaliacaoClienteResponseDTO>> listarAvaliacoesCliente() {
-        // Ideally, this mapping should be in the service layer, but for current scope, doing it here.
         List<AvaliacaoCliente> avaliacoes = avaliacaoClienteRepo.findAll();
         List<AvaliacaoClienteResponseDTO> dtos = avaliacoes.stream()
                 .map(avaliacao -> modelMapper.map(avaliacao, AvaliacaoClienteResponseDTO.class))
@@ -96,7 +95,6 @@ public class AvaliacaoController {
     @GetMapping("/trabalhador")
     @Operation(summary = "Listar avaliações de trabalhador", description = "Retorna todas as avaliações feitas sobre trabalhadores")
     public ResponseEntity<List<AvaliacaoTrabalhadorReponseDTO>> listarAvaliacoesTrabalhador() {
-        // Ideally, this mapping should be in the service layer, but for current scope, doing it here.
         List<AvaliacaoTrabalhador> avaliacoes = avaliacaoTrabalhadorRepo.findAll();
         List<AvaliacaoTrabalhadorReponseDTO> dtos = avaliacoes.stream()
                 .map(avaliacao -> modelMapper.map(avaliacao, AvaliacaoTrabalhadorReponseDTO.class))

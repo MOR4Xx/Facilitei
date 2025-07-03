@@ -34,17 +34,15 @@ public class TrabalhadorService {
     @Autowired
     private ModelMapper modelMapper;
 
-    // ... (Seus outros métodos como createTrabalhador, findAll, etc. continuam iguais)
+
 
     @Transactional
     public TrabalhadorResponseDTO atualizar(Long id, TrabalhadorRequestDTO dto) {
         Trabalhador trabalhador = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Trabalhador não encontrado com ID: " + id));
 
-        // Mapeia os campos simples do DTO para a entidade
         modelMapper.map(dto, trabalhador);
 
-        // Atualiza o endereço, se fornecido
         if (dto.getEndereco() != null) {
             if (trabalhador.getEndereco() == null) {
                 trabalhador.setEndereco(new Endereco());
@@ -52,30 +50,22 @@ public class TrabalhadorService {
             modelMapper.map(dto.getEndereco(), trabalhador.getEndereco());
         }
 
-        // ===================================================================
-        // AQUI ESTÁ A CORREÇÃO
-        // ===================================================================
-        // Atualiza a lista de serviços de forma segura
         if (dto.getServicosIds() != null) {
             List<Servico> novosServicos = servicoRepository.findAllById(dto.getServicosIds());
-            // 1. Limpa a lista atual que está ligada ao trabalhador
             trabalhador.getServicos().clear();
-            // 2. Adiciona todos os novos serviços à MESMA lista
             trabalhador.getServicos().addAll(novosServicos);
         }
-        
-        // Mantive a mesma lógica para avaliações para garantir consistência
         if (dto.getAvaliacoesIds() != null) {
             List<AvaliacaoTrabalhador> novasAvaliacoes = avaliacaoTrabalhadorRepository.findAllById(dto.getAvaliacoesIds());
             trabalhador.getAvaliacoesTrabalhador().clear();
             trabalhador.getAvaliacoesTrabalhador().addAll(novasAvaliacoes);
         }
-        // ===================================================================
+
 
         return modelMapper.map(repository.save(trabalhador), TrabalhadorResponseDTO.class);
     }
 
-    // ... (O resto da sua classe continua igual)
+
     @Transactional
     public void delete(Long id) {
         if (!repository.existsById(id)) {

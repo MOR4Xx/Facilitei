@@ -11,6 +11,6 @@ public class ClienteResponseDTO {
 
     private String nome;
     private String email;
-    private String notaCliente; // Corrected to camelCase
+    private String notaCliente; 
     private EnderecoResponseDTO endereco;
 }

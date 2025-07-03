@@ -3,15 +3,15 @@ package psg.facilitei.DTO;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data; // Added Lombok Data annotation
-import lombok.NoArgsConstructor; // Added Lombok NoArgsConstructor annotation
-import lombok.AllArgsConstructor; // Added Lombok AllArgsConstructor annotation
+import lombok.Data; 
+import lombok.NoArgsConstructor; 
+import lombok.AllArgsConstructor;
 
 
 @Schema(description = "DTO para requisição de criação/atualização de Disponibilidade")
-@Data // Generates getters, setters, toString, equals, and hashCode
-@NoArgsConstructor // Generates a no-argument constructor
-@AllArgsConstructor // Generates a constructor with all fields
+@Data 
+@NoArgsConstructor 
+@AllArgsConstructor 
 public class DisponibilidadeRequestDTO {
 
     @NotNull(message = "A data e hora de início são obrigatórias.")

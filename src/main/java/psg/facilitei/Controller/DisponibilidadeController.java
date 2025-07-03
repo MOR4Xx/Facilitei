@@ -1,4 +1,4 @@
-// mor4xx/facilitei/Facilitei-d427a563d4621b17bc84b9d2a9232fff512c93a8/src/main/java/psg/facilitei/Controller/DisponibilidadeController.java
+
 package psg.facilitei.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-import jakarta.validation.Valid; // Added for DTO validation
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -37,7 +37,7 @@ public class DisponibilidadeController {
                    @ApiResponse(responseCode = "400", description = "Requisição inválida"),
                    @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
                })
-    public ResponseEntity<DisponibilidadeResponseDTO> criarDisponibilidade(@Valid @RequestBody DisponibilidadeRequestDTO dto) { // Added @Valid
+    public ResponseEntity<DisponibilidadeResponseDTO> criarDisponibilidade(@Valid @RequestBody DisponibilidadeRequestDTO dto) {
         DisponibilidadeResponseDTO created = disponibilidadeService.create(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -79,7 +79,7 @@ public class DisponibilidadeController {
                    @ApiResponse(responseCode = "404", description = "Disponibilidade não encontrada"),
                    @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
                })
-    public ResponseEntity<DisponibilidadeResponseDTO> atualizarDisponibilidade(@PathVariable Long id, @Valid @RequestBody DisponibilidadeRequestDTO dto) { // Added @Valid
+    public ResponseEntity<DisponibilidadeResponseDTO> atualizarDisponibilidade(@PathVariable Long id, @Valid @RequestBody DisponibilidadeRequestDTO dto) {
         DisponibilidadeResponseDTO updated = disponibilidadeService.update(id, dto);
         return ResponseEntity.ok(updated);
     }

@@ -4,9 +4,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode; // Added
+import lombok.EqualsAndHashCode; 
 import lombok.NoArgsConstructor;
-import lombok.ToString; // Added
+import lombok.ToString; 
 
 @Entity
 @Table(name = "avaliacao_trabalhador")
@@ -18,13 +18,13 @@ public class AvaliacaoTrabalhador extends Avaliacao {
 
     @ManyToOne
     @JoinColumn(name = "cliente_id")
-    @EqualsAndHashCode.Exclude // Exclude from equals and hashCode to prevent StackOverflowError
-    @ToString.Exclude // Exclude from toString to prevent StackOverflowError
+    @EqualsAndHashCode.Exclude 
+    @ToString.Exclude 
     private Cliente cliente;
 
     @ManyToOne
     @JoinColumn(name = "trabalhador_id")
-    @EqualsAndHashCode.Exclude // Exclude from equals and hashCode to prevent StackOverflowError
-    @ToString.Exclude // Exclude from toString to prevent StackOverflowError
+    @EqualsAndHashCode.Exclude 
+    @ToString.Exclude 
     private Trabalhador trabalhador;
 }

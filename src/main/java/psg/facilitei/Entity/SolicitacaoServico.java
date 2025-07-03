@@ -37,7 +37,6 @@ public class SolicitacaoServico {
     @ToString.Exclude
     private Servico servico;
 
-    // CAMPO ADICIONADO PARA GUARDAR A DESCRIÇÃO
     @NotBlank(message = "A descrição da solicitação é obrigatória.")
     @Column(name = "descricao", nullable = false, length = 500)
     private String descricao;

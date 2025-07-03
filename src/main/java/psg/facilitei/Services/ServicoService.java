@@ -1,4 +1,3 @@
-// mor4xx/facilitei/Facilitei-d427a563d4621b17bc84b9d2a9232fff512c93a8/src/main/java/psg/facilitei/Services/ServicoService.java
 package psg.facilitei.Services;
 
 import jakarta.transaction.Transactional;
@@ -10,7 +9,7 @@ import psg.facilitei.DTO.ServicoResponseDTO;
 import psg.facilitei.Entity.Cliente;
 import psg.facilitei.Entity.Servico;
 import psg.facilitei.Entity.Trabalhador;
-import psg.facilitei.Entity.Disponibilidade; // Import Disponibilidade entity
+import psg.facilitei.Entity.Disponibilidade;
 import psg.facilitei.Entity.Enum.StatusServico;
 import psg.facilitei.Exceptions.ResourceNotFoundException;
 import psg.facilitei.Repository.ClienteRepository;
@@ -34,7 +33,7 @@ public class ServicoService {
     @Autowired
     private ClienteRepository clienteRepository;
 
-    @Autowired // 💡 NOVO: Injetar DisponibilidadeService
+    @Autowired
     private DisponibilidadeService disponibilidadeService;
 
     public List<ServicoResponseDTO> listarTodos() {
@@ -66,7 +65,6 @@ public class ServicoService {
             .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + dto.getClienteId()));
         servico.setCliente(cliente);
 
-        // 💡 NOVO: Buscar e definir a entidade Disponibilidade
         Disponibilidade disponibilidade = disponibilidadeService.buscarEntidadePorId(dto.getDisponibilidadeId());
         servico.setDisponibilidade(disponibilidade);
 
@@ -97,7 +95,6 @@ public class ServicoService {
             existente.setCliente(novoCliente);
         }
 
-        // 💡 NOVO: Atualizar Disponibilidade se o ID mudar
         if (dto.getDisponibilidadeId() != null && (existente.getDisponibilidade() == null || !existente.getDisponibilidade().getId().equals(dto.getDisponibilidadeId()))) {
             Disponibilidade novaDisponibilidade = disponibilidadeService.buscarEntidadePorId(dto.getDisponibilidadeId());
             existente.setDisponibilidade(novaDisponibilidade);

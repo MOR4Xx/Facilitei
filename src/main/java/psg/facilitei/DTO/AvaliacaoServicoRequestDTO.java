@@ -2,7 +2,7 @@ package psg.facilitei.DTO;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank; // Added for comentario
+import jakarta.validation.constraints.NotBlank; 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
@@ -19,11 +19,11 @@ public class AvaliacaoServicoRequestDTO {
     @NotNull @Min(1) @Max(5)
     private Integer nota;
 
-    @NotBlank(message = "O comentário é obrigatório.") // Made mandatory as per SRS (UC03)
+    @NotBlank(message = "O comentário é obrigatório.") 
     private String comentario;
 
-    private List<@Size(max = 500) String> fotos; // @Size validates each string in the list
-                                                // The "up to 3 images" is a business rule handled in service layer if needed.
+    private List<@Size(max = 500) String> fotos; 
+                                                
 
     @NotNull
     private Long clienteId;

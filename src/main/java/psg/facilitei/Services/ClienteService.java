@@ -1,4 +1,3 @@
-// mor4xx/facilitei/Facilitei-d427a563d4621b17bc84b9d2a9232fff512c93a8/src/main/java/psg/facilitei/Services/ClienteService.java
 package psg.facilitei.Services;
 
 import org.modelmapper.ModelMapper;
@@ -14,11 +13,11 @@ import psg.facilitei.Repository.AvaliacaoClienteRepository;
 import psg.facilitei.Repository.AvaliacaoServicoRepository;
 import psg.facilitei.Repository.AvaliacaoTrabalhadorRepository;
 import psg.facilitei.Repository.ClienteRepository;
-import psg.facilitei.Repository.ServicoRepository; // Added ServicoRepository
+import psg.facilitei.Repository.ServicoRepository;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.logging.Logger; // Import Logger
+import java.util.logging.Logger;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -45,9 +44,9 @@ public class ClienteService {
     private TrabalhadorService trabalhadorService;
 
     @Autowired
-    private ServicoRepository servicoRepository; // Changed from ServicoService to ServicoRepository to break cycle
+    private ServicoRepository servicoRepository;
 
-    private Logger logger = Logger.getLogger(ClienteService.class.getName()); // Initialize Logger
+    private Logger logger = Logger.getLogger(ClienteService.class.getName());
 
     public ClienteResponseDTO create(ClienteRequestDTO dto) {
         logger.info("Criando cliente");
@@ -74,7 +73,7 @@ public class ClienteService {
         return cliente;
     }
 
-    // Avaliações que o trabalhador fez para o cliente (Cliente recebeu)
+
     public List<AvaliacaoClienteResponseDTO> getAvaliacoes(Long id) {
         logger.info("Buscando Avaliações que o cliente " + id + " recebeu");
         List<AvaliacaoCliente> avaliacoesEntities = avaliacaoClienteRepository.findByClienteId(id);
@@ -89,7 +88,7 @@ public class ClienteService {
                 .collect(Collectors.toList());
     }
 
-    // Avaliações que o cliente fez para o trabalhador (Cliente avaliou)
+
     public List<AvaliacaoTrabalhadorReponseDTO> getAvaliacoesTrabalhador(Long id) {
         logger.info("Busca Avaliações que o cliente " + id + " fez para o trabalhador");
         List<AvaliacaoTrabalhador> avaliacoesEntities = avaliacaoTrabalhadorRepository.findByClienteId(id);
@@ -104,7 +103,7 @@ public class ClienteService {
                 .collect(Collectors.toList());
     }
 
-    // Avaliações que o cliente fez aos serviços (Cliente avaliou)
+
     public List<AvaliacaoServicoResponseDTO> getAvaliacoesServico(Long id) {
         logger.info("Busca avaliações que o cliente " + id + " fez para os serviços");
         List<AvaliacaoServico> avaliacaoServicos = avaliacaoServicoRepository.findByClienteId(id);
@@ -114,7 +113,7 @@ public class ClienteService {
                     if (avaliacao.getCliente() != null) {
                         dto.setCliente(modelMapper.map(avaliacao.getCliente(), ClienteResponseDTO.class));
                     }
-                    // Fetch Servico directly from repository to break circular dependency
+
                     if (avaliacao.getServico() != null) {
                         Servico servicoEntity = servicoRepository.findById(avaliacao.getServico().getId())
                             .orElseThrow(() -> new ResourceNotFoundException("Serviço associado à avaliação não encontrado com ID: " + avaliacao.getServico().getId()));

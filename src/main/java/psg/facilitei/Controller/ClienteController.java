@@ -1,4 +1,4 @@
-// mor4xx/facilitei/Facilitei-d427a563d4621b17bc84b9d2a9232fff512c93a8/src/main/java/psg/facilitei/Controller/ClienteController.java
+
 package psg.facilitei.Controller;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,7 +14,7 @@ import psg.facilitei.DTO.*;
 import psg.facilitei.Exceptions.ErrorResponseDTO;
 import psg.facilitei.Services.ClienteService;
 
-import jakarta.validation.Valid; // Added for DTO validation
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.logging.Logger;
@@ -32,16 +32,16 @@ public class ClienteController {
     @Operation(summary = "Cria um novo cliente", description = "Cria um novo cliente",
             responses = {@ApiResponse(responseCode = "201", description = "Cliente criada com sucesso.",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ClienteResponseDTO.class))), // Changed to ResponseDTO
+                                    schema = @Schema(implementation = ClienteResponseDTO.class))), 
                     @ApiResponse(responseCode = "400", description = "Requisição inválida.",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ErrorResponseDTO.class))), // Changed to ErrorResponseDTO
+                                    schema = @Schema(implementation = ErrorResponseDTO.class))), 
                     @ApiResponse(responseCode = "500", description = "Erro interno do servidor.",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponseDTO.class)))
             })
     @PostMapping(value = "/criar", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<ClienteResponseDTO> create(@Valid @RequestBody ClienteRequestDTO dto) { // Added @Valid
+    public ResponseEntity<ClienteResponseDTO> create(@Valid @RequestBody ClienteRequestDTO dto) {
         logger.info("Criando cliente");
         return ResponseEntity.ok(clienteService.create(dto));
     }
@@ -50,7 +50,7 @@ public class ClienteController {
     @Operation(summary = "Busca um cliente por ID", description = "Busca um cliente por ID",
             responses = {@ApiResponse(responseCode = "200", description = "Cliente encontrado.",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ClienteResponseDTO.class))), // Changed to ResponseDTO
+                                    schema = @Schema(implementation = ClienteResponseDTO.class))), 
                     @ApiResponse(responseCode = "404", description = "Cliente não encontrado."),
                     @ApiResponse(responseCode = "500", description = "Erro interno do servidor.",
                             content = @Content(mediaType = "application/json",
@@ -62,17 +62,17 @@ public class ClienteController {
     }
 
     @GetMapping(value = "/avaliacoes/{id}", produces = "application/json")
-    @Operation(summary = "Busca avaliações feitas ao cliente", description = "Busca as avaliações feitas ao cliente", // Corrected typo
+    @Operation(summary = "Busca avaliações feitas ao cliente", description = "Busca as avaliações feitas ao cliente",
             responses = {@ApiResponse(responseCode = "200", description = "Avaliações encontradas.",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = AvaliacaoClienteResponseDTO.class))), // Changed to ResponseDTO
+                                    schema = @Schema(implementation = AvaliacaoClienteResponseDTO.class))), 
                     @ApiResponse(responseCode = "404", description = "Avaliações não encontradas."),
                     @ApiResponse(responseCode = "500", description = "Erro interno do servidor.",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponseDTO.class)))
             })
     public ResponseEntity<List<AvaliacaoClienteResponseDTO>> getAvaliacoes(@PathVariable Long id) {
-        logger.info("Buscando Avaliações que o cliente " + id + " recebeu"); // Corrected log message
+        logger.info("Buscando Avaliações que o cliente " + id + " recebeu");
         return ResponseEntity.ok(clienteService.getAvaliacoes(id));
     }
 
@@ -80,14 +80,14 @@ public class ClienteController {
     @Operation(summary = "Busca avaliações feitas ao trabalhador", description = "Busca as avaliações feitas do cliente ao trabalhador",
             responses = {@ApiResponse(responseCode = "200", description = "Avaliações encontradas.",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = AvaliacaoTrabalhadorReponseDTO.class))), // Changed to ResponseDTO
+                                    schema = @Schema(implementation = AvaliacaoTrabalhadorReponseDTO.class))), 
                     @ApiResponse(responseCode = "404", description = "Avaliações não encontradas."),
                     @ApiResponse(responseCode = "500", description = "Erro interno do servidor.",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponseDTO.class)))
             })
     public ResponseEntity<List<AvaliacaoTrabalhadorReponseDTO>> getAvaliacoesTrabalhador(@PathVariable Long id) {
-        logger.info("Busca Avaliações que o cliente " + id + " fez para o trabalhador"); // Corrected log message
+        logger.info("Busca Avaliações que o cliente " + id + " fez para o trabalhador");
         return ResponseEntity.ok(clienteService.getAvaliacoesTrabalhador(id));
     }
 
@@ -95,7 +95,7 @@ public class ClienteController {
     @Operation(summary = "Busca avaliações feitas aos serviços contratados", description = "Busca as avaliações feitas do cliente aos serviços",
             responses = {@ApiResponse(responseCode = "200", description = "Avaliações encontradas.",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = AvaliacaoServicoResponseDTO.class))), // Changed to ResponseDTO
+                                    schema = @Schema(implementation = AvaliacaoServicoResponseDTO.class))), 
                     @ApiResponse(responseCode = "404", description = "Avaliações não encontradas."),
                     @ApiResponse(responseCode = "500", description = "Erro interno do servidor.",
                             content = @Content(mediaType = "application/json",
@@ -108,15 +108,15 @@ public class ClienteController {
 
     @PutMapping(value = "/editar/{id}", consumes = "application/json", produces = "application/json")
     @Operation(summary = "Edita os dados do cliente", description = "Edita os dados do cliente sem que seja modificado completamente",
-            responses = {@ApiResponse(responseCode = "200", description = "Cliente atualizado com sucesso.", // Added 200 response code
+            responses = {@ApiResponse(responseCode = "200", description = "Cliente atualizado com sucesso.",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ClienteResponseDTO.class))), // Changed to ResponseDTO
+                                    schema = @Schema(implementation = ClienteResponseDTO.class))), 
                     @ApiResponse(responseCode = "404", description = "Cliente não encontrado para edição"),
                     @ApiResponse(responseCode = "500", description = "Erro interno do servidor.",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponseDTO.class)))
             })
-    public ResponseEntity<ClienteResponseDTO> editar(@PathVariable Long id, @Valid @RequestBody ClienteRequestDTO dto) { // Added @Valid
+    public ResponseEntity<ClienteResponseDTO> editar(@PathVariable Long id, @Valid @RequestBody ClienteRequestDTO dto) {
         logger.info("Editando cliente");
         return clienteService.update(id, dto);
     }
@@ -134,9 +134,9 @@ public class ClienteController {
                                     schema = @Schema(implementation = ErrorResponseDTO.class))
                     )
             })
-    public ResponseEntity<Void> deletar(@PathVariable Long id) { // Changed return type to Void
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
         logger.info("Deletando cliente");
         clienteService.delete(id);
-        return ResponseEntity.noContent().build(); // Return 204 No Content
+        return ResponseEntity.noContent().build();
     }
 }

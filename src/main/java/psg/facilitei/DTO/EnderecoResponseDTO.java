@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EnderecoResponseDTO {
     private String rua;
-    private String numero; // Added based on Endereco entity
-    private String bairro; // Added based on Endereco entity
+    private String numero; 
+    private String bairro; 
     private String cidade;
     private String estado;
     private String cep;
