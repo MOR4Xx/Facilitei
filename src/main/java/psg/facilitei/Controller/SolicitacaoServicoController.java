@@ -1,3 +1,4 @@
+
 package psg.facilitei.Controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -62,7 +65,7 @@ public class SolicitacaoServicoController {
                    @ApiResponse(responseCode = "400", description = "Requisição inválida"),
                    @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
                })
-    public ResponseEntity<SolicitacaoServicoResponseDTO> criar(@RequestBody SolicitacaoServicoRequestDTO dto) {
+    public ResponseEntity<SolicitacaoServicoResponseDTO> criar(@Valid @RequestBody SolicitacaoServicoRequestDTO dto) {
         SolicitacaoServicoResponseDTO criada = solicitacaoServicoService.criar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(criada);
     }
@@ -77,7 +80,7 @@ public class SolicitacaoServicoController {
                    @ApiResponse(responseCode = "404", description = "Solicitação de serviço não encontrada"),
                    @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
                })
-    public ResponseEntity<SolicitacaoServicoResponseDTO> atualizar(@PathVariable Long id, @RequestBody SolicitacaoServicoRequestDTO dto) {
+    public ResponseEntity<SolicitacaoServicoResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody SolicitacaoServicoRequestDTO dto) {
         SolicitacaoServicoResponseDTO atualizada = solicitacaoServicoService.atualizar(id, dto);
         return ResponseEntity.ok(atualizada);
     }

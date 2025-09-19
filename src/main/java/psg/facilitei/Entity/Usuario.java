@@ -1,12 +1,17 @@
 package psg.facilitei.Entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor; 
 import lombok.Data;
-
+import lombok.NoArgsConstructor; 
+import lombok.EqualsAndHashCode; 
+import lombok.ToString; 
 
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-@Data
+@Data 
+@NoArgsConstructor 
+
 public abstract class Usuario {
 
     @Id
@@ -24,15 +29,9 @@ public abstract class Usuario {
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "endereco_id", referencedColumnName = "id")
+    @EqualsAndHashCode.Exclude 
+    @ToString.Exclude 
     private Endereco endereco;
 
-    public Usuario() {}
-
-    public Usuario(String nome, String email, String senha, String fotoPerfil, Endereco endereco) {
-        this.nome = nome;
-        this.email = email;
-        this.senha = senha;
-        this.endereco = endereco;
-    }
 
 }

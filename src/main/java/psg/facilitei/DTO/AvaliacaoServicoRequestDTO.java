@@ -1,57 +1,32 @@
 package psg.facilitei.DTO;
 
-
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank; 
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AvaliacaoServicoRequestDTO {
 
+    @NotNull @Min(1) @Max(5)
     private Integer nota;
+
+    @NotBlank(message = "O comentário é obrigatório.") 
     private String comentario;
-    private List<String> fotos;
 
+    private List<@Size(max = 500) String> fotos; 
+                                                
+
+    @NotNull
     private Long clienteId;
+    @NotNull
     private Long servicoId;
-
-    // Getters e Setters
-    public Integer getNota() {
-        return nota;
-    }
-
-    public void setNota(Integer nota) {
-        this.nota = nota;
-    }
-
-    public String getComentario() {
-        return comentario;
-    }
-
-    public void setComentario(String comentario) {
-        this.comentario = comentario;
-    }
-
-    public List<String> getFotos() {
-        return fotos;
-    }
-
-    public void setFotos(List<String> fotos) {
-        this.fotos = fotos;
-    }
-
-    public Long getClienteId() {
-        return clienteId;
-    }
-
-    public void setClienteId(Long clienteId) {
-        this.clienteId = clienteId;
-    }
-
-    public Long getServicoId() {
-        return servicoId;
-    }
-
-    public void setServicoId(Long servicoId) {
-        this.servicoId = servicoId;
-    }
 }
-

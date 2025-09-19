@@ -2,13 +2,19 @@ package psg.facilitei.DTO;
 
 import jakarta.validation.constraints.*;
 import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AvaliacaoClienteRequestDTO {
 
     @NotNull @Min(1) @Max(5)
     private Integer nota;
 
-    @NotBlank
+    @NotBlank(message = "O comentário é obrigatório.") 
     private String comentario;
 
     private List<@Size(max = 500) String> fotos;
@@ -18,44 +24,4 @@ public class AvaliacaoClienteRequestDTO {
 
     @NotNull
     private Long clienteId;
-
-    public Integer getNota() {
-        return nota;
-    }
-
-    public void setNota(Integer nota) {
-        this.nota = nota;
-    }
-
-    public String getComentario() {
-        return comentario;
-    }
-
-    public void setComentario(String comentario) {
-        this.comentario = comentario;
-    }
-
-    public List<String> getFotos() {
-        return fotos;
-    }
-
-    public void setFotos(List<String> fotos) {
-        this.fotos = fotos;
-    }
-
-    public Long getTrabalhadorId() {
-        return trabalhadorId;
-    }
-
-    public void setTrabalhadorId(Long trabalhadorId) {
-        this.trabalhadorId = trabalhadorId;
-    }
-
-    public Long getClienteId() {
-        return clienteId;
-    }
-
-    public void setClienteId(Long clienteId) {
-        this.clienteId = clienteId;
-    }
 }

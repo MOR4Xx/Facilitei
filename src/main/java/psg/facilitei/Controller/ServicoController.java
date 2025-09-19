@@ -16,6 +16,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import jakarta.validation.Valid;
+
 import java.util.List;
 
 @RestController
@@ -58,11 +60,11 @@ public class ServicoController {
                responses = {
                    @ApiResponse(responseCode = "201", description = "Serviço criado com sucesso",
                                 content = @Content(mediaType = "application/json",
-                                schema = @Schema(implementation = ServicoResponseDTO.class))),
+                                schema = @Schema(implementation = ServicoResponseDTO.class))), 
                    @ApiResponse(responseCode = "400", description = "Requisição inválida"),
                    @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
                })
-    public ResponseEntity<ServicoResponseDTO> criar(@RequestBody ServicoRequestDTO dto) {
+    public ResponseEntity<ServicoResponseDTO> criar(@Valid @RequestBody ServicoRequestDTO dto) {
         ServicoResponseDTO criado = servicoService.criar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(criado);
     }
@@ -72,12 +74,12 @@ public class ServicoController {
                responses = {
                    @ApiResponse(responseCode = "200", description = "Serviço atualizado com sucesso",
                                 content = @Content(mediaType = "application/json",
-                                schema = @Schema(implementation = ServicoResponseDTO.class))),
+                                schema = @Schema(implementation = ServicoResponseDTO.class))), 
                    @ApiResponse(responseCode = "400", description = "Requisição inválida"),
                    @ApiResponse(responseCode = "404", description = "Serviço não encontrado"),
                    @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
                })
-    public ResponseEntity<ServicoResponseDTO> atualizar(@PathVariable Long id, @RequestBody ServicoRequestDTO dto) {
+    public ResponseEntity<ServicoResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody ServicoRequestDTO dto) {
         ServicoResponseDTO atualizado = servicoService.atualizar(id, dto);
         return ResponseEntity.ok(atualizado);
     }
