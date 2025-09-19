@@ -35,5 +35,7 @@ public class Trabalhador extends Usuario {
     @Column(name = "nota_trabalhador")
     private Integer notaTrabalhador = 0;
 
+    @Column(name = "disponibilidade")
+    private String disponibilidade;
 
 }

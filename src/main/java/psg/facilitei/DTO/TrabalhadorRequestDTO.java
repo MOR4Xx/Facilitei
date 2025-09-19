@@ -13,9 +13,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TrabalhadorRequestDTO {
 
-    @NotBlank
+    @NotBlank(message = "Nome não pode ser vazio!")
     private String nome;
-    @NotBlank
+
+    @NotBlank(message = "Email não pode ser vazio!")
     @Email
     private String email;
   

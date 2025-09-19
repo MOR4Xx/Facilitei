@@ -9,7 +9,6 @@ import psg.facilitei.DTO.ServicoResponseDTO;
 import psg.facilitei.Entity.Cliente;
 import psg.facilitei.Entity.Servico;
 import psg.facilitei.Entity.Trabalhador;
-import psg.facilitei.Entity.Disponibilidade;
 import psg.facilitei.Entity.Enum.StatusServico;
 import psg.facilitei.Exceptions.ResourceNotFoundException;
 import psg.facilitei.Repository.ClienteRepository;

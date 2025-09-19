@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import psg.facilitei.Entity.AvaliacaoTrabalhador;
 
 import java.util.List;
 
@@ -12,15 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 public class AvaliacaoTrabalhadorReponseDTO {
 
-    @Schema(description = "Cliente que avaliou")
-    private ClienteResponseDTO cliente; 
 
-    @Schema(description = "Nota deixada")
-    private int nota;
+    private Long id;
+    private TrabalhadorResponseDTO trabalhador;
+    private AvaliacaoTrabalhador avaliacao;
 
-    @Schema(description = "Comentario deixado") 
-    private String comentario;
-
-    @Schema(description = "Lista de URLs das fotos")
-    private List<String> fotos;
 }

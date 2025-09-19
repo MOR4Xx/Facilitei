@@ -5,11 +5,9 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import psg.facilitei.DTO.DisponibilidadeResponseDTO;
 import psg.facilitei.DTO.ServicoRequestDTO;
 import psg.facilitei.DTO.ServicoResponseDTO;
 import psg.facilitei.DTO.SolicitacaoServicoResponseDTO;
-import psg.facilitei.Entity.Disponibilidade;
 import psg.facilitei.Entity.Servico;
 import psg.facilitei.Entity.SolicitacaoServico;
 
