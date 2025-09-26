@@ -15,5 +15,5 @@ public class TrabalhadorResponseDTO {
     private EnderecoResponseDTO endereco;
     private String disponibilidade;
     private List<ServicoResponseDTO> servicos;
-    private Integer notaTrabalhador;
+    private Double notaTrabalhador;
 }

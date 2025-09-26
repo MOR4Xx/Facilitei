@@ -23,6 +23,7 @@ public class TrabalhadorRequestDTO {
     private EnderecoRequestDTO endereco; 
     private List<Long> servicosIds;
     private List<Long> avaliacoesIds;
-    private Integer notaTrabalhador;
-    private String senha; 
+    private String disponibilidade;
+    private Double notaTrabalhador;
+    private String senha;
 }

@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import jakarta.persistence.EntityNotFoundException;
-import psg.facilitei.DTO.AvaliacaoTrabalhadorRequestDTO;
 import psg.facilitei.DTO.EnderecoResponseDTO;
 import psg.facilitei.DTO.ServicoResponseDTO;
 import psg.facilitei.DTO.TrabalhadorRequestDTO;
@@ -35,9 +34,10 @@ public class TrabalhadorService {
     @Autowired
     private AvaliacaoClienteRepository avaliacaoClienteRepository;
 
-    public TrabalhadorRequestDTO createTrabalhador(TrabalhadorRequestDTO trabalhadorRequestDTO) {
-        repository.save(toEntity(trabalhadorRequestDTO));
-        return trabalhadorRequestDTO;
+    public TrabalhadorResponseDTO createTrabalhador(TrabalhadorRequestDTO trabalhadorRequestDTO) {
+        Trabalhador trabalhador = repository.save(toEntity(trabalhadorRequestDTO));
+
+        return toResponseDTO(trabalhador);
     }
 
     public List<TrabalhadorResponseDTO> findAll() {
@@ -87,9 +87,10 @@ public class TrabalhadorService {
         return toResponseDTO(trabalhador);
     }
 
-    public Trabalhador buscarEntidadePorId(Long id) {
-        return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trabalhador não encontrado com ID: " + id));
+    public TrabalhadorResponseDTO buscarEntidadePorId(Long id) {
+        Trabalhador trabalhador = repository.findById(id).orElseThrow(()-> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
+
+        return toResponseDTO(trabalhador);
     }
 
     public Trabalhador toEntity(TrabalhadorRequestDTO dto) {
@@ -144,21 +145,11 @@ public class TrabalhadorService {
             List<ServicoResponseDTO> servicosDTO = entity.getServicos().stream().map(servico -> {
                 ServicoResponseDTO s = new ServicoResponseDTO();
                 s.setId(servico.getId());
-                s.setNome(servico.getTitulo());
+                s.setTitulo(servico.getTitulo());
                 s.setDescricao(servico.getDescricao());
                 return s;
             }).toList();
             dto.setServicos(servicosDTO);
-        }
-
-        if (entity.getAvaliacoesTrabalhador() != null) {
-            List<AvaliacaoTrabalhadorRequestDTO> avaliacoesDTO = entity.getAvaliacoesTrabalhador().stream().map(av -> {
-                AvaliacaoTrabalhadorRequestDTO a = new AvaliacaoTrabalhadorRequestDTO();
-                a.setComentario(av.getComentario());
-                a.setNota(av.getNota());
-                return a;
-            }).toList();
-            dto.setAvaliacoesTrabalhador(avaliacoesDTO);
         }
 
         return dto;

@@ -33,7 +33,7 @@ public class Trabalhador extends Usuario {
     private List<AvaliacaoTrabalhador> avaliacoesTrabalhador = new ArrayList<>();
 
     @Column(name = "nota_trabalhador")
-    private Integer notaTrabalhador = 0;
+    private Double notaTrabalhador = 0.0;
 
     @Column(name = "disponibilidade")
     private String disponibilidade;
