@@ -1,0 +1,134 @@
+{
+  "trabalhadores": [
+    {
+      "id": 1,
+      "nome": "João da Silva",
+      "email": "joao.silva@exemplo.com",
+      "endereco": {
+        "rua": "Rua das Flores",
+        "numero": "123",
+        "bairro": "Centro",
+        "cidade": "São Paulo",
+        "estado": "SP",
+        "cep": "01001-000"
+      },
+      "disponibilidade": "Segunda a Sexta, 8h às 18h",
+      "notaTrabalhador": 4
+    },
+    {
+      "id": 2,
+      "nome": "Maria Oliveira",
+      "email": "maria.oliveira@exemplo.com",
+      "endereco": {
+        "rua": "Avenida Paulista",
+        "numero": "1578",
+        "bairro": "Bela Vista",
+        "cidade": "São Paulo",
+        "estado": "SP",
+        "cep": "01310-200"
+      },
+      "disponibilidade": "Finais de semana, 9h às 17h",
+      "notaTrabalhador": 5
+    }
+  ],
+  "clientes": [
+    {
+      "id": 1,
+      "nome": "Carlos Pereira",
+      "email": "carlos.pereira@exemplo.com",
+      "notaCliente": 5,
+      "endereco": {
+        "rua": "Rua Augusta",
+        "numero": "500",
+        "bairro": "Consolação",
+        "cidade": "São Paulo",
+        "estado": "SP",
+        "cep": "01304-001"
+      }
+    },
+    {
+      "id": 2,
+      "nome": "Ana Souza",
+      "email": "ana.souza@exemplo.com",
+      "notaCliente": 4,
+      "endereco": {
+        "rua": "Rua Oscar Freire",
+        "numero": "800",
+        "bairro": "Jardins",
+        "cidade": "São Paulo",
+        "estado": "SP",
+        "cep": "01426-000"
+      }
+    }
+  ],
+  "servicos": [
+    {
+      "id": 1,
+      "titulo": "Instalação de Ar Condicionado",
+      "descricao": "Serviço completo de instalação de ar condicionado.",
+      "preco": 250.00,
+      "trabalhadorId": 1,
+      "clienteId": 1,
+      "disponibilidadeId": 1,
+      "tipoServico": "INSTALADOR_AR_CONDICIONADO",
+      "statusServico": "PENDENTE"
+    },
+    {
+      "id": 2,
+      "titulo": "Reparo Elétrico Residencial",
+      "descricao": "Conserto de fiação e tomadas.",
+      "preco": 150.00,
+      "trabalhadorId": 2,
+      "clienteId": 2,
+      "disponibilidadeId": 2,
+      "tipoServico": "ELETRICISTA",
+      "statusServico": "EM_ANDAMENTO"
+    }
+  ],
+  "solicitacoes-servico": [
+    {
+      "id": 1,
+      "clienteId": 1,
+      "servicoId": 1,
+      "descricao": "Instalação de um novo chuveiro na residência.",
+      "statusSolicitacao": "PENDENTE"
+    },
+    {
+      "id": 2,
+      "clienteId": 2,
+      "servicoId": 2,
+      "descricao": "Verificar curto-circuito na cozinha.",
+      "statusSolicitacao": "ACEITA"
+    }
+  ],
+  "avaliacoes-cliente": [
+    {
+      "id": 1,
+      "trabalhadorId": 1,
+      "clienteId": 1,
+      "nota": 5,
+      "comentario": "Cliente muito educado e prestativo.",
+      "fotos": []
+    }
+  ],
+  "avaliacoes-trabalhador": [
+    {
+      "id": 1,
+      "clienteId": 1,
+      "trabalhadorId": 1,
+      "nota": 4,
+      "comentario": "Ótimo profissional, resolveu meu problema rapidamente.",
+      "fotos": []
+    }
+  ],
+  "avaliacoes-servico": [
+    {
+      "id": 1,
+      "clienteId": 2,
+      "servicoId": 2,
+      "nota": 5,
+      "comentario": "Serviço executado com perfeição.",
+      "fotos": []
+    }
+  ]
+}
