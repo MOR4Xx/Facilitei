@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card } from '../components/ui/Card';
 import { Typography } from '../components/ui/Typography';
 import { Button } from '../components/ui/Button';
-import { Servico } from '../types/api'; // 👈 IMPORTAMOS O TIPO DAQUI
+import type { Servico } from '../types/api'; // 👈 IMPORTAMOS O TIPO DAQUI
 
 // A função de fetch continua a mesma
 const fetchServicos = async (): Promise<Servico[]> => {

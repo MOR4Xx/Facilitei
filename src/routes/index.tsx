@@ -4,8 +4,9 @@ import { MainLayout } from "../components/layout/MainLayout";
 import { HomePage } from "../pages/HomePage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { AboutPage } from "../pages/AboutPage";
-import { FAQPage } from "../pages/FAQPage"; // 👈 Importe a nova página
-import { ExemploPage } from "../pages/ExemploPage";
+import { FAQPage } from "../pages/FAQPage";
+import { LoginPage } from "../pages/LoginPage"; // 👈 IMPORTE
+import { RegisterPage } from "../pages/RegisterPage"; // 👈 IMPORTE
 
 export const router = createBrowserRouter([
   {
@@ -25,12 +26,16 @@ export const router = createBrowserRouter([
         element: <AboutPage />,
       },
       {
-        path: "faq", // 👈 Adicione a nova rota
+        path: "faq",
         element: <FAQPage />,
       },
       {
-        path: "exemplo", // 👈 Adicione a nova rota
-        element: <ExemploPage />,
+        path: "login", // 👈 ADICIONE A ROTA
+        element: <LoginPage />,
+      },
+      {
+        path: "cadastro", // 👈 ADICIONE A ROTA
+        element: <RegisterPage />,
       },
     ],
   },
