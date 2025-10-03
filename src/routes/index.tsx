@@ -5,6 +5,7 @@ import { HomePage } from "../pages/HomePage";
 import { DashboardPage } from "../pages/DashboardPage";
 import { AboutPage } from "../pages/AboutPage";
 import { FAQPage } from "../pages/FAQPage"; // 👈 Importe a nova página
+import { ExemploPage } from "../pages/ExemploPage";
 
 export const router = createBrowserRouter([
   {
@@ -26,6 +27,10 @@ export const router = createBrowserRouter([
       {
         path: "faq", // 👈 Adicione a nova rota
         element: <FAQPage />,
+      },
+      {
+        path: "exemplo", // 👈 Adicione a nova rota
+        element: <ExemploPage />,
       },
     ],
   },

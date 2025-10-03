@@ -5,6 +5,7 @@ import { Footer } from "./Footer";
 
 export function MainLayout() {
   return (
+    // 👇 ATUALIZE ESTA LINHA 👇
     <div className="flex flex-col min-h-screen bg-background-dark text-text-light">
       <Header />
       <main className="flex-grow container mx-auto px-6 py-12">
