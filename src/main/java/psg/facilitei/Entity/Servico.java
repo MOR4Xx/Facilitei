@@ -43,13 +43,6 @@ public class Servico {
     @ToString.Exclude
     private AvaliacaoServico avaliacaoServico;
 
-    @NotNull(message = "Informe os dias disponíveis")
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "disponibilidade_id", nullable = false)
-    @EqualsAndHashCode.Exclude
-    @ToString.Exclude
-    private Disponibilidade disponibilidade;
-
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "solicitacao_id")
     @EqualsAndHashCode.Exclude

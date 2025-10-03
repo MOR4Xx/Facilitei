@@ -4,10 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode; 
 import lombok.NoArgsConstructor;
-import lombok.ToString;
-
 import java.util.List;
 
 @Entity
@@ -22,13 +19,13 @@ public class AvaliacaoTrabalhador extends Avaliacao {
     private Long trabalhadorId;
 
     @Column(name = "nota", nullable = false)
-    private Double nota;
+    private int nota;
 
     @Column(name = "total_avaliacoes", nullable = false)
-    private Long totalAvaliacoes;
+    private int totalAvaliacoes;
 
     @Column(name = "soma_total_notas" ,nullable = false)
-    private Long somaTotalNotas;
-
+    private Double somaTotalNotas;
+    
     private List<String> comentarios_servicos;
 }

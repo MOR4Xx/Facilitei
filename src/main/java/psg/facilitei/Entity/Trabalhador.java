@@ -17,19 +17,20 @@ import lombok.ToString;
 @AllArgsConstructor 
 @EqualsAndHashCode(callSuper = true) 
 @ToString(callSuper = true) 
-@PrimaryKeyJoinColumn(name = "trabalhador_id") 
 public class Trabalhador extends Usuario {
 
-   
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @OneToMany(mappedBy = "trabalhador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    @EqualsAndHashCode.Exclude 
-    @ToString.Exclude 
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private List<Servico> servicos = new ArrayList<>();
 
     @OneToMany(mappedBy = "trabalhador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    @EqualsAndHashCode.Exclude 
-    @ToString.Exclude 
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private List<AvaliacaoTrabalhador> avaliacoesTrabalhador = new ArrayList<>();
 
     @Column(name = "nota_trabalhador")
@@ -37,5 +38,4 @@ public class Trabalhador extends Usuario {
 
     @Column(name = "disponibilidade")
     private String disponibilidade;
-
 }

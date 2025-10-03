@@ -12,8 +12,11 @@ import java.util.List;
 @AllArgsConstructor
 public class AvaliacaoServicoResponseDTO {
 
+    @Schema(description = "ID da avaliação")
+    private long id;
+
     @Schema(description = "Cliente que avaliou")
-    private ClienteResponseDTO cliente; 
+    private long clienteId;
 
     @Schema(description = "Nota deixada")
     private int nota;
@@ -25,5 +28,5 @@ public class AvaliacaoServicoResponseDTO {
     private List<String> fotos;
 
     @Schema(description = "Serviço avaliado")
-    private ServicoResponseDTO servico; 
+    private long servicoId;
 }

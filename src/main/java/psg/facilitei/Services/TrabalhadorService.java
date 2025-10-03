@@ -3,7 +3,6 @@ package psg.facilitei.Services;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,10 +32,10 @@ public class TrabalhadorService {
     private AvaliacaoTrabalhadorRepository avaliacaoTrabalhadorRepository;
     @Autowired
     private AvaliacaoClienteRepository avaliacaoClienteRepository;
+    
 
     public TrabalhadorResponseDTO createTrabalhador(TrabalhadorRequestDTO trabalhadorRequestDTO) {
         Trabalhador trabalhador = repository.save(toEntity(trabalhadorRequestDTO));
-
         return toResponseDTO(trabalhador);
     }
 
@@ -87,10 +86,9 @@ public class TrabalhadorService {
         return toResponseDTO(trabalhador);
     }
 
-    public TrabalhadorResponseDTO buscarEntidadePorId(Long id) {
-        Trabalhador trabalhador = repository.findById(id).orElseThrow(()-> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
-
-        return toResponseDTO(trabalhador);
+    public Trabalhador buscarEntidadePorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Trabalhador não encontrado com ID: " + id));
     }
 
     public Trabalhador toEntity(TrabalhadorRequestDTO dto) {
@@ -151,6 +149,7 @@ public class TrabalhadorService {
             }).toList();
             dto.setServicos(servicosDTO);
         }
+
 
         return dto;
     }
