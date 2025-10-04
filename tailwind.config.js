@@ -1,3 +1,5 @@
+// tailwind.config.js
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -7,18 +9,26 @@ export default {
   theme: {
     extend: {
       colors: {
-        'primary': '#1E3A8A',      // Azul Marinho Principal
-        'accent': {
-          DEFAULT: '#F97316', // Laranja Vibrante
-          hover: '#EA580C',   // Laranja mais escuro para hover
+        primary: {
+          DEFAULT: '#0D9488', 
+          hover: '#0F766E',
         },
-        'light': '#FFFFFF',         // Branco puro
-        'dark': {
-          background: '#18181B', // Fundo Escuro (cinza "carvão")
-          text: '#E4E4E7',      // Texto Claro (cinza bem claro)
+        accent: {
+          DEFAULT: '#A3E635', 
+          hover: '#84CC16',
+          glow: '#A3E635', // 👈 Adicionada cor para o efeito de brilho
         },
-        'text-dark': '#09090B',    // Preto suave
-      }
+        dark: {
+          background: '#081426',
+          surface: '#111E35',
+          text: '#E2E8F0',
+          subtle: '#94A3B8',
+        },
+      },
+      // Efeito de sombra/brilho para o accent
+      boxShadow: {
+        'glow-accent': '0 0 16px 0 rgba(163, 230, 53, 0.3)',
+      },
     },
   },
   plugins: [],

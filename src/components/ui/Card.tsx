@@ -16,6 +16,7 @@ export function Card({ children, className = '' }: CardProps) {
         y: -5,
         boxShadow: '0px 10px 20px rgba(0, 0, 0, 0.2)',
       }}
+      // 👇 CLASSE CORRIGIDA AQUI 👇
       className={`bg-dark-surface p-6 rounded-xl border border-transparent hover:border-accent/50 transition-all duration-300 ${className}`}
     >
       {children}

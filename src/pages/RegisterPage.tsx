@@ -1,3 +1,4 @@
+// src/pages/RegisterPage.tsx
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -11,7 +12,7 @@ export function RegisterPage() {
         <Typography as="h2" className="text-center mb-2">
           Crie sua conta
         </Typography>
-        <Typography as="p" className="text-center text-subtle-dark mb-8">
+        <Typography as="p" className="text-center text-dark-subtle mb-8">
           É rápido e fácil. Comece a usar o Facilitei agora mesmo.
         </Typography>
 
@@ -20,7 +21,7 @@ export function RegisterPage() {
           <Input label="Seu melhor e-mail" type="email" />
           <Input label="Crie uma senha" type="password" />
           
-          <Button type="submit" size="lg" className="w-full">
+          <Button type="submit" size="lg" variant="secondary" className="w-full">
             Criar Conta
           </Button>
 

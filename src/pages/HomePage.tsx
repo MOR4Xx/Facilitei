@@ -1,3 +1,4 @@
+// src/pages/HomePage.tsx
 import { Link } from "react-router-dom";
 
 export function HomePage() {
@@ -14,7 +15,7 @@ export function HomePage() {
         <div className="mt-10 flex justify-center gap-4">
           <Link
             to="/dashboard"
-            className="bg-accent hover:bg-accent-hover text-white font-bold py-3 px-8 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
+            className="bg-gradient-to-r from-accent to-lime-400 hover:from-accent-hover hover:to-lime-500 text-dark-background font-bold py-3 px-8 rounded-lg text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-accent/20"
           >
             Começar Agora
           </Link>
@@ -24,15 +25,15 @@ export function HomePage() {
       {/* Seção "Como Funciona" com ícones */}
       <section>
         <div className="grid md:grid-cols-3 gap-8 text-center">
-          <div className="bg-dark-surface p-8 rounded-xl border border-transparent hover:border-accent transition-all duration-300">
+          <div className="bg-dark-surface p-8 rounded-xl border border-dark-surface hover:border-primary transition-all duration-300 transform hover:-translate-y-1">
             <h3 className="text-2xl font-semibold text-dark-text mb-3">1. Descreva o Serviço</h3>
             <p className="text-dark-subtle">Diga-nos o que você precisa. Detalhes ajudam a encontrar o profissional ideal.</p>
           </div>
-          <div className="bg-dark-surface p-8 rounded-xl border border-transparent hover:border-accent transition-all duration-300">
+          <div className="bg-dark-surface p-8 rounded-xl border border-dark-surface hover:border-primary transition-all duration-300 transform hover:-translate-y-1">
             <h3 className="text-2xl font-semibold text-dark-text mb-3">2. Receba Propostas</h3>
             <p className="text-dark-subtle">Profissionais qualificados enviam orçamentos diretamente para você.</p>
           </div>
-          <div className="bg-dark-surface p-8 rounded-xl border border-transparent hover:border-accent transition-all duration-300">
+          <div className="bg-dark-surface p-8 rounded-xl border border-dark-surface hover:border-primary transition-all duration-300 transform hover:-translate-y-1">
             <h3 className="text-2xl font-semibold text-dark-text mb-3">3. Contrate com Segurança</h3>
             <p className="text-dark-subtle">Escolha a melhor opção, agende e realize o pagamento com tranquilidade.</p>
           </div>

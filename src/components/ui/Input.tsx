@@ -1,3 +1,4 @@
+// src/components/ui/Input.tsx
 import { ComponentProps, useState, ReactNode } from 'react';
 
 type InputProps = ComponentProps<'input'> & {
@@ -25,9 +26,9 @@ export function Input({ label, type = 'text', icon, ...props }: InputProps) {
         </span>
       )}
       <label
-        className={`absolute transition-all duration-300 ${
+        className={`absolute transition-all duration-300 pointer-events-none ${
           isLabelActive
-            ? 'top-[-0.75rem] left-2 bg-dark-background px-1 text-xs text-accent'
+            ? 'top-[-0.75rem] left-2 bg-dark-surface px-1 text-xs text-accent'
             : `top-1/2 left-${icon ? '10' : '4'} -translate-y-1/2 text-dark-subtle`
         }`}
       >
@@ -37,6 +38,7 @@ export function Input({ label, type = 'text', icon, ...props }: InputProps) {
         type={type}
         onFocus={handleFocus}
         onBlur={handleBlur}
+        onChange={(e) => setHasValue(!!e.target.value)}
         className={`w-full bg-transparent border-2 border-dark-surface rounded-lg p-3 text-dark-text focus:outline-none focus:border-accent ${
           icon ? 'pl-10' : ''
         }`}

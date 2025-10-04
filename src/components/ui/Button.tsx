@@ -1,11 +1,10 @@
+// src/components/ui/Button.tsx
 import { motion } from 'framer-motion';
 import { ComponentProps, ReactNode } from 'react';
 
-// Define os tipos para as variantes e tamanhos do botão
 type ButtonVariant = 'primary' | 'secondary' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
-// Combina as props do botão com as nossas props customizadas
 type ButtonProps = ComponentProps<'button'> & {
   children: ReactNode;
   variant?: ButtonVariant;
@@ -13,11 +12,10 @@ type ButtonProps = ComponentProps<'button'> & {
   className?: string;
 };
 
-// Mapeamento de estilos para facilitar a manutenção
 const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-accent text-white hover:bg-accent-hover',
-  secondary: 'bg-primary text-white hover:bg-blue-800', // Tom mais escuro do azul
-  outline: 'bg-transparent border border-accent text-accent hover:bg-accent hover:text-white',
+  primary: 'bg-primary text-white hover:bg-primary-hover',
+  secondary: 'bg-accent text-dark-background hover:bg-accent-hover',
+  outline: 'bg-transparent border border-primary text-primary hover:bg-primary hover:text-white',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

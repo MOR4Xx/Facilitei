@@ -10,12 +10,12 @@ export function AccordionItem({ title, children }: AccordionItemProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border-b border-gray-700">
+    <div className="border-b border-dark-surface/50">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex justify-between items-center text-left py-5 px-2"
       >
-        <span className="text-lg font-medium text-text-light">{title}</span>
+        <span className="text-lg font-medium text-dark-text">{title}</span>
         <span className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-accent">
             <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -25,7 +25,7 @@ export function AccordionItem({ title, children }: AccordionItemProps) {
       <div
         className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96' : 'max-h-0'}`}
       >
-        <div className="p-4 pt-0 text-gray-400">
+        <div className="p-4 pt-0 text-dark-subtle">
           {children}
         </div>
       </div>
