@@ -1,26 +1,26 @@
 package psg.facilitei.DTO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List; 
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class AvaliacaoClienteResponseDTO {
 
-    @Schema(description = "Trabalhador que avaliou")
-    private TrabalhadorResponseDTO trabalhador; 
+    @Schema(description = "ID da avaliação")
+    private Long id;
 
-    @Schema(description = "Nota deixada")
+    @Schema(description = "ID do trabalhador que avaliou")
+    private Long trabalhadorId;
+
+    @Schema(description = "ID do cliente avaliado")
+    private Long clienteId;
+
+    @Schema(description = "Nota atribuída")
     private int nota;
 
-    @Schema(description = "Comentario deixado")
+    @Schema(description = "Comentário do trabalhador")
     private String comentario;
 
-    @Schema(description = "Lista de URLs das fotos") 
-    private List<String> fotos;
+    @Schema(description = "Média atual do cliente")
+    private Double mediaCliente;
 }

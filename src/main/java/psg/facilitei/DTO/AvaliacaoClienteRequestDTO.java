@@ -1,27 +1,20 @@
 package psg.facilitei.DTO;
 
-import jakarta.validation.constraints.*;
-import java.util.List;
-import lombok.AllArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class AvaliacaoClienteRequestDTO {
 
-    @NotNull @Min(1) @Max(5)
-    private Integer nota;
-
-    @NotBlank(message = "O comentário é obrigatório.") 
-    private String comentario;
-
-    private List<@Size(max = 500) String> fotos;
-
-    @NotNull
+    @Schema(description = "ID do trabalhador que avaliou")
     private Long trabalhadorId;
 
-    @NotNull
+    @Schema(description = "ID do cliente avaliado")
     private Long clienteId;
+
+    @Schema(description = "Nota dada pelo trabalhador")
+    private int nota;
+
+    @Schema(description = "Comentário opcional do trabalhador")
+    private String comentario;
 }

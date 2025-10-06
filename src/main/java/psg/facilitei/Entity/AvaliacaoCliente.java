@@ -27,4 +27,13 @@ public class AvaliacaoCliente extends Avaliacao {
     @EqualsAndHashCode.Exclude 
     @ToString.Exclude 
     private Cliente cliente;
+
+    @Column(name = "nota", nullable = false)
+    private int nota;
+
+    @Column(name = "comentario", length = 1000)
+    private String comentario;
+
+    @Column(name = "media_cliente", nullable = false)
+    private Double mediaCliente;
 }

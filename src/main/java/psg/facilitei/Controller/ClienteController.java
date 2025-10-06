@@ -76,21 +76,6 @@ public class ClienteController {
         return ResponseEntity.ok(clienteService.getAvaliacoes(id));
     }
 
-    @GetMapping(value = "/avaliacoestrabalhador/{id}", produces = "application/json")
-    @Operation(summary = "Busca avaliações feitas ao trabalhador", description = "Busca as avaliações feitas do cliente ao trabalhador",
-            responses = {@ApiResponse(responseCode = "200", description = "Avaliações encontradas.",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = AvaliacaoTrabalhadorReponseDTO.class))), 
-                    @ApiResponse(responseCode = "404", description = "Avaliações não encontradas."),
-                    @ApiResponse(responseCode = "500", description = "Erro interno do servidor.",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ErrorResponseDTO.class)))
-            })
-    public ResponseEntity<List<AvaliacaoTrabalhadorReponseDTO>> getAvaliacoesTrabalhador(@PathVariable Long id) {
-        logger.info("Busca Avaliações que o cliente " + id + " fez para o trabalhador");
-        return ResponseEntity.ok(clienteService.getAvaliacoesTrabalhador(id));
-    }
-
     @GetMapping(value = "/avaliacaoservico/{id}", produces = "application/json")
     @Operation(summary = "Busca avaliações feitas aos serviços contratados", description = "Busca as avaliações feitas do cliente aos serviços",
             responses = {@ApiResponse(responseCode = "200", description = "Avaliações encontradas.",

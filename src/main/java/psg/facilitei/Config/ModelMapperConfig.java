@@ -29,10 +29,7 @@ public class ModelMapperConfig {
                 context.getSource() == null || context.getSource().getCliente() == null
                         ? null : context.getSource().getCliente().getId();
 
-        Converter<Servico, Long> servicoToDisponibilidadeIdConverter = context ->
-                context.getSource() == null || context.getSource().getDisponibilidade() == null
-                        ? null : context.getSource().getDisponibilidade().getId();
-
+        
         Converter<SolicitacaoServico, Long> solicitacaoToClienteIdConverter = context ->
                 context.getSource() == null || context.getSource().getCliente() == null
                         ? null : context.getSource().getCliente().getId();
@@ -46,12 +43,6 @@ public class ModelMapperConfig {
                         ? null : context.getSource().getStatusSolicitacao().name();
         
 
-        Converter<Disponibilidade, Long> disponibilidadeToTrabalhadorIdConverter = context ->
-                context.getSource() == null || context.getSource().getTrabalhador() == null
-                        ? null : context.getSource().getTrabalhador().getId();
-
-
-
 
         modelMapper.createTypeMap(ServicoRequestDTO.class, Servico.class)
                 .addMappings(mapper -> {
@@ -64,7 +55,6 @@ public class ModelMapperConfig {
                 .addMappings(mapper -> {
                     mapper.using(servicoToTrabalhadorIdConverter).map(source -> source, ServicoResponseDTO::setTrabalhadorId);
                     mapper.using(servicoToClienteIdConverter).map(source -> source, ServicoResponseDTO::setClienteId);
-                    mapper.using(servicoToDisponibilidadeIdConverter).map(source -> source, ServicoResponseDTO::setDisponibilidadeId);
                 });
 
         modelMapper.createTypeMap(SolicitacaoServico.class, SolicitacaoServicoResponseDTO.class)
@@ -74,11 +64,6 @@ public class ModelMapperConfig {
                     mapper.using(solicitacaoToStatusConverter).map(source -> source, SolicitacaoServicoResponseDTO::setStatus);
                 });
 
-
-        modelMapper.createTypeMap(Disponibilidade.class, DisponibilidadeResponseDTO.class)
-                .addMappings(mapper -> {
-                    mapper.using(disponibilidadeToTrabalhadorIdConverter).map(source -> source, DisponibilidadeResponseDTO::setTrabalhadorId);
-                });
 
 
         return modelMapper;
