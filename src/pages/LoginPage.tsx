@@ -11,7 +11,7 @@ import type { Cliente, Trabalhador } from "../types/api";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState(""); // Senha para simulação futura
+  // A senha foi removida, pois a API (db.json) não implementa validação de senha.
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -23,25 +23,27 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      // 1. Tenta encontrar como Cliente
+      // 1. Tenta encontrar como Cliente (Apenas por e-mail)
       let response = await fetch(
         `http://localhost:3333/clientes?email=${email}`
       );
       let users: Cliente[] = await response.json();
 
       if (users.length > 0) {
+        // Se encontrado, faz login e assume a role 'cliente'
         login({ ...users[0], role: "cliente" });
         navigate("/dashboard");
         return;
       }
 
-      // 2. Se não encontrou, tenta como Trabalhador
+      // 2. Se não encontrou, tenta como Trabalhador (Apenas por e-mail)
       response = await fetch(
         `http://localhost:3333/trabalhadores?email=${email}`
       );
       let workers: Trabalhador[] = await response.json();
 
       if (workers.length > 0) {
+        // Se encontrado, faz login e assume a role 'trabalhador'
         login({ ...workers[0], role: "trabalhador" });
         navigate("/dashboard");
         return;
@@ -63,7 +65,7 @@ export function LoginPage() {
           Bem-vindo!
         </Typography>
         <Typography as="p" className="text-center text-dark-subtle mb-8">
-          Acesse sua conta para continuar.
+          Acesse sua conta para continuar. (Login simplificado por e-mail)
         </Typography>
 
         {error && (
@@ -80,13 +82,14 @@ export function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          <Input
+          {/* Campo de senha desativado temporariamente. O login é feito apenas buscando o e-mail no db.json. */}
+          {/* <Input
             label="Sua senha"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-          />
+          /> */}
 
           <Button
             type="submit"

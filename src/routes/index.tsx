@@ -7,8 +7,10 @@ import { AboutPage } from "../pages/AboutPage";
 import { FAQPage } from "../pages/FAQPage";
 import { LoginPage } from "../pages/LoginPage";
 import { RegisterPage } from "../pages/RegisterPage";
-import { ProtectedRoute } from "./ProtectedRoute"; // 👈 IMPORT
-import { DashboardRootPage } from "../pages/DashboardRootPage"; // 👈 IMPORT
+import { ProtectedRoute } from "./ProtectedRoute"; 
+import { DashboardRootPage } from "../pages/DashboardRootPage"; 
+import { SolicitarServicoPage } from "../pages/SolicitarServicoPage"; // 👈 IMPORT
+import { TrabalhadorProfilePage } from "../pages/TrabalhadorProfilePage";
 
 export const router = createBrowserRouter([
   {
@@ -22,11 +24,19 @@ export const router = createBrowserRouter([
       { path: "cadastro", element: <RegisterPage /> },
       {
         path: "dashboard",
-        element: <ProtectedRoute />, // 👈 ROTA PROTEGIDA
+        element: <ProtectedRoute />, 
         children: [
           {
             index: true,
-            element: <DashboardRootPage />, // 👈 RENDERIZA O ESCOLHEDOR DE DASHBOARD
+            element: <DashboardRootPage />, 
+          },
+          {
+            path: "solicitar", // 👈 NOVA ROTA DE SOLICITAÇÃO
+            element: <SolicitarServicoPage />,
+          },
+          {
+            path: "trabalhador/:id", // 👈 NOVA ROTA DE PERFIL DINÂMICA
+            element: <TrabalhadorProfilePage />,
           },
         ],
       },

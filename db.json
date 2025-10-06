@@ -13,7 +13,9 @@
         "cep": "01001-000"
       },
       "disponibilidade": "Segunda a Sexta, 8h às 18h",
-      "notaTrabalhador": 4
+      "notaTrabalhador": 4,
+      "servicos": ["ELETRICISTA", "INSTALADOR_AR_CONDICIONADO"],
+      "servicoPrincipal": "ELETRICISTA"
     },
     {
       "id": 2,
@@ -28,7 +30,9 @@
         "cep": "01310-200"
       },
       "disponibilidade": "Finais de semana, 9h às 17h",
-      "notaTrabalhador": 5
+      "notaTrabalhador": 5,
+      "servicos": ["PEDREIRO", "ENCANADOR"],
+      "servicoPrincipal": "PEDREIRO"
     }
   ],
   "clientes": [

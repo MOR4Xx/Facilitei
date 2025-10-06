@@ -16,6 +16,8 @@ export interface Trabalhador {
   endereco: Endereco;
   disponibilidade: string;
   notaTrabalhador: number;
+  servicos: TipoServico[]; // 👈 NOVO CAMPO: Lista de serviços que ele pode fazer
+  servicoPrincipal: TipoServico; // 👈 NOVO CAMPO: Serviço de destaque
 }
 
 export interface Cliente {
