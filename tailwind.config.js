@@ -28,6 +28,7 @@ export default {
       // Efeito de sombra/brilho para o accent
       boxShadow: {
         'glow-accent': '0 0 16px 0 rgba(163, 230, 53, 0.3)',
+        'glow-primary': '0 0 16px 0 rgba(13, 148, 136, 0.3)',
       },
     },
   },
