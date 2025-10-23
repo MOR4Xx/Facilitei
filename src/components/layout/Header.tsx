@@ -17,6 +17,13 @@ export function Header() {
   const inactiveClass =
     "text-dark-text hover:text-accent transition-colors duration-200";
 
+  // Define o link do perfil baseado no tipo de usuário
+  const profileUrl = user
+    ? user.role === 'cliente'
+      ? `/dashboard/cliente/${user.id}` // 👈 APONTA PARA O PERFIL PÚBLICO
+      : `/dashboard/trabalhador/${user.id}` // Rota pública do Trabalhador
+    : '/login';
+
   return (
     <header className="bg-dark-surface/70 backdrop-blur-lg sticky top-0 z-50 border-b border-dark-surface/50">
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -25,6 +32,7 @@ export function Header() {
         </Link>
         <div className="flex items-center gap-8">
           <ul className="flex items-center space-x-8 text-base">
+            {/* ... (links de navegação) ... */}
             <li>
               <NavLink
                 to="/"
@@ -68,14 +76,20 @@ export function Header() {
               </NavLink>
             </li>
           </ul>
-          {isAuthenticated ? (
+          {isAuthenticated && user ? ( // 👈 MUDANÇA AQUI
             <div className="flex items-center gap-4">
-              <span className="text-dark-subtle">
-                Olá, {user?.nome.split(" ")[0]}
-              </span>
               <Button onClick={handleLogout} variant="primary" size="sm">
                 Sair
               </Button>
+              {/* Avatar clicável */}
+              <Link to={profileUrl} title="Meu Perfil">
+                <img
+                  src={user.avatarUrl}
+                  alt={user.nome}
+                  className="w-10 h-10 rounded-full object-cover border-2 border-accent
+                             hover:border-accent-hover transition-all"
+                />
+              </Link>
             </div>
           ) : (
             <Button

@@ -9,8 +9,10 @@ import { LoginPage } from "../pages/LoginPage";
 import { RegisterPage } from "../pages/RegisterPage";
 import { ProtectedRoute } from "./ProtectedRoute"; 
 import { DashboardRootPage } from "../pages/DashboardRootPage"; 
-import { SolicitarServicoPage } from "../pages/SolicitarServicoPage"; // 👈 IMPORT
+import { SolicitarServicoPage } from "../pages/SolicitarServicoPage";
 import { TrabalhadorProfilePage } from "../pages/TrabalhadorProfilePage";
+import { ClienteProfilePage } from "../pages/ClienteProfilePage"; // 👈 IMPORTAR
+import { ClienteSettingsPage } from "../pages/ClienteSettingsPage"; // 👈 IMPORTAR
 
 export const router = createBrowserRouter([
   {
@@ -31,12 +33,20 @@ export const router = createBrowserRouter([
             element: <DashboardRootPage />, 
           },
           {
-            path: "solicitar", // 👈 NOVA ROTA DE SOLICITAÇÃO
+            path: "solicitar", 
             element: <SolicitarServicoPage />,
           },
           {
-            path: "trabalhador/:id", // 👈 NOVA ROTA DE PERFIL DINÂMICA
+            path: "trabalhador/:id", 
             element: <TrabalhadorProfilePage />,
+          },
+          {
+            path: "cliente/:id", // 👈 NOVA ROTA PÚBLICA DE CLIENTE
+            element: <ClienteProfilePage />,
+          },
+           {
+            path: "configuracoes", // 👈 NOVA ROTA PRIVADA DE EDIÇÃO
+            element: <ClienteSettingsPage />,
           },
         ],
       },

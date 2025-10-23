@@ -4,6 +4,7 @@
       "id": 1,
       "nome": "João da Silva",
       "email": "joao.silva@exemplo.com",
+      "avatarUrl": "/avatars/trabalhador-1.png", 
       "endereco": {
         "rua": "Rua das Flores",
         "numero": "123",
@@ -21,6 +22,7 @@
       "id": 2,
       "nome": "Maria Oliveira",
       "email": "maria.oliveira@exemplo.com",
+      "avatarUrl": "/avatars/trabalhador-2.png", 
       "endereco": {
         "rua": "Avenida Paulista",
         "numero": "1578",
@@ -40,6 +42,7 @@
       "id": 1,
       "nome": "Carlos Pereira",
       "email": "carlos.pereira@exemplo.com",
+      "avatarUrl": "/avatars/cliente-1.png", 
       "notaCliente": 5,
       "endereco": {
         "rua": "Rua Augusta",
@@ -54,6 +57,7 @@
       "id": 2,
       "nome": "Ana Souza",
       "email": "ana.souza@exemplo.com",
+      "avatarUrl": "/avatars/cliente-2.png", 
       "notaCliente": 4,
       "endereco": {
         "rua": "Rua Oscar Freire",

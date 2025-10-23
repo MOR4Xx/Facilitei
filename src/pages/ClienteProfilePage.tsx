@@ -1,22 +1,23 @@
-// src/pages/TrabalhadorProfilePage.tsx
+// src/pages/ClienteProfilePage.tsx
 
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
 import type { Trabalhador, Cliente } from "../types/api";
 import { useEffect, useState } from "react";
+import { useAuthStore } from "../store/useAuthStore";
 
 // --- INTERFACES ADICIONAIS ---
-interface AvaliacaoTrabalhador {
+interface AvaliacaoCliente {
   id: number;
   clienteId: number;
   trabalhadorId: number;
   nota: number;
   comentario: string;
-  clienteNome?: string; // Nome do cliente será adicionado aqui
+  trabalhadorNome?: string; // Nome do trabalhador será adicionado
 }
 
 // --- VARIANTES DE ANIMAÇÃO ---
@@ -52,70 +53,75 @@ const Rating = ({ score }: { score: number }) => {
 };
 
 // --- FUNÇÕES DE BUSCA ---
-const fetchTrabalhadorById = async (id: number): Promise<Trabalhador> => {
-  const response = await fetch(`http://localhost:3333/trabalhadores/${id}`);
+const fetchClienteById = async (id: number): Promise<Cliente> => {
+  const response = await fetch(`http://localhost:3333/clientes/${id}`);
   if (!response.ok) {
-    throw new Error("Profissional não encontrado.");
+    throw new Error("Cliente não encontrado.");
   }
   return response.json();
 };
 
 const fetchAvaliacoes = async (
-  workerId: number
-): Promise<AvaliacaoTrabalhador[]> => {
-  // 1. Busca todas as avaliações de trabalhadores
+  clienteId: number
+): Promise<AvaliacaoCliente[]> => {
+  // 1. Busca todas as avaliações de clientes
   const response = await fetch(
-    `http://localhost:3333/avaliacoes-trabalhador?trabalhadorId=${workerId}`
+    `http://localhost:3333/avaliacoes-cliente?clienteId=${clienteId}`
   );
   if (!response.ok) return [];
-  const avaliacoes: AvaliacaoTrabalhador[] = await response.json();
+  const avaliacoes: AvaliacaoCliente[] = await response.json();
 
-  // 2. Para cada avaliação, busca o nome do cliente
+  // 2. Para cada avaliação, busca o nome do trabalhador
   const avaliacoesComNomes = await Promise.all(
     avaliacoes.map(async (avaliacao) => {
-      const clienteResponse = await fetch(
-        `http://localhost:3333/clientes/${avaliacao.clienteId}`
+      const trabalhadorResponse = await fetch(
+        `http://localhost:3333/trabalhadores/${avaliacao.trabalhadorId}`
       );
-      if (clienteResponse.ok) {
-        const cliente: Cliente = await clienteResponse.json();
-        return { ...avaliacao, clienteNome: cliente.nome };
+      if (trabalhadorResponse.ok) {
+        const trabalhador: Trabalhador = await trabalhadorResponse.json();
+        return { ...avaliacao, trabalhadorNome: trabalhador.nome };
       }
-      return { ...avaliacao, clienteNome: "Cliente Anônimo" }; // Fallback
+      return { ...avaliacao, trabalhadorNome: "Profissional Anônimo" }; // Fallback
     })
   );
 
   return avaliacoesComNomes;
 };
 
-// --- COMPONENTE PRINCIPAL: TRABALHADOR PROFILE PAGE ZIKA ---
-export function TrabalhadorProfilePage() {
+// --- COMPONENTE PRINCIPAL: CLIENTE PROFILE PAGE ---
+export function ClienteProfilePage() {
   const { id } = useParams<{ id: string }>();
-  const trabalhadorId = id ? parseInt(id, 10) : 0;
-  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoTrabalhador[]>([]);
+  const clienteId = id ? parseInt(id, 10) : 0;
+  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoCliente[]>([]);
+
+  const { user } = useAuthStore();
+  const navigate = useNavigate();
 
   const {
-    data: trabalhador,
+    data: cliente,
     isLoading,
     isError,
-  } = useQuery<Trabalhador>({
-    queryKey: ["trabalhador", trabalhadorId],
-    queryFn: () => fetchTrabalhadorById(trabalhadorId),
-    enabled: trabalhadorId > 0,
+  } = useQuery<Cliente>({
+    queryKey: ["cliente", clienteId],
+    queryFn: () => fetchClienteById(clienteId),
+    enabled: clienteId > 0,
   });
 
-  // Efeito para buscar as avaliações quando o trabalhador for carregado
+  // Efeito para buscar as avaliações quando o cliente for carregado
   useEffect(() => {
-    if (trabalhador) {
-      fetchAvaliacoes(trabalhador.id).then(setAvaliacoes);
+    if (cliente) {
+      fetchAvaliacoes(cliente.id).then(setAvaliacoes);
     }
-  }, [trabalhador]);
+  }, [cliente]);
+
+  const isOwner = user?.id === clienteId && user?.role === "cliente";
 
   if (isError) {
     return (
       <div className="text-center py-20 text-red-500">
         <Typography as="h2">Perfil Não Encontrado</Typography>
         <p className="text-dark-subtle mt-4">
-          O profissional que você busca não está disponível.
+          O cliente que você busca não está disponível.
         </p>
         <Button
           variant="outline"
@@ -131,20 +137,15 @@ export function TrabalhadorProfilePage() {
   if (isLoading) {
     return (
       <div className="text-center py-20">
-        <Typography as="h2">Carregando Perfil ZIKA...</Typography>
-        <p className="text-dark-subtle mt-4">
-          Preparando o perfil completo do profissional.
-        </p>
+        <Typography as="h2">Carregando Perfil do Cliente...</Typography>
+        <p className="text-dark-subtle mt-4">Buscando dados e avaliações.</p>
       </div>
     );
   }
 
-  if (!trabalhador) return null;
+  if (!cliente) return null;
 
-  const [primeiroNome] = trabalhador.nome.split(" ");
-  const readableService =
-    trabalhador.servicoPrincipal.charAt(0).toUpperCase() +
-    trabalhador.servicoPrincipal.slice(1).toLowerCase().replace(/_/g, " ");
+  const [primeiroNome] = cliente.nome.split(" ");
 
   return (
     <motion.div
@@ -153,54 +154,59 @@ export function TrabalhadorProfilePage() {
       variants={pageVariants}
       className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10"
     >
-      {/* Coluna da Esquerda: Perfil e Ações */}
+      {/* Coluna da Esquerda: Perfil */}
       <motion.div className="lg:col-span-1 space-y-8" variants={itemVariants}>
         <Card className="p-8 flex flex-col items-center text-center shadow-glow-accent">
           <img
-            src={trabalhador.avatarUrl}
-            alt={trabalhador.nome}
+            src={cliente.avatarUrl}
+            alt={cliente.nome}
             className="w-28 h-28 rounded-full object-cover mb-4 border-4 border-accent shadow-lg"
           />
           <Typography as="h2" className="!text-3xl !text-primary">
-            {trabalhador.nome}
+            {cliente.nome}
           </Typography>
           <Typography
             as="p"
             className="text-xl font-semibold !text-accent mb-2"
           >
-            {readableService}
+            Cliente
           </Typography>
           <div className="mt-2">
-            <Rating score={trabalhador.notaTrabalhador} />
+            <Rating score={cliente.notaCliente} />
           </div>
           <p className="text-sm text-dark-subtle mt-1">
-            Nota Média: {trabalhador.notaTrabalhador.toFixed(1)}
+            Nota Média: {cliente.notaCliente.toFixed(1)}
           </p>
         </Card>
+
+        {/* 👇 BOTÃO DE EDITAR PERFIL ADICIONADO AQUI */}
+        {isOwner && (
+          <Button
+            variant="secondary"
+            size="lg"
+            className="w-full shadow-lg shadow-accent/40"
+            onClick={() => navigate("/dashboard/configuracoes")}
+          >
+            Editar Perfil ✏️
+          </Button>
+        )}
 
         <Card className="p-6">
           <Typography
             as="h3"
             className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
           >
-            Disponibilidade
+            Localização
           </Typography>
           <p className="text-dark-text text-center font-medium">
-            {trabalhador.disponibilidade}
+            {cliente.endereco.cidade}, {cliente.endereco.estado}
           </p>
         </Card>
-
-        <Button
-          variant="secondary"
-          size="lg"
-          className="w-full shadow-lg shadow-accent/40"
-        >
-          Solicitar Serviço 🚀
-        </Button>
       </motion.div>
 
       {/* Coluna da Direita: Detalhes e Avaliações */}
       <motion.div className="lg:col-span-2 space-y-8" variants={itemVariants}>
+        {/* ... (Resto da página: Sobre Mim, Avaliações Recebidas) ... */}
         <Card className="p-6">
           <Typography
             as="h3"
@@ -209,10 +215,9 @@ export function TrabalhadorProfilePage() {
             Sobre Mim
           </Typography>
           <Typography as="p">
-            Olá! Sou {primeiroNome}, um profissional dedicado e com vasta
-            experiência em {readableService}. Meu compromisso é com a qualidade
-            e a satisfação do cliente, buscando sempre a melhor solução para
-            suas necessidades. Estou pronto para te ajudar!
+            Olá! Sou {primeiroNome}, um cliente que utiliza a plataforma
+            Facilitei para encontrar os melhores profissionais para meus
+            projetos e necessidades.
           </Typography>
         </Card>
 
@@ -221,26 +226,7 @@ export function TrabalhadorProfilePage() {
             as="h3"
             className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
           >
-            Serviços Prestados
-          </Typography>
-          <div className="flex flex-wrap gap-3">
-            {trabalhador.servicos.map((servico, index) => (
-              <span
-                key={index}
-                className="px-4 py-1 bg-dark-surface/50 text-dark-text rounded-full text-sm font-medium border border-dark-surface"
-              >
-                {servico.replace(/_/g, " ")}
-              </span>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="p-6">
-          <Typography
-            as="h3"
-            className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
-          >
-            Avaliações de Clientes ({avaliacoes.length})
+            Avaliações Recebidas ({avaliacoes.length})
           </Typography>
           <div className="space-y-6">
             {avaliacoes.length > 0 ? (
@@ -251,7 +237,7 @@ export function TrabalhadorProfilePage() {
                 >
                   <div className="flex justify-between items-center mb-2">
                     <Typography as="h3" className="!text-lg !text-dark-text">
-                      {avaliacao.clienteNome}
+                      {avaliacao.trabalhadorNome}
                     </Typography>
                     <Rating score={avaliacao.nota} />
                   </div>
@@ -262,7 +248,7 @@ export function TrabalhadorProfilePage() {
               ))
             ) : (
               <p className="text-dark-subtle italic text-center py-4">
-                Este profissional ainda não possui avaliações.
+                Este cliente ainda não foi avaliado por profissionais.
               </p>
             )}
           </div>

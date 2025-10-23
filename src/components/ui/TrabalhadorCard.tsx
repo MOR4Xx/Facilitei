@@ -1,5 +1,5 @@
 // src/components/ui/TrabalhadorCard.tsx
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion'; // 👈 IMPORTE O 'Variants' AQUI
 import { useNavigate } from 'react-router-dom';
 import { Card } from './Card';
 import { Typography } from './Typography';
@@ -21,7 +21,7 @@ const Rating = ({ score }: { score: number }) => {
 };
 
 // --- VARIANTES DE ANIMAÇÃO ---
-const itemVariants = {
+const itemVariants: Variants = { // 👈 ADICIONE A TIPAGEM ': Variants' AQUI
   hidden: { opacity: 0, scale: 0.95 },
   visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 100 } },
 };
@@ -49,12 +49,11 @@ export function TrabalhadorCard({ trabalhador }: TrabalhadorCardProps) {
                          hover:border-primary/40 h-full"
         onClick={() => navigate(`/dashboard/trabalhador/${trabalhador.id}`)}
       >
-        <div
-          className="w-16 h-16 bg-primary rounded-full flex items-center justify-center
-                                text-white text-3xl font-bold mb-3 border-4 border-accent"
-        >
-          {primeiroNome[0]}
-        </div>
+        <img
+          src={trabalhador.avatarUrl}
+          alt={trabalhador.nome}
+          className="w-16 h-16 rounded-full object-cover mb-3 border-4 border-accent"
+        />
         <Typography as="h3" className="!text-xl !text-primary mb-1">
           {trabalhador.nome}
         </Typography>

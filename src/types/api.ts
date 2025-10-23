@@ -13,6 +13,7 @@ export interface Trabalhador {
   id: number;
   nome: string;
   email: string;
+  avatarUrl: string; // 👈 ADICIONADO
   endereco: Endereco;
   disponibilidade: string;
   notaTrabalhador: number;
@@ -24,24 +25,25 @@ export interface Cliente {
   id: number;
   nome: string;
   email: string;
+  avatarUrl: string; // 👈 ADICIONADO
   notaCliente: number;
   endereco: Endereco;
 }
 
 // Usando os Enums que você tem no backend
 export type TipoServico =
-  | 'PEDREIRO'
-  | 'ELETRICISTA'
-  | 'ENCANADOR'
+  | "PEDREIRO"
+  | "ELETRICISTA"
+  | "ENCANADOR"
   // ... adicione todos os outros tipos do seu Enum TipoServico.java
-  | 'INSTALADOR_AR_CONDICIONADO';
+  | "INSTALADOR_AR_CONDICIONADO";
 
 export type StatusServico =
-  | 'SOLICITADO'
-  | 'EM_ANDAMENTO'
-  | 'FINALIZADO'
+  | "SOLICITADO"
+  | "EM_ANDAMENTO"
+  | "FINALIZADO"
   // ... adicione todos os outros status do seu Enum StatusServico.java
-  | 'PENDENTE';
+  | "PENDENTE";
 
 export interface Servico {
   id: number;
