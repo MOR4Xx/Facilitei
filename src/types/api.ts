@@ -39,11 +39,12 @@ export type TipoServico =
   | "INSTALADOR_AR_CONDICIONADO";
 
 export type StatusServico =
-  | "SOLICITADO"
-  | "EM_ANDAMENTO"
-  | "FINALIZADO"
-  // ... adicione todos os outros status do seu Enum StatusServico.java
-  | "PENDENTE";
+  | "SOLICITADO" // Cliente enviou, mas trabalhador não viu
+  | "PENDENTE" // Está na fila do trabalhador
+  | "EM_ANDAMENTO" // Trabalhador aceitou
+  | "FINALIZADO" // Trabalhador concluiu
+  | "CANCELADO" // Cliente ou Trabalhador cancelou
+  | "RECUSADO"; // Trabalhador recusou
 
 export interface Servico {
   id: number;

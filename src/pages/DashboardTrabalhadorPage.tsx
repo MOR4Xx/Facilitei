@@ -1,31 +1,32 @@
 // src/pages/DashboardTrabalhadorPage.tsx
 
-import { useQuery } from '@tanstack/react-query';
-import { motion } from 'framer-motion'; 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'; // 👈 IMPORTAÇÕES ATUALIZADAS
+import { motion } from 'framer-motion';
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
 import { useAuthStore } from "../store/useAuthStore";
-import type { Servico, Trabalhador } from '../types/api';
+import type { Servico, Trabalhador, Cliente, StatusServico } from '../types/api'; // 👈 IMPORTADO Cliente e StatusServico
 
 // Definindo o tipo de Solicitação de Serviço com base no db.json
 interface SolicitacaoServico {
   id: number;
   clienteId: number;
-  servicoId: number;
+  servicoId: number; // ID do serviço associado
   descricao: string;
-  statusSolicitacao: 'PENDENTE' | 'ACEITA';
+  statusSolicitacao: 'PENDENTE' | 'ACEITA' | 'RECUSADA'; // 👈 Status atualizado
+}
+
+// Interface para os dados retornados pela query principal
+interface WorkerData {
+  newRequests: (SolicitacaoServico & { cliente: Cliente; servico: Servico })[];
+  activeServices: (Servico & { cliente: Cliente })[];
 }
 
 // --- VARIANTES DE ANIMAÇÃO ZIKA ---
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1, // Animação em cascata
-    },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
 const itemVariants = {
@@ -34,89 +35,174 @@ const itemVariants = {
 };
 
 // --- COMPONENTE DE RATING (Estrelas) ---
-// Reutilizado do DashboardClientePage para consistência
 const Rating = ({ score }: { score: number }) => {
   const stars = Array(5).fill(0).map((_, i) => (
-    <span 
-      key={i} 
-      className={`text-xl ${i < score ? 'text-accent' : 'text-dark-subtle/50'}`}
-    >
+    <span key={i} className={`text-xl ${i < score ? 'text-accent' : 'text-dark-subtle/50'}`}>
       ★
     </span>
   ));
   return <div className="flex space-x-0.5">{stars}</div>;
 };
 
-// --- FUNÇÕES DE BUSCA SIMULADA ---
+// --- FUNÇÕES DE FETCH (API) ---
 
-// Busca todas as solicitações e serviços, e filtra pelo ID do trabalhador
-const fetchWorkerData = async (workerId: number) => {
-    // Busca todos os serviços
-    const servicesResponse = await fetch('http://localhost:3333/servicos');
-    if (!servicesResponse.ok) throw new Error('Falha ao buscar serviços.');
-    const allServices: Servico[] = await servicesResponse.json();
-
-    // Filtra serviços designados ao trabalhador
-    const workerServices = allServices.filter(s => s.trabalhadorId === workerId);
-    
-    // Busca todas as solicitações
-    const solicitationsResponse = await fetch('http://localhost:3333/solicitacoes-servico');
-    if (!solicitationsResponse.ok) throw new Error('Falha ao buscar solicitações.');
-    const allSolicitations: SolicitacaoServico[] = await solicitationsResponse.json();
-
-    // IDs dos serviços designados ao trabalhador
-    const workerServiceIds = workerServices.map(s => s.id);
-
-    // Filtra solicitações PENDENTES relacionadas aos serviços do trabalhador
-    const newRequests = allSolicitations.filter(sol => 
-        workerServiceIds.includes(sol.servicoId) && sol.statusSolicitacao === 'PENDENTE'
-    );
-    
-    // Filtra serviços EM_ANDAMENTO
-    const activeServices = workerServices.filter(s => s.statusServico === 'EM_ANDAMENTO');
-
-
-    // Retorna os dados agregados
-    return {
-        newRequests,
-        activeServices
-    };
+// Busca os dados do cliente
+const fetchCliente = async (id: number): Promise<Cliente> => {
+  const res = await fetch(`http://localhost:3333/clientes/${id}`);
+  if (!res.ok) throw new Error('Cliente não encontrado');
+  return res.json();
 };
+
+// Busca todos os dados do dashboard do trabalhador
+const fetchWorkerData = async (workerId: number): Promise<WorkerData> => {
+  // 1. Busca todos os serviços deste trabalhador
+  const servicesResponse = await fetch(`http://localhost:3333/servicos?trabalhadorId=${workerId}`);
+  if (!servicesResponse.ok) throw new Error('Falha ao buscar serviços.');
+  const allServices: Servico[] = await servicesResponse.json();
+
+  // 2. Separa os serviços
+  const activeServices = allServices.filter(s => s.statusServico === 'EM_ANDAMENTO');
+  const pendingServiceIds = allServices
+    .filter(s => s.statusServico === 'PENDENTE')
+    .map(s => s.id);
+
+  // 3. Busca solicitações PENDENTES (Pré-Requisições) que correspondem aos serviços pendentes
+  const solicitationsResponse = await fetch(`http://localhost:3333/solicitacoes-servico?statusSolicitacao=PENDENTE`);
+  if (!solicitationsResponse.ok) throw new Error('Falha ao buscar solicitações.');
+  const allSolicitations: SolicitacaoServico[] = await solicitationsResponse.json();
+
+  const newRequests = allSolicitations.filter(sol => pendingServiceIds.includes(sol.servicoId));
+
+  // 4. Busca dados dos clientes para os SERVIÇOS ATIVOS
+  const activeServicesWithClient = await Promise.all(
+    activeServices.map(async (servico) => {
+      const cliente = await fetchCliente(servico.clienteId);
+      return { ...servico, cliente };
+    })
+  );
+
+  // 5. Busca dados dos clientes para as NOVAS SOLICITAÇÕES
+  const newRequestsWithClient = await Promise.all(
+    newRequests.map(async (solicitacao) => {
+      const cliente = await fetchCliente(solicitacao.clienteId);
+      const servico = allServices.find(s => s.id === solicitacao.servicoId)!;
+      return { ...solicitacao, cliente, servico };
+    })
+  );
+
+  return { newRequests: newRequestsWithClient, activeServices: activeServicesWithClient };
+};
+
+// --- FUNÇÕES DE MUTATION (API) ---
+
+// Função genérica para atualizar um Serviço (PATCH)
+const updateServicoStatus = async ({ id, status }: { id: number; status: StatusServico }) => {
+  const response = await fetch(`http://localhost:3333/servicos/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ statusServico: status }),
+  });
+  if (!response.ok) throw new Error('Falha ao atualizar serviço.');
+  return response.json();
+};
+
+// Função genérica para atualizar uma Solicitação (PATCH)
+const updateSolicitacaoStatus = async ({ id, status }: { id: number; status: 'ACEITA' | 'RECUSADA' }) => {
+  const response = await fetch(`http://localhost:3333/solicitacoes-servico/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ statusSolicitacao: status }),
+  });
+  if (!response.ok) throw new Error('Falha ao atualizar solicitação.');
+  return response.json();
+};
+
 
 // --- COMPONENTE PRINCIPAL ---
 export function DashboardTrabalhadorPage() {
   const { user } = useAuthStore();
-  // Assume que 'user' é um Trabalhador, já que esta é a rota protegida para eles
-  const trabalhador = user as Trabalhador; 
+  const queryClient = useQueryClient(); // 👈 Hook para invalidar queries
+  const trabalhador = user as Trabalhador;
 
-  // Busca de dados com React Query
-  const { data, isLoading } = useQuery({
+  // Query principal que busca todos os dados
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['workerData', trabalhador.id],
     queryFn: () => fetchWorkerData(trabalhador.id),
     enabled: !!trabalhador.id,
   });
-  
+
+  // --- MUTATIONS ---
+
+  // Mutation para atualizar o status do SERVIÇO
+  const servicoMutation = useMutation({
+    mutationFn: updateServicoStatus,
+    onSuccess: () => {
+      // Invalida a query 'workerData' para buscar os dados atualizados
+      queryClient.invalidateQueries({ queryKey: ['workerData', trabalhador.id] });
+    },
+  });
+
+  // Mutation para atualizar o status da SOLICITAÇÃO
+  const solicitacaoMutation = useMutation({
+    mutationFn: updateSolicitacaoStatus,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workerData', trabalhador.id] });
+    },
+  });
+
+  // --- HANDLERS (Ações dos Botões) ---
+
+  const handleAccept = (solicitacao: SolicitacaoServico) => {
+    // 1. Muda status da Solicitação para "ACEITA"
+    solicitacaoMutation.mutate({ id: solicitacao.id, status: 'ACEITA' });
+    // 2. Muda status do Serviço para "EM_ANDAMENTO"
+    servicoMutation.mutate({ id: solicitacao.servicoId, status: 'EM_ANDAMENTO' });
+  };
+
+  const handleReject = (solicitacao: SolicitacaoServico) => {
+    // 1. Muda status da Solicitação para "RECUSADA"
+    solicitacaoMutation.mutate({ id: solicitacao.id, status: 'RECUSADA' });
+    // 2. Muda status do Serviço para "RECUSADO"
+    servicoMutation.mutate({ id: solicitacao.servicoId, status: 'RECUSADO' });
+  };
+
+  const handleFinish = (servico: Servico) => {
+    // 1. Muda status do Serviço para "FINALIZADO"
+    servicoMutation.mutate({ id: servico.id, status: 'FINALIZADO' });
+  };
+
+  const isMutating = solicitacaoMutation.isPending || servicoMutation.isPending;
+
+  // --- RENDER ---
+
   const primeiroNome = trabalhador?.nome.split(' ')[0];
   const newRequestsCount = data?.newRequests.length || 0;
   const activeServicesCount = data?.activeServices.length || 0;
 
   if (isLoading) {
     return (
-        <div className="text-center py-20">
-            <Typography as="h2">Carregando Painel do Profissional...</Typography>
-            <p className="text-dark-subtle mt-4">Organizando suas solicitações e tarefas.</p>
-        </div>
+      <div className="text-center py-20">
+        <Typography as="h2">Carregando Painel do Profissional...</Typography>
+        <p className="text-dark-subtle mt-4">Organizando suas solicitações e tarefas.</p>
+      </div>
     );
   }
 
-  // Cor de fundo do Card de Boas-vindas baseada na nota
-  // Se nota >= 4, usa um gradiente de sucesso (accent), se não, usa o primário.
-  const welcomeCardClass = trabalhador.notaTrabalhador >= 4 
-    ? 'bg-gradient-to-r from-accent to-lime-600 shadow-2xl shadow-accent/40' 
+  if (isError) {
+    return (
+      <div className="text-center py-20 text-red-500">
+        <Typography as="h2">Erro ao carregar dados.</Typography>
+        <p className="text-dark-subtle mt-4">Tente recarregar a página.</p>
+      </div>
+    );
+  }
+  
+  const welcomeCardClass = trabalhador.notaTrabalhador >= 4
+    ? 'bg-gradient-to-r from-accent to-lime-600 shadow-2xl shadow-accent/40'
     : 'bg-gradient-to-r from-primary to-teal-700 shadow-2xl shadow-primary/40';
 
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -126,20 +212,20 @@ export function DashboardTrabalhadorPage() {
       {/* HEADER E AÇÕES */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
         <motion.div variants={itemVariants}>
-            <Typography as="h1">Painel do Profissional</Typography>
+          <Typography as="h1">Painel do Profissional</Typography>
         </motion.div>
         <motion.div variants={itemVariants}>
-            <Button 
-                variant="primary" 
-                size="lg" 
-                className="mt-4 md:mt-0 shadow-lg shadow-primary/20 hover:shadow-primary/40"
-            >
-                Ver Agenda Completa 📅
-            </Button>
+          <Button
+            variant="primary"
+            size="lg"
+            className="mt-4 md:mt-0 shadow-lg shadow-primary/20 hover:shadow-primary/40"
+          >
+            Ver Agenda Completa 📅
+          </Button>
         </motion.div>
       </div>
 
-      {/* CARD DE BOAS-VINDAS / DESEMPENHO (O GOSTO DE USAR) */}
+      {/* CARD DE BOAS-VINDAS */}
       <motion.div variants={itemVariants}>
         <Card className={`p-8 ${welcomeCardClass}`}>
           <div className="flex justify-between items-center">
@@ -154,8 +240,8 @@ export function DashboardTrabalhadorPage() {
         </Card>
       </motion.div>
 
-      {/* CARDS DE ESTATÍSTICAS RÁPIDAS (Grid zika) */}
-      <div className="grid md:grid-cols-3 gap-6">
+      {/* CARDS DE ESTATÍSTICAS RÁPIDAS */}
+      <div className="grid md:grid-cols-2 gap-6">
         {/* Novas Solicitações */}
         <motion.div variants={itemVariants}>
           <Card className="p-6 border-l-4 border-accent">
@@ -165,9 +251,6 @@ export function DashboardTrabalhadorPage() {
             <Typography as="p" className="text-dark-subtle mt-1">
               Novas Solicitações de Serviço
             </Typography>
-            <Button variant="secondary" size="sm" className="mt-4">
-                Ver Pedidos
-            </Button>
           </Card>
         </motion.div>
 
@@ -180,68 +263,144 @@ export function DashboardTrabalhadorPage() {
             <Typography as="p" className="text-dark-subtle mt-1">
               Serviços em Andamento
             </Typography>
-            <Button variant="primary" size="sm" className="mt-4">
-                Acompanhar
-            </Button>
-          </Card>
-        </motion.div>
-        
-        {/* Clientes Avaliados (Mockado) */}
-        <motion.div variants={itemVariants}>
-          <Card className="p-6 border-l-4 border-dark-subtle">
-            <Typography as="h3" className="!text-3xl text-dark-text font-extrabold">
-              4 {/* Mock: Mantenha-o simples por enquanto */}
-            </Typography>
-            <Typography as="p" className="text-dark-subtle mt-1">
-              Clientes que você avaliou
-            </Typography>
-            <Button variant="outline" size="sm" className="mt-4">
-                Avaliar Clientes
-            </Button>
           </Card>
         </motion.div>
       </div>
-      
-      {/* SEÇÃO PRINCIPAL - SERVIÇOS EM ANDAMENTO */}
+
+      {/* // --- SEÇÃO NOVAS SOLICITAÇÕES (LISTA) ---
+      */}
       <section className="space-y-6">
         <motion.div variants={itemVariants}>
-            <Typography as="h2" className="!text-2xl border-b border-dark-surface/50 pb-2">
-                💼 Seus Serviços Ativos
-            </Typography>
-            <p className="text-dark-subtle mt-2">
-                Os trabalhos que estão atualmente em progresso.
-            </p>
+          <Typography as="h2" className="!text-2xl border-b border-dark-surface/50 pb-2">
+            🔔 Novas Solicitações ({newRequestsCount})
+          </Typography>
+          <p className="text-dark-subtle mt-2">
+            Clientes aguardando sua resposta.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {data?.newRequests && data.newRequests.length > 0 ? (
+            data.newRequests.map((sol) => (
+              <motion.div key={sol.id} variants={itemVariants}>
+                <Card className="p-6 shadow-glow-accent">
+                  {/* Info do Cliente */}
+                  <div className="flex items-center mb-4">
+                    <img 
+                      src={sol.cliente.avatarUrl} 
+                      alt={sol.cliente.nome} 
+                      className="w-12 h-12 rounded-full object-cover mr-4 border-2 border-accent"
+                    />
+                    <div>
+                      <Typography as="h3" className="!text-lg !text-dark-text">
+                        {sol.cliente.nome}
+                      </Typography>
+                      <p className="text-sm text-dark-subtle">
+                        {sol.cliente.endereco.cidade} - {sol.cliente.endereco.estado}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Detalhes da Solicitação */}
+                  <div className="mb-5">
+                    <Typography as="p" className="!text-dark-text !font-semibold mb-1">
+                      {sol.servico.titulo}
+                    </Typography>
+                    <Typography as="p" className="italic bg-dark-background/50 p-3 rounded-md">
+                      "{sol.descricao}"
+                    </Typography>
+                  </div>
+
+                  {/* Botões de Ação */}
+                  <div className="flex gap-4">
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => handleReject(sol)}
+                      disabled={isMutating}
+                    >
+                      Recusar
+                    </Button>
+                    <Button 
+                      variant="secondary" 
+                      className="w-full"
+                      onClick={() => handleAccept(sol)}
+                      disabled={isMutating}
+                    >
+                      {isMutating ? "Aguarde..." : "Aceitar"}
+                    </Button>
+                  </div>
+                </Card>
+              </motion.div>
+            ))
+          ) : (
+            <motion.div variants={itemVariants} className="lg:col-span-2">
+              <Card className="text-center p-8 border-dashed border-dark-subtle/30 border-2">
+                <Typography as="p">
+                  Nenhuma nova solicitação no momento.
+                </Typography>
+              </Card>
+            </motion.div>
+          )}
+        </div>
+      </section>
+
+      {/* // --- SEÇÃO SERVIÇOS EM ANDAMENTO (ATUALIZADA) ---
+      */}
+      <section className="space-y-6">
+        <motion.div variants={itemVariants}>
+          <Typography as="h2" className="!text-2xl border-b border-dark-surface/50 pb-2">
+            💼 Seus Serviços Ativos ({activeServicesCount})
+          </Typography>
+          <p className="text-dark-subtle mt-2">
+            Os trabalhos que você aceitou e estão em progresso.
+          </p>
         </motion.div>
 
         <div className="grid gap-4">
           {data?.activeServices && data.activeServices.length > 0 ? (
             data.activeServices.map((servico) => (
               <motion.div key={servico.id} variants={itemVariants}>
-                <Card className="flex justify-between items-center p-5">
-                  <div>
-                    <Typography as="h3" className="!text-lg">
-                      {servico.titulo}
-                    </Typography>
-                    <p className="text-sm text-dark-subtle mt-1">
-                      Status: <span className="font-semibold text-primary">{servico.statusServico}</span> | Preço: R$ {servico.preco.toFixed(2)}
-                    </p>
+                <Card className="flex flex-col md:flex-row justify-between items-start md:items-center p-5">
+                  {/* Info Cliente + Serviço */}
+                  <div className="flex items-center mb-4 md:mb-0">
+                    <img 
+                      src={servico.cliente.avatarUrl} 
+                      alt={servico.cliente.nome} 
+                      className="w-12 h-12 rounded-full object-cover mr-4 border-2 border-primary"
+                    />
+                    <div>
+                      <Typography as="h3" className="!text-lg !text-dark-text">
+                        {servico.titulo}
+                      </Typography>
+                      <p className="text-sm text-dark-subtle mt-1">
+                        Cliente: <span className="font-semibold text-primary">{servico.cliente.nome}</span>
+                      </p>
+                      <p className="text-sm text-dark-subtle">
+                        Descrição: {servico.descricao.substring(0, 50)}...
+                      </p>
+                    </div>
                   </div>
-                  <Button size="sm" variant="outline">
-                    Finalizar Serviço
+                  {/* Botão de Ação */}
+                  <Button 
+                    size="md" 
+                    variant="primary" 
+                    className="w-full md:w-auto"
+                    onClick={() => handleFinish(servico)}
+                    disabled={isMutating}
+                  >
+                    {isMutating ? "..." : "Finalizar Serviço"}
                   </Button>
                 </Card>
               </motion.div>
             ))
           ) : (
             <motion.div variants={itemVariants}>
-                <Card className="text-center p-8 border-dashed border-dark-subtle/30 border-2">
-                    <Typography as="p">
-                        Nenhum serviço em andamento. Busque novas solicitações!
-                    </Typography>
-                    <Button variant="secondary" className="mt-4">
-                        Ver Novas Solicitações
-                    </Button>
-                </Card>
+              <Card className="text-center p-8 border-dashed border-dark-subtle/30 border-2">
+                <Typography as="p">
+                  Nenhum serviço em andamento. Aceite novas solicitações!
+                </Typography>
+              </Card>
             </motion.div>
           )}
         </div>
