@@ -13,6 +13,7 @@ import { SolicitarServicoPage } from "../pages/SolicitarServicoPage";
 import { TrabalhadorProfilePage } from "../pages/TrabalhadorProfilePage";
 import { ClienteProfilePage } from "../pages/ClienteProfilePage"; // 👈 IMPORTAR
 import { ClienteSettingsPage } from "../pages/ClienteSettingsPage"; // 👈 IMPORTAR
+import { ChatPage } from "../pages/ChatPage";
 
 export const router = createBrowserRouter([
   {
@@ -47,6 +48,10 @@ export const router = createBrowserRouter([
            {
             path: "configuracoes", // 👈 NOVA ROTA PRIVADA DE EDIÇÃO
             element: <ClienteSettingsPage />,
+          },
+          { // 👇 NOVA ROTA DE CHAT
+            path: "chat/:trabalhadorId", // Recebe o ID do trabalhador
+            element: <ChatPage />,
           },
         ],
       },

@@ -1,13 +1,16 @@
 // src/pages/TrabalhadorProfilePage.tsx
 
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
-import type { Trabalhador, Cliente } from "../types/api";
+import type { Trabalhador, Cliente, TipoServico, Servico } from "../types/api"; // 👈 Servico e TipoServico importados
 import { useEffect, useState } from "react";
+import { useAuthStore } from "../store/useAuthStore"; // 👈 auth store
+import { Modal } from "../components/ui/Modal"; // 👈 NOVO MODAL
+import { Textarea } from "../components/ui/Textarea"; // 👈 NOVO TEXTAREA
 
 // --- INTERFACES ADICIONAIS ---
 interface AvaliacaoTrabalhador {
@@ -16,7 +19,26 @@ interface AvaliacaoTrabalhador {
   trabalhadorId: number;
   nota: number;
   comentario: string;
-  clienteNome?: string; // Nome do cliente será adicionado aqui
+  clienteNome?: string;
+}
+
+// Interface para o corpo da NOVA solicitação
+interface NewServicoRequest {
+  titulo: string;
+  descricao: string;
+  preco: number;
+  trabalhadorId: number;
+  clienteId: number;
+  disponibilidadeId: number; // Mockado
+  tipoServico: TipoServico;
+  statusServico: "PENDENTE" | "SOLICITADO";
+}
+
+interface NewSolicitacaoRequest {
+  clienteId: number;
+  servicoId: number;
+  descricao: string;
+  statusSolicitacao: "PENDENTE";
 }
 
 // --- VARIANTES DE ANIMAÇÃO ---
@@ -63,14 +85,12 @@ const fetchTrabalhadorById = async (id: number): Promise<Trabalhador> => {
 const fetchAvaliacoes = async (
   workerId: number
 ): Promise<AvaliacaoTrabalhador[]> => {
-  // 1. Busca todas as avaliações de trabalhadores
   const response = await fetch(
     `http://localhost:3333/avaliacoes-trabalhador?trabalhadorId=${workerId}`
   );
   if (!response.ok) return [];
   const avaliacoes: AvaliacaoTrabalhador[] = await response.json();
 
-  // 2. Para cada avaliação, busca o nome do cliente
   const avaliacoesComNomes = await Promise.all(
     avaliacoes.map(async (avaliacao) => {
       const clienteResponse = await fetch(
@@ -80,18 +100,55 @@ const fetchAvaliacoes = async (
         const cliente: Cliente = await clienteResponse.json();
         return { ...avaliacao, clienteNome: cliente.nome };
       }
-      return { ...avaliacao, clienteNome: "Cliente Anônimo" }; // Fallback
+      return { ...avaliacao, clienteNome: "Cliente Anônimo" };
     })
   );
 
   return avaliacoesComNomes;
 };
 
-// --- COMPONENTE PRINCIPAL: TRABALHADOR PROFILE PAGE ZIKA ---
+// --- FUNÇÕES DE ENVIO (MUTATION) ---
+
+// 1. Cria o Servico (job)
+const createServico = async (data: NewServicoRequest): Promise<Servico> => {
+  const response = await fetch(`http://localhost:3333/servicos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Falha ao criar o serviço.');
+  return response.json();
+};
+
+// 2. Cria a Solicitação (request)
+const createSolicitacao = async (data: NewSolicitacaoRequest) => {
+  const response = await fetch(`http://localhost:3333/solicitacoes-servico`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Falha ao criar a solicitação.');
+  return response.json();
+};
+
+
+// --- COMPONENTE PRINCIPAL: TRABALHADOR PROFILE PAGE ---
 export function TrabalhadorProfilePage() {
   const { id } = useParams<{ id: string }>();
   const trabalhadorId = id ? parseInt(id, 10) : 0;
   const [avaliacoes, setAvaliacoes] = useState<AvaliacaoTrabalhador[]>([]);
+  
+  // Acesso ao usuário logado
+  const { user, isAuthenticated } = useAuthStore();
+  const navigate = useNavigate();
+
+  // Estados do Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [descricao, setDescricao] = useState("");
+  const [selectedServico, setSelectedServico] = useState<TipoServico | "">("");
+  const [modalMessage, setModalMessage] = useState({ type: "", text: "" });
+
+  const queryClient = useQueryClient();
 
   const {
     data: trabalhador,
@@ -103,12 +160,109 @@ export function TrabalhadorProfilePage() {
     enabled: trabalhadorId > 0,
   });
 
-  // Efeito para buscar as avaliações quando o trabalhador for carregado
+  // Efeito para buscar as avaliações
   useEffect(() => {
     if (trabalhador) {
       fetchAvaliacoes(trabalhador.id).then(setAvaliacoes);
+      // Define o serviço principal como padrão no modal
+      setSelectedServico(trabalhador.servicoPrincipal);
     }
   }, [trabalhador]);
+
+  // --- LÓGICA DE MUTATION (ENVIO DA SOLICITAÇÃO) ---
+
+  // Mutation para criar o serviço
+  const mutationCreateServico = useMutation({
+    mutationFn: createServico,
+    onSuccess: (newServico) => {
+      // Sucesso! Agora, crie a solicitação
+      const solicitacaoData: NewSolicitacaoRequest = {
+        clienteId: user!.id,
+        servicoId: newServico.id,
+        descricao: descricao,
+        statusSolicitacao: "PENDENTE",
+      };
+      mutationCreateSolicitacao.mutate(solicitacaoData);
+    },
+    onError: (error) => {
+       setModalMessage({ type: "error", text: `Erro: ${error.message}` });
+    },
+  });
+
+  // Mutation para criar a solicitação
+  const mutationCreateSolicitacao = useMutation({
+    mutationFn: createSolicitacao,
+    onSuccess: () => {
+      // SUCESSO TOTAL!
+      setModalMessage({ type: "success", text: "Solicitação enviada! O profissional foi notificado." });
+      
+      // Limpa os campos e fecha o modal após um tempo
+      setTimeout(() => {
+        setIsModalOpen(false);
+        setDescricao("");
+        setModalMessage({ type: "", text: "" });
+      }, 2000);
+
+      // Invalida as queries do dashboard do trabalhador (para ele ver a nova)
+      // e do cliente (para ele ver o serviço novo)
+      queryClient.invalidateQueries({ queryKey: ['workerData'] });
+      queryClient.invalidateQueries({ queryKey: ['servicos'] });
+    },
+    onError: (error) => {
+      setModalMessage({ type: "error", text: `Erro final: ${error.message}` });
+    },
+  });
+
+  const isLoadingRequest = mutationCreateServico.isPending || mutationCreateSolicitacao.isPending;
+
+  // Função chamada pelo botão "Enviar" do Modal
+  const handleSubmitRequest = () => {
+    setModalMessage({ type: "", text: "" });
+
+    // 1. Validação
+    if (!isAuthenticated || user?.role !== 'cliente') {
+      setModalMessage({ type: "error", text: "Você precisa estar logado como cliente." });
+      return;
+    }
+    if (!selectedServico) {
+      setModalMessage({ type: "error", text: "Selecione um tipo de serviço." });
+      return;
+    }
+     if (descricao.length < 10) {
+      setModalMessage({ type: "error", text: "Descreva um pouco mais o que precisa (mín. 10 caracteres)." });
+      return;
+    }
+
+    // 2. Monta o corpo do NOVO SERVIÇO
+    const servicoData: NewServicoRequest = {
+      titulo: `Solicitação de ${selectedServico.replace(/_/g, " ")}`,
+      descricao: descricao,
+      preco: 0, // Preço a combinar
+      trabalhadorId: trabalhadorId,
+      clienteId: user.id,
+      disponibilidadeId: 1, // Mockado, como no db.json
+      tipoServico: selectedServico,
+      statusServico: "PENDENTE", // Status inicial do serviço
+    };
+
+    // 3. Inicia a primeira mutation
+    mutationCreateServico.mutate(servicoData);
+  };
+
+  // --- Funções de Handler do Modal ---
+  const handleOpenModal = () => {
+    if (!isAuthenticated) {
+      navigate('/login?redirect=true'); // Redireciona se não logado
+      return;
+    }
+    if (user?.role !== 'cliente') {
+       alert("Apenas clientes podem solicitar serviços."); // Alerta se for outro trabalhador
+       return;
+    }
+    setModalMessage({ type: "", text: "" });
+    setIsModalOpen(true);
+  };
+
 
   if (isError) {
     return (
@@ -147,127 +301,198 @@ export function TrabalhadorProfilePage() {
     trabalhador.servicoPrincipal.slice(1).toLowerCase().replace(/_/g, " ");
 
   return (
-    <motion.div
-      initial="hidden"
-      animate="visible"
-      variants={pageVariants}
-      className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10"
-    >
-      {/* Coluna da Esquerda: Perfil e Ações */}
-      <motion.div className="lg:col-span-1 space-y-8" variants={itemVariants}>
-        <Card className="p-8 flex flex-col items-center text-center shadow-glow-accent">
-          <img
-            src={trabalhador.avatarUrl}
-            alt={trabalhador.nome}
-            className="w-28 h-28 rounded-full object-cover mb-4 border-4 border-accent shadow-lg"
-          />
-          <Typography as="h2" className="!text-3xl !text-primary">
-            {trabalhador.nome}
-          </Typography>
-          <Typography
-            as="p"
-            className="text-xl font-semibold !text-accent mb-2"
-          >
-            {readableService}
-          </Typography>
-          <div className="mt-2">
-            <Rating score={trabalhador.notaTrabalhador} />
-          </div>
-          <p className="text-sm text-dark-subtle mt-1">
-            Nota Média: {trabalhador.notaTrabalhador.toFixed(1)}
-          </p>
-        </Card>
+    <>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={pageVariants}
+        className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10"
+      >
+        {/* Coluna da Esquerda: Perfil e Ações */}
+        <motion.div className="lg:col-span-1 space-y-8" variants={itemVariants}>
+          <Card className="p-8 flex flex-col items-center text-center shadow-glow-accent">
+            <img
+              src={trabalhador.avatarUrl}
+              alt={trabalhador.nome}
+              className="w-28 h-28 rounded-full object-cover mb-4 border-4 border-accent shadow-lg"
+            />
+            <Typography as="h2" className="!text-3xl !text-primary">
+              {trabalhador.nome}
+            </Typography>
+            <Typography
+              as="p"
+              className="text-xl font-semibold !text-accent mb-2"
+            >
+              {readableService}
+            </Typography>
+            <div className="mt-2">
+              <Rating score={trabalhador.notaTrabalhador} />
+            </div>
+            <p className="text-sm text-dark-subtle mt-1">
+              Nota Média: {trabalhador.notaTrabalhador.toFixed(1)}
+            </p>
+          </Card>
 
-        <Card className="p-6">
-          <Typography
-            as="h3"
-            className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
-          >
-            Disponibilidade
-          </Typography>
-          <p className="text-dark-text text-center font-medium">
-            {trabalhador.disponibilidade}
-          </p>
-        </Card>
+          <Card className="p-6">
+            <Typography
+              as="h3"
+              className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
+            >
+              Disponibilidade
+            </Typography>
+            <p className="text-dark-text text-center font-medium">
+              {trabalhador.disponibilidade}
+            </p>
+          </Card>
 
-        <Button
-          variant="secondary"
-          size="lg"
-          className="w-full shadow-lg shadow-accent/40"
-        >
-          Solicitar Serviço 🚀
-        </Button>
-      </motion.div>
-
-      {/* Coluna da Direita: Detalhes e Avaliações */}
-      <motion.div className="lg:col-span-2 space-y-8" variants={itemVariants}>
-        <Card className="p-6">
-          <Typography
-            as="h3"
-            className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
+          <Button
+            variant="secondary"
+            size="lg"
+            className="w-full shadow-lg shadow-accent/40"
+            onClick={handleOpenModal} // 👈 AÇÃO DO BOTÃO ATUALIZADA
           >
-            Sobre Mim
-          </Typography>
-          <Typography as="p">
-            Olá! Sou {primeiroNome}, um profissional dedicado e com vasta
-            experiência em {readableService}. Meu compromisso é com a qualidade
-            e a satisfação do cliente, buscando sempre a melhor solução para
-            suas necessidades. Estou pronto para te ajudar!
-          </Typography>
-        </Card>
+            Solicitar Serviço 🚀
+          </Button>
+        </motion.div>
 
-        <Card className="p-6">
-          <Typography
-            as="h3"
-            className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
-          >
-            Serviços Prestados
-          </Typography>
-          <div className="flex flex-wrap gap-3">
-            {trabalhador.servicos.map((servico, index) => (
-              <span
-                key={index}
-                className="px-4 py-1 bg-dark-surface/50 text-dark-text rounded-full text-sm font-medium border border-dark-surface"
-              >
-                {servico.replace(/_/g, " ")}
-              </span>
-            ))}
-          </div>
-        </Card>
+        {/* Coluna da Direita: Detalhes e Avaliações */}
+        <motion.div className="lg:col-span-2 space-y-8" variants={itemVariants}>
+          <Card className="p-6">
+            <Typography
+              as="h3"
+              className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
+            >
+              Sobre Mim
+            </Typography>
+            <Typography as="p">
+              Olá! Sou {primeiroNome}, um profissional dedicado e com vasta
+              experiência em {readableService}. Meu compromisso é com a qualidade
+              e a satisfação do cliente, buscando sempre a melhor solução para
+              suas necessidades. Estou pronto para te ajudar!
+            </Typography>
+          </Card>
 
-        <Card className="p-6">
-          <Typography
-            as="h3"
-            className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
-          >
-            Avaliações de Clientes ({avaliacoes.length})
-          </Typography>
-          <div className="space-y-6">
-            {avaliacoes.length > 0 ? (
-              avaliacoes.map((avaliacao) => (
-                <div
-                  key={avaliacao.id}
-                  className="border-b border-dark-surface/50 pb-4 last:border-b-0 last:pb-0"
+          <Card className="p-6">
+            <Typography
+              as="h3"
+              className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
+            >
+              Serviços Prestados
+            </Typography>
+            <div className="flex flex-wrap gap-3">
+              {trabalhador.servicos.map((servico, index) => (
+                <span
+                  key={index}
+                  className="px-4 py-1 bg-dark-surface/50 text-dark-text rounded-full text-sm font-medium border border-dark-surface"
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <Typography as="h3" className="!text-lg !text-dark-text">
-                      {avaliacao.clienteNome}
+                  {servico.replace(/_/g, " ")}
+                </span>
+              ))}
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <Typography
+              as="h3"
+              className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
+            >
+              Avaliações de Clientes ({avaliacoes.length})
+            </Typography>
+            <div className="space-y-6">
+              {avaliacoes.length > 0 ? (
+                avaliacoes.map((avaliacao) => (
+                  <div
+                    key={avaliacao.id}
+                    className="border-b border-dark-surface/50 pb-4 last:border-b-0 last:pb-0"
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <Typography as="h3" className="!text-lg !text-dark-text">
+                        {avaliacao.clienteNome}
+                      </Typography>
+                      <Rating score={avaliacao.nota} />
+                    </div>
+                    <Typography as="p" className="italic">
+                      "{avaliacao.comentario}"
                     </Typography>
-                    <Rating score={avaliacao.nota} />
                   </div>
-                  <Typography as="p" className="italic">
-                    "{avaliacao.comentario}"
-                  </Typography>
-                </div>
-              ))
-            ) : (
-              <p className="text-dark-subtle italic text-center py-4">
-                Este profissional ainda não possui avaliações.
-              </p>
-            )}
-          </div>
-        </Card>
+                ))
+              ) : (
+                <p className="text-dark-subtle italic text-center py-4">
+                  Este profissional ainda não possui avaliações.
+                </p>
+              )}
+            </div>
+          </Card>
+        </motion.div>
       </motion.div>
-    </motion.div>
+
+      {/* // --- NOSSO NOVO MODAL DE SOLICITAÇÃO ---
+      */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={`Solicitar ${primeiroNome}`}
+      >
+        <div className="space-y-6">
+          
+          {/* O "MARCADOR" (SELECT) */}
+          <div className="relative">
+            <label htmlFor="servicoTipo" className="block text-sm font-medium text-dark-subtle mb-2">
+              Qual serviço você precisa? (o "marcador")
+            </label>
+            <select
+              id="servicoTipo"
+              value={selectedServico}
+              onChange={(e) => setSelectedServico(e.target.value as TipoServico)}
+              className="w-full bg-transparent border-2 border-dark-surface rounded-lg p-3 text-dark-text focus:outline-none focus:border-accent"
+            >
+              <option value="" disabled>Selecione um serviço...</option>
+              {trabalhador.servicos.map((tipo) => (
+                <option key={tipo} value={tipo} className="bg-dark-surface">
+                  {tipo.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          {/* A "BREVE DESCRIÇÃO" (TEXTAREA) */}
+          <Textarea
+            label="Breve descrição do serviço"
+            value={descricao}
+            onChange={(e) => setDescricao(e.target.value)}
+            placeholder="Ex: Preciso instalar um ar condicionado de 9000 BTUs na sala."
+          />
+
+          {/* Mensagens de Status */}
+          {modalMessage.text && (
+            <Typography className={
+              modalMessage.type === 'error' ? 'text-red-500 text-center' : 'text-accent text-center'
+            }>
+              {modalMessage.text}
+            </Typography>
+          )}
+
+          {/* Botões de Ação */}
+          <div className="flex gap-4 pt-4">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setIsModalOpen(false)}
+              disabled={isLoadingRequest}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={handleSubmitRequest}
+              disabled={isLoadingRequest}
+            >
+              {isLoadingRequest ? "Enviando..." : "Enviar Solicitação"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }
