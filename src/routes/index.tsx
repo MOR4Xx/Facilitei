@@ -49,8 +49,8 @@ export const router = createBrowserRouter([
             path: "configuracoes", // 👈 NOVA ROTA PRIVADA DE EDIÇÃO
             element: <ClienteSettingsPage />,
           },
-          { // 👇 NOVA ROTA DE CHAT
-            path: "chat/:trabalhadorId", // Recebe o ID do trabalhador
+          {
+            path: "chat/:servicoId", // Recebe o ID do serviço pela URL
             element: <ChatPage />,
           },
         ],

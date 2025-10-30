@@ -40,7 +40,6 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-
 // --- COMPONENTE PRINCIPAL ---
 export function DashboardClientePage() {
   const { user } = useAuthStore();
@@ -158,14 +157,31 @@ export function DashboardClientePage() {
                     </Typography>
                     <p className="text-sm text-dark-subtle mt-1">
                       Tipo: {servico.tipoServico} | Status:{" "}
-                      <span className="font-semibold text-primary">
-                        {servico.statusServico}
+                      <span
+                        className={`font-semibold ${
+                          servico.statusServico === "EM_ANDAMENTO"
+                            ? "text-primary"
+                            : "text-dark-subtle"
+                        }`}
+                      >
+                        {servico.statusServico.replace(/_/g, " ")}
                       </span>
                     </p>
                   </div>
-                  <Button size="sm" variant="outline">
-                    Detalhes
-                  </Button>
+                  {/* 👇 BOTÃO ATUALIZADO */}
+                  {servico.statusServico === "EM_ANDAMENTO" ? (
+                    <Button
+                      size="sm"
+                      variant="primary"
+                      onClick={() => navigate(`/dashboard/chat/${servico.id}`)} // Navega para o chat
+                    >
+                      Abrir Chat
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="outline" disabled>
+                      Detalhes
+                    </Button>
+                  )}
                 </Card>
               </motion.div>
             ))
