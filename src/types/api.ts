@@ -14,6 +14,7 @@ export interface Trabalhador {
   nome: string;
   email: string;
   avatarUrl: string; // 👈 ADICIONADO
+  telefone: string; // 👈 ADICIONADO
   endereco: Endereco;
   disponibilidade: string;
   notaTrabalhador: number;
@@ -25,6 +26,7 @@ export interface Cliente {
   id: number;
   nome: string;
   email: string;
+  telefone: string; // 👈 ADICIONADO
   avatarUrl: string; // 👈 ADICIONADO
   notaCliente: number;
   endereco: Endereco;

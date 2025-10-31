@@ -7,7 +7,7 @@ import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
 import type { Trabalhador, Cliente } from "../types/api";
-import { useEffect, useState } from "react";
+// ⛔️ Removido: import { useEffect, useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 
 // --- INTERFACES ADICIONAIS ---
@@ -19,6 +19,50 @@ interface AvaliacaoCliente {
   comentario: string;
   trabalhadorNome?: string; // Nome do trabalhador será adicionado
 }
+
+// =================================================================
+//  MUDANÇA ZIKA 1: MOVER FUNÇÕES DE FETCH PARA FORA DO COMPONENTE
+// =================================================================
+
+// --- FUNÇÕES DE BUSCA ---
+const fetchClienteById = async (id: number): Promise<Cliente> => {
+  const response = await fetch(`http://localhost:3333/clientes/${id}`);
+  if (!response.ok) {
+    throw new Error("Cliente não encontrado.");
+  }
+  return response.json();
+};
+
+const fetchAvaliacoesCliente = async (
+  clienteId: number
+): Promise<AvaliacaoCliente[]> => {
+  // 1. Busca todas as avaliações de clientes
+  const response = await fetch(
+    `http://localhost:3333/avaliacoes-cliente?clienteId=${clienteId}`
+  );
+  if (!response.ok) return [];
+  const avaliacoes: AvaliacaoCliente[] = await response.json();
+
+  // 2. Para cada avaliação, busca o nome do trabalhador
+  const avaliacoesComNomes = await Promise.all(
+    avaliacoes.map(async (avaliacao) => {
+      const trabalhadorResponse = await fetch(
+        `http://localhost:3333/trabalhadores/${avaliacao.trabalhadorId}`
+      );
+      if (trabalhadorResponse.ok) {
+        const trabalhador: Trabalhador = await trabalhadorResponse.json();
+        return { ...avaliacao, trabalhadorNome: trabalhador.nome };
+      }
+      return { ...avaliacao, trabalhadorNome: "Profissional Anônimo" }; // Fallback
+    })
+  );
+
+  return avaliacoesComNomes;
+};
+
+// =================================================================
+//  FIM DA MUDANÇA 1
+// =================================================================
 
 // --- VARIANTES DE ANIMAÇÃO ---
 const pageVariants = {
@@ -52,54 +96,18 @@ const Rating = ({ score }: { score: number }) => {
   return <div className="flex space-x-1">{stars}</div>;
 };
 
-// --- FUNÇÕES DE BUSCA ---
-const fetchClienteById = async (id: number): Promise<Cliente> => {
-  const response = await fetch(`http://localhost:3333/clientes/${id}`);
-  if (!response.ok) {
-    throw new Error("Cliente não encontrado.");
-  }
-  return response.json();
-};
-
-const fetchAvaliacoes = async (
-  clienteId: number
-): Promise<AvaliacaoCliente[]> => {
-  // 1. Busca todas as avaliações de clientes
-  const response = await fetch(
-    `http://localhost:3333/avaliacoes-cliente?clienteId=${clienteId}`
-  );
-  if (!response.ok) return [];
-  const avaliacoes: AvaliacaoCliente[] = await response.json();
-
-  // 2. Para cada avaliação, busca o nome do trabalhador
-  const avaliacoesComNomes = await Promise.all(
-    avaliacoes.map(async (avaliacao) => {
-      const trabalhadorResponse = await fetch(
-        `http://localhost:3333/trabalhadores/${avaliacao.trabalhadorId}`
-      );
-      if (trabalhadorResponse.ok) {
-        const trabalhador: Trabalhador = await trabalhadorResponse.json();
-        return { ...avaliacao, trabalhadorNome: trabalhador.nome };
-      }
-      return { ...avaliacao, trabalhadorNome: "Profissional Anônimo" }; // Fallback
-    })
-  );
-
-  return avaliacoesComNomes;
-};
 
 // --- COMPONENTE PRINCIPAL: CLIENTE PROFILE PAGE ---
 export function ClienteProfilePage() {
   const { id } = useParams<{ id: string }>();
   const clienteId = id ? parseInt(id, 10) : 0;
-  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoCliente[]>([]);
 
   const { user } = useAuthStore();
   const navigate = useNavigate();
 
   const {
     data: cliente,
-    isLoading,
+    isLoading: isLoadingCliente, // Renomeado
     isError,
   } = useQuery<Cliente>({
     queryKey: ["cliente", clienteId],
@@ -107,12 +115,22 @@ export function ClienteProfilePage() {
     enabled: clienteId > 0,
   });
 
-  // Efeito para buscar as avaliações quando o cliente for carregado
-  useEffect(() => {
-    if (cliente) {
-      fetchAvaliacoes(cliente.id).then(setAvaliacoes);
-    }
-  }, [cliente]);
+  // =================================================================
+  //  MUDANÇA ZIKA 2: SUBSTITUIR useEffect+useState POR useQuery
+  // =================================================================
+  const { 
+    data: avaliacoes, 
+    isLoading: isLoadingAvaliacoes 
+  } = useQuery({
+    queryKey: ['avaliacoesCliente', cliente?.id],
+    queryFn: () => fetchAvaliacoesCliente(cliente!.id),
+    enabled: !!cliente, // SÓ RODA QUANDO O 'cliente' TIVER CARREGADO
+  });
+  
+  // ⛔️ REMOVIDO: O useEffect que fazia fetchAvaliacoes
+  // =================================================================
+  //  FIM DA MUDANÇA 2
+  // =================================================================
 
   const isOwner = user?.id === clienteId && user?.role === "cliente";
 
@@ -134,7 +152,7 @@ export function ClienteProfilePage() {
     );
   }
 
-  if (isLoading) {
+  if (isLoadingCliente) { // Atualizado
     return (
       <div className="text-center py-20">
         <Typography as="h2">Carregando Perfil do Cliente...</Typography>
@@ -226,10 +244,15 @@ export function ClienteProfilePage() {
             as="h3"
             className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
           >
-            Avaliações Recebidas ({avaliacoes.length})
+            Avaliações Recebidas ({avaliacoes?.length || 0}) {/* Atualizado */}
           </Typography>
           <div className="space-y-6">
-            {avaliacoes.length > 0 ? (
+            {/* ATUALIZADO: Checa o novo isLoading das avaliações */}
+            {isLoadingAvaliacoes ? (
+              <p className="text-dark-subtle italic text-center py-4">
+                  Carregando avaliações...
+              </p>
+            ) : avaliacoes && avaliacoes.length > 0 ? (
               avaliacoes.map((avaliacao) => (
                 <div
                   key={avaliacao.id}

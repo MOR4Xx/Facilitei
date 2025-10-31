@@ -6,11 +6,11 @@ import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
-import type { Trabalhador, Cliente, TipoServico, Servico } from "../types/api"; // 👈 Servico e TipoServico importados
-import { useEffect, useState } from "react";
-import { useAuthStore } from "../store/useAuthStore"; // 👈 auth store
-import { Modal } from "../components/ui/Modal"; // 👈 NOVO MODAL
-import { Textarea } from "../components/ui/Textarea"; // 👈 NOVO TEXTAREA
+import type { Trabalhador, Cliente, TipoServico, Servico } from "../types/api";
+import { useEffect, useState } from "react"; // useEffect ainda é usado para o modal
+import { useAuthStore } from "../store/useAuthStore";
+import { Modal } from "../components/ui/Modal";
+import { Textarea } from "../components/ui/Textarea";
 
 // --- INTERFACES ADICIONAIS ---
 interface AvaliacaoTrabalhador {
@@ -22,7 +22,6 @@ interface AvaliacaoTrabalhador {
   clienteNome?: string;
 }
 
-// Interface para o corpo da NOVA solicitação
 interface NewServicoRequest {
   titulo: string;
   descricao: string;
@@ -40,6 +39,69 @@ interface NewSolicitacaoRequest {
   descricao: string;
   statusSolicitacao: "PENDENTE";
 }
+
+// =================================================================
+//  MUDANÇA ZIKA 1: MOVER FUNÇÕES DE FETCH PARA FORA DO COMPONENTE
+// =================================================================
+
+// --- FUNÇÕES DE BUSCA ---
+const fetchTrabalhadorById = async (id: number): Promise<Trabalhador> => {
+  const response = await fetch(`http://localhost:3333/trabalhadores/${id}`);
+  if (!response.ok) {
+    throw new Error("Profissional não encontrado.");
+  }
+  return response.json();
+};
+
+const fetchAvaliacoesTrabalhador = async (
+  workerId: number
+): Promise<AvaliacaoTrabalhador[]> => {
+  const response = await fetch(
+    `http://localhost:3333/avaliacoes-trabalhador?trabalhadorId=${workerId}`
+  );
+  if (!response.ok) return [];
+  const avaliacoes: AvaliacaoTrabalhador[] = await response.json();
+
+  const avaliacoesComNomes = await Promise.all(
+    avaliacoes.map(async (avaliacao) => {
+      const clienteResponse = await fetch(
+        `http://localhost:3333/clientes/${avaliacao.clienteId}`
+      );
+      if (clienteResponse.ok) {
+        const cliente: Cliente = await clienteResponse.json();
+        return { ...avaliacao, clienteNome: cliente.nome };
+      }
+      return { ...avaliacao, clienteNome: "Cliente Anônimo" };
+    })
+  );
+
+  return avaliacoesComNomes;
+};
+
+// --- FUNÇÕES DE ENVIO (MUTATION) ---
+const createServico = async (data: NewServicoRequest): Promise<Servico> => {
+  const response = await fetch(`http://localhost:3333/servicos`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Falha ao criar o serviço.');
+  return response.json();
+};
+
+const createSolicitacao = async (data: NewSolicitacaoRequest) => {
+  const response = await fetch(`http://localhost:3333/solicitacoes-servico`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error('Falha ao criar a solicitação.');
+  return response.json();
+};
+
+// =================================================================
+//  FIM DA MUDANÇA 1
+// =================================================================
 
 // --- VARIANTES DE ANIMAÇÃO ---
 const pageVariants = {
@@ -73,72 +135,12 @@ const Rating = ({ score }: { score: number }) => {
   return <div className="flex space-x-1">{stars}</div>;
 };
 
-// --- FUNÇÕES DE BUSCA ---
-const fetchTrabalhadorById = async (id: number): Promise<Trabalhador> => {
-  const response = await fetch(`http://localhost:3333/trabalhadores/${id}`);
-  if (!response.ok) {
-    throw new Error("Profissional não encontrado.");
-  }
-  return response.json();
-};
-
-const fetchAvaliacoes = async (
-  workerId: number
-): Promise<AvaliacaoTrabalhador[]> => {
-  const response = await fetch(
-    `http://localhost:3333/avaliacoes-trabalhador?trabalhadorId=${workerId}`
-  );
-  if (!response.ok) return [];
-  const avaliacoes: AvaliacaoTrabalhador[] = await response.json();
-
-  const avaliacoesComNomes = await Promise.all(
-    avaliacoes.map(async (avaliacao) => {
-      const clienteResponse = await fetch(
-        `http://localhost:3333/clientes/${avaliacao.clienteId}`
-      );
-      if (clienteResponse.ok) {
-        const cliente: Cliente = await clienteResponse.json();
-        return { ...avaliacao, clienteNome: cliente.nome };
-      }
-      return { ...avaliacao, clienteNome: "Cliente Anônimo" };
-    })
-  );
-
-  return avaliacoesComNomes;
-};
-
-// --- FUNÇÕES DE ENVIO (MUTATION) ---
-
-// 1. Cria o Servico (job)
-const createServico = async (data: NewServicoRequest): Promise<Servico> => {
-  const response = await fetch(`http://localhost:3333/servicos`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) throw new Error('Falha ao criar o serviço.');
-  return response.json();
-};
-
-// 2. Cria a Solicitação (request)
-const createSolicitacao = async (data: NewSolicitacaoRequest) => {
-  const response = await fetch(`http://localhost:3333/solicitacoes-servico`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) throw new Error('Falha ao criar a solicitação.');
-  return response.json();
-};
-
 
 // --- COMPONENTE PRINCIPAL: TRABALHADOR PROFILE PAGE ---
 export function TrabalhadorProfilePage() {
   const { id } = useParams<{ id: string }>();
   const trabalhadorId = id ? parseInt(id, 10) : 0;
-  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoTrabalhador[]>([]);
-  
-  // Acesso ao usuário logado
+
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
 
@@ -152,7 +154,7 @@ export function TrabalhadorProfilePage() {
 
   const {
     data: trabalhador,
-    isLoading,
+    isLoading: isLoadingTrabalhador, // Renomeado para clareza
     isError,
   } = useQuery<Trabalhador>({
     queryKey: ["trabalhador", trabalhadorId],
@@ -160,18 +162,30 @@ export function TrabalhadorProfilePage() {
     enabled: trabalhadorId > 0,
   });
 
-  // Efeito para buscar as avaliações
+  // =================================================================
+  //  MUDANÇA ZIKA 2: SUBSTITUIR useEffect+useState POR useQuery
+  // =================================================================
+  const { 
+    data: avaliacoes, 
+    isLoading: isLoadingAvaliacoes // Novo estado de loading
+  } = useQuery({
+    queryKey: ['avaliacoesTrabalhador', trabalhador?.id], // A key depende do ID do trabalhador
+    queryFn: () => fetchAvaliacoesTrabalhador(trabalhador!.id),
+    enabled: !!trabalhador, // SÓ RODA QUANDO O 'trabalhador' TIVER CARREGADO
+  });
+
+  // Efeito para ATUALIZAR o modal quando o trabalhador MUDAR
   useEffect(() => {
     if (trabalhador) {
-      fetchAvaliacoes(trabalhador.id).then(setAvaliacoes);
-      // Define o serviço principal como padrão no modal
       setSelectedServico(trabalhador.servicoPrincipal);
     }
-  }, [trabalhador]);
+  }, [trabalhador]); // Dependência correta
+  
+  // =================================================================
+  //  FIM DA MUDANÇA 2
+  // =================================================================
 
   // --- LÓGICA DE MUTATION (ENVIO DA SOLICITAÇÃO) ---
-
-  // Mutation para criar o serviço
   const mutationCreateServico = useMutation({
     mutationFn: createServico,
     onSuccess: (newServico) => {
@@ -203,8 +217,6 @@ export function TrabalhadorProfilePage() {
         setModalMessage({ type: "", text: "" });
       }, 2000);
 
-      // Invalida as queries do dashboard do trabalhador (para ele ver a nova)
-      // e do cliente (para ele ver o serviço novo)
       queryClient.invalidateQueries({ queryKey: ['workerData'] });
       queryClient.invalidateQueries({ queryKey: ['servicos'] });
     },
@@ -282,7 +294,8 @@ export function TrabalhadorProfilePage() {
     );
   }
 
-  if (isLoading) {
+  // ATUALIZADO: Espera o perfil principal carregar
+  if (isLoadingTrabalhador) {
     return (
       <div className="text-center py-20">
         <Typography as="h2">Carregando Perfil ZIKA...</Typography>
@@ -293,7 +306,7 @@ export function TrabalhadorProfilePage() {
     );
   }
 
-  if (!trabalhador) return null;
+  if (!trabalhador) return null; // Se não está carregando e não tem trabalhador, não renderiza
 
   const [primeiroNome] = trabalhador.nome.split(" ");
   const readableService =
@@ -349,7 +362,7 @@ export function TrabalhadorProfilePage() {
             variant="secondary"
             size="lg"
             className="w-full shadow-lg shadow-accent/40"
-            onClick={handleOpenModal} // 👈 AÇÃO DO BOTÃO ATUALIZADA
+            onClick={handleOpenModal} // AÇÃO DO BOTÃO ATUALIZADA
           >
             Solicitar Serviço 🚀
           </Button>
@@ -396,10 +409,15 @@ export function TrabalhadorProfilePage() {
               as="h3"
               className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
             >
-              Avaliações de Clientes ({avaliacoes.length})
+              Avaliações de Clientes ({avaliacoes?.length || 0}) {/* Atualizado */}
             </Typography>
             <div className="space-y-6">
-              {avaliacoes.length > 0 ? (
+              {/* ATUALIZADO: Checa o novo isLoading das avaliações */}
+              {isLoadingAvaliacoes ? (
+                 <p className="text-dark-subtle italic text-center py-4">
+                  Carregando avaliações...
+                </p>
+              ) : avaliacoes && avaliacoes.length > 0 ? (
                 avaliacoes.map((avaliacao) => (
                   <div
                     key={avaliacao.id}
@@ -426,8 +444,7 @@ export function TrabalhadorProfilePage() {
         </motion.div>
       </motion.div>
 
-      {/* // --- NOSSO NOVO MODAL DE SOLICITAÇÃO ---
-      */}
+      {/* --- MODAL DE SOLICITAÇÃO --- */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
