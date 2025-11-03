@@ -4,7 +4,11 @@
 
 @layer base {
   body {
-    @apply bg-dark-background text-dark-text;
-    background-image: linear-gradient(160deg, theme('colors.dark.background') 0%, #0c182f 100%);
+    @apply bg-dark-background text-dark-text font-sans;
+    background-image: linear-gradient(
+      160deg,
+      theme("colors.dark.background") 0%,
+      #0c182f 100%
+    );
   }
 }

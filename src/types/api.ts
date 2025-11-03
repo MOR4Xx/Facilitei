@@ -13,23 +13,23 @@ export interface Trabalhador {
   id: number;
   nome: string;
   email: string;
-  senha: string; // 👈 ADICIONADO (opcional para não quebrar outros locais)
-  avatarUrl: string; // 👈 ADICIONADO
-  telefone: string; // 👈 ADICIONADO
+  senha: string; 
+  avatarUrl: string; 
+  telefone: string; 
   endereco: Endereco;
   disponibilidade: string;
   notaTrabalhador: number;
-  servicos: TipoServico[]; // 👈 NOVO CAMPO: Lista de serviços que ele pode fazer
-  servicoPrincipal: TipoServico; // 👈 NOVO CAMPO: Serviço de destaque
+  servicos: TipoServico[]; 
+  servicoPrincipal: TipoServico;
 }
 
 export interface Cliente {
   id: number;
   nome: string;
   email: string;
-  senha: string; // 👈 ADICIONADO (opcional para não quebrar outros locais)
-  telefone: string; // 👈 ADICIONADO
-  avatarUrl: string; // 👈 ADICIONADO
+  senha: string; 
+  telefone: string;
+  avatarUrl: string; 
   notaCliente: number;
   endereco: Endereco;
 }
@@ -39,13 +39,14 @@ export type TipoServico =
   | "PEDREIRO"
   | "ELETRICISTA"
   | "ENCANADOR"
-  // ... adicione todos os outros tipos do seu Enum TipoServico.java
+  // ... adicionar todos os outros tipos do seu Enum TipoServico.java
   | "INSTALADOR_AR_CONDICIONADO";
 
 export type StatusServico =
   | "SOLICITADO" // Cliente enviou, mas trabalhador não viu
   | "PENDENTE" // Está na fila do trabalhador
   | "EM_ANDAMENTO" // Trabalhador aceitou
+  | "PENDENTE_APROVACAO" // Trabalhador solicitou finalização, cliente precisa aprovar
   | "FINALIZADO" // Trabalhador concluiu
   | "CANCELADO" // Cliente ou Trabalhador cancelou
   | "RECUSADO"; // Trabalhador recusou

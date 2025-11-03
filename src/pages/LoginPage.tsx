@@ -59,9 +59,6 @@ export function LoginPage() {
   };
 
   return (
-    // =================================================================
-    //  MUDANÇA ZIKA: Título "Facilitei" grande acima do Card
-    // =================================================================
     <div className="flex flex-col justify-center items-center min-h-[80vh] py-12">
       
       {/* 1. TÍTULO GRANDE "FACILITEI" */}
@@ -75,7 +72,7 @@ export function LoginPage() {
       {/* 2. CARD DE LOGIN */}
       <Card className="w-full max-w-md">
         
-        {/* Título "Bem-vindo!" removido (ficou redundante) */}
+        {/* Título "Bem-vindo!" */}
         <Typography as="p" className="text-center text-dark-subtle mb-8">
           Acesse sua conta para continuar.
         </Typography>
@@ -127,8 +124,5 @@ export function LoginPage() {
         </form>
       </Card>
     </div>
-    // =================================================================
-    //  FIM DA MUDANÇA
-    // =================================================================
   );
 }

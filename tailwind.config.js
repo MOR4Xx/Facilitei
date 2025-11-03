@@ -8,6 +8,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        // Adiciona 'Inter' e a stack de fontes do sistema como padrão
+        sans: ['Inter', ...fontFamily.sans],
+      },
       colors: {
         primary: {
           DEFAULT: '#0D9488', 

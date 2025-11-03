@@ -5,11 +5,6 @@ type TextareaProps = ComponentProps<'textarea'> & {
   label: string;
   name: string;
 };
-
-// =================================================================
-//  MUDANÇA ZIKA: Label inicial com 'text-primary' (verde fraco)
-// =================================================================
-
 export function Textarea({ label, name, ...props }: TextareaProps) {
   return (
     <div className="relative w-full">
@@ -46,6 +41,3 @@ export function Textarea({ label, name, ...props }: TextareaProps) {
     </div>
   );
 }
-// =================================================================
-//  FIM DA MUDANÇA
-// =================================================================  

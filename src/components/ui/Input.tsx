@@ -7,10 +7,6 @@ type InputProps = ComponentProps<'input'> & {
   name: string;
 };
 
-// =================================================================
-//  MUDANÇA ZIKA: Borda 'primary' (verde fraco) por padrão
-// =================================================================
-
 export function Input({ label, type = 'text', icon, name, ...props }: InputProps) {
   const hasIcon = !!icon;
 
@@ -54,13 +50,10 @@ export function Input({ label, type = 'text', icon, name, ...props }: InputProps
             focus:border-accent 
             focus:shadow-glow-accent/50
             ${hasIcon ? 'pl-10' : 'pl-4'}
-          `} // 👆 MUDANÇAS AQUI: bg-dark-surface (sólido) e border-primary/50 (verde fraco)
+          `} 
           {...props}
         />
       </div>
     </div>
   );
 }
-// =================================================================
-//  FIM DA MUDANÇA
-// =================================================================

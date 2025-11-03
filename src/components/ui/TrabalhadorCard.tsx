@@ -21,7 +21,7 @@ const Rating = ({ score }: { score: number }) => {
 };
 
 // --- VARIANTES DE ANIMAÇÃO ---
-const itemVariants: Variants = { // 👈 ADICIONE A TIPAGEM ': Variants' AQUI
+const itemVariants: Variants = { 
   hidden: { opacity: 0, scale: 0.95 },
   visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 100 } },
 };

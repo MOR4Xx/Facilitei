@@ -7,16 +7,8 @@ import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Typography } from '../components/ui/Typography';
 import { useAuthStore } from '../store/useAuthStore';
-import type { Cliente, Trabalhador, Endereco, TipoServico } from '../types/api';
+import type { Cliente, Trabalhador, TipoServico } from '../types/api';
 
-// (O resto do arquivo permanece o mesmo... Stepper, allServices, etc)
-// ...
-
-// =================================================================
-//  MUDANÇA ZIKA: SALVANDO A SENHA NO HANDLE SUBMIT
-// =================================================================
-
-// Define o tipo de usuário
 type UserRole = 'cliente' | 'trabalhador';
 
 // Lista de todos os serviços disponíveis (copiado do original)
@@ -224,7 +216,7 @@ export function RegisterPage() {
         const newCliente: Omit<Cliente, 'id'> = {
           nome: formData.nome,
           email: formData.email,
-          senha: formData.senha, // 👈 SENHA SALVA AQUI
+          senha: formData.senha,
           telefone: formData.telefone,
           avatarUrl: '/avatars/cliente-1.png',
           notaCliente: 0,
@@ -240,7 +232,7 @@ export function RegisterPage() {
         const newTrabalhador: Omit<Trabalhador, 'id'> = {
           nome: formData.nome,
           email: formData.email,
-          senha: formData.senha, // 👈 SENHA SALVA AQUI
+          senha: formData.senha,
           telefone: formData.telefone,
           avatarUrl: '/avatars/trabalhador-2.png',
           endereco: formData.endereco,
@@ -261,7 +253,7 @@ export function RegisterPage() {
         throw new Error('Falha ao criar a conta no servidor.');
       }
 
-      // 3. Buscar o usuário recém-criado (lógica original ZIKA)
+      // 3. Buscar o usuário recém-criado
       const getResponse = await fetch(
         `http://localhost:3333/${endpoint}?email=${formData.email}`
       );

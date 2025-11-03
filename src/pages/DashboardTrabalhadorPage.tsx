@@ -1,6 +1,6 @@
 // src/pages/DashboardTrabalhadorPage.tsx
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"; // 👈 IMPORTAÇÕES ATUALIZADAS
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
@@ -12,7 +12,7 @@ import type {
   Trabalhador,
   Cliente,
   StatusServico,
-} from "../types/api"; // 👈 IMPORTADO Cliente e StatusServico
+} from "../types/api";
 
 // Definindo o tipo de Solicitação de Serviço com base no db.json
 interface SolicitacaoServico {
@@ -20,7 +20,7 @@ interface SolicitacaoServico {
   clienteId: number;
   servicoId: number; // ID do serviço associado
   descricao: string;
-  statusSolicitacao: "PENDENTE" | "ACEITA" | "RECUSADA"; // 👈 Status atualizado
+  statusSolicitacao: "PENDENTE" | "ACEITA" | "RECUSADA";
 }
 
 // Interface para os dados retornados pela query principal
@@ -76,9 +76,16 @@ const fetchWorkerData = async (workerId: number): Promise<WorkerData> => {
   const allServices: Servico[] = await servicesResponse.json();
 
   // 2. Separa os serviços
+  // =================================================================
+  //  MUDANÇA ZIKA: INCLUIR SERVIÇOS PENDENTES DE APROVAÇÃO NA LISTA
+  // =================================================================
   const activeServices = allServices.filter(
-    (s) => s.statusServico === "EM_ANDAMENTO"
+    (s) =>
+      s.statusServico === "EM_ANDAMENTO" ||
+      s.statusServico === "PENDENTE_APROVACAO" // 👈 ADICIONADO AQUI
   );
+  // =================================================================
+
   const pendingServiceIds = allServices
     .filter((s) => s.statusServico === "PENDENTE")
     .map((s) => s.id);
@@ -96,7 +103,7 @@ const fetchWorkerData = async (workerId: number): Promise<WorkerData> => {
     pendingServiceIds.includes(sol.servicoId)
   );
 
-  // 4. Busca dados dos clientes para os SERVIÇOS ATIVOS
+  // 4. Busca dados dos clientes para os SERVIÇOS ATIVOS (e Pendentes de Aprovação)
   const activeServicesWithClient = await Promise.all(
     activeServices.map(async (servico) => {
       const cliente = await fetchCliente(servico.clienteId);
@@ -160,7 +167,7 @@ const updateSolicitacaoStatus = async ({
 
 // --- COMPONENTE PRINCIPAL ---
 export function DashboardTrabalhadorPage() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const { user } = useAuthStore();
   const queryClient = useQueryClient(); // 👈 Hook para invalidar queries
   const trabalhador = user as Trabalhador;
@@ -182,6 +189,8 @@ export function DashboardTrabalhadorPage() {
       queryClient.invalidateQueries({
         queryKey: ["workerData", trabalhador.id],
       });
+      // Invalida a query do cliente também, para o caso dele estar vendo
+      queryClient.invalidateQueries({ queryKey: ["servicosCliente"] });
     },
   });
 
@@ -214,10 +223,14 @@ export function DashboardTrabalhadorPage() {
     servicoMutation.mutate({ id: solicitacao.servicoId, status: "RECUSADO" });
   };
 
-  const handleFinish = (servico: Servico) => {
-    // 1. Muda status do Serviço para "FINALIZADO"
-    servicoMutation.mutate({ id: servico.id, status: "FINALIZADO" });
+  // =================================================================
+  //  MUDANÇA ZIKA: ATUALIZANDO O HANDLEFINISH
+  // =================================================================
+  const handleRequestFinish = (servico: Servico) => {
+    // 1. Muda status do Serviço para "PENDENTE_APROVACAO"
+    servicoMutation.mutate({ id: servico.id, status: "PENDENTE_APROVACAO" });
   };
+  // =================================================================
 
   const isMutating = solicitacaoMutation.isPending || servicoMutation.isPending;
 
@@ -420,6 +433,9 @@ export function DashboardTrabalhadorPage() {
 
       {/* // --- SEÇÃO SERVIÇOS EM ANDAMENTO (ATUALIZADA) ---
        */}
+      {/* ================================================================= */}
+      {/* MUDANÇA ZIKA: ATUALIZANDO A SEÇÃO "SERVIÇOS ATIVOS" */}
+      {/* ================================================================= */}
       <section className="space-y-6">
         <motion.div variants={itemVariants}>
           <Typography
@@ -429,7 +445,7 @@ export function DashboardTrabalhadorPage() {
             💼 Seus Serviços Ativos ({activeServicesCount})
           </Typography>
           <p className="text-dark-subtle mt-2">
-            Os trabalhos que você aceitou e estão em progresso.
+            Trabalhos em progresso ou aguardando aprovação do cliente.
           </p>
         </motion.div>
 
@@ -455,8 +471,12 @@ export function DashboardTrabalhadorPage() {
                           {servico.cliente.nome}
                         </span>
                       </p>
+                      {/* 👇 Mostra o status atual */}
                       <p className="text-sm text-dark-subtle">
-                        Descrição: {servico.descricao.substring(0, 50)}...
+                        Status:{" "}
+                        <span className="font-semibold text-accent">
+                          {servico.statusServico.replace(/_/g, " ")}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -471,15 +491,28 @@ export function DashboardTrabalhadorPage() {
                     >
                       Abrir Chat 💬
                     </Button>
-                    <Button
-                      size="md"
-                      variant="primary"
-                      className="w-full md:w-auto"
-                      onClick={() => handleFinish(servico)}
-                      disabled={isMutating}
-                    >
-                      {isMutating ? "..." : "Finalizar Serviço"}
-                    </Button>
+
+                    {/* Lógica do Botão de Finalização */}
+                    {servico.statusServico === "EM_ANDAMENTO" ? (
+                      <Button
+                        size="md"
+                        variant="primary"
+                        className="w-full md:w-auto"
+                        onClick={() => handleRequestFinish(servico)} // 👈 CHAMA A NOVA FUNÇÃO
+                        disabled={isMutating}
+                      >
+                        {isMutating ? "..." : "Solicitar Finalização"}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="md"
+                        variant="primary" // Mantém o estilo, mas desabilitado
+                        className="w-full md:w-auto opacity-70"
+                        disabled={true}
+                      >
+                        Aguardando Cliente
+                      </Button>
+                    )}
                   </div>
                 </Card>
               </motion.div>
@@ -495,6 +528,7 @@ export function DashboardTrabalhadorPage() {
           )}
         </div>
       </section>
+      {/* ================================================================= */}
     </motion.div>
   );
 }
