@@ -11,7 +11,7 @@ import type { Cliente, Trabalhador } from "../types/api";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
-  // A senha foi removida, pois a API (db.json) não implementa validação de senha.
+  const [senha, setsenha] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -23,9 +23,9 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      // 1. Tenta encontrar como Cliente (Apenas por e-mail)
+      // 1. Tenta encontrar como Cliente (agora com E-mail E Senha)
       let response = await fetch(
-        `http://localhost:3333/clientes?email=${email}`
+        `http://localhost:3333/clientes?email=${email}&senha=${senha}`
       );
       let users: Cliente[] = await response.json();
 
@@ -36,9 +36,9 @@ export function LoginPage() {
         return;
       }
 
-      // 2. Se não encontrou, tenta como Trabalhador (Apenas por e-mail)
+      // 2. Se não encontrou, tenta como Trabalhador (agora com E-mail E Senha)
       response = await fetch(
-        `http://localhost:3333/trabalhadores?email=${email}`
+        `http://localhost:3333/trabalhadores?email=${email}&senha=${senha}`
       );
       let workers: Trabalhador[] = await response.json();
 
@@ -50,7 +50,7 @@ export function LoginPage() {
       }
 
       // 3. Se não encontrou em nenhum, exibe o erro
-      setError("E-mail não encontrado. Verifique suas credenciais.");
+      setError("E-mail ou senha incorretos. Verifique suas credenciais.");
     } catch (err) {
       setError("Ocorreu um erro ao conectar com o servidor.");
     } finally {
@@ -59,13 +59,25 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-[70vh]">
+    // =================================================================
+    //  MUDANÇA ZIKA: Título "Facilitei" grande acima do Card
+    // =================================================================
+    <div className="flex flex-col justify-center items-center min-h-[80vh] py-12">
+      
+      {/* 1. TÍTULO GRANDE "FACILITEI" */}
+      <Typography
+        as="h1"
+        className="!text-6xl font-extrabold text-accent mb-10"
+      >
+        Facilitei
+      </Typography>
+
+      {/* 2. CARD DE LOGIN */}
       <Card className="w-full max-w-md">
-        <Typography as="h2" className="text-center mb-2">
-          Bem-vindo!
-        </Typography>
+        
+        {/* Título "Bem-vindo!" removido (ficou redundante) */}
         <Typography as="p" className="text-center text-dark-subtle mb-8">
-          Acesse sua conta para continuar. (Login simplificado por e-mail)
+          Acesse sua conta para continuar.
         </Typography>
 
         {error && (
@@ -77,19 +89,21 @@ export function LoginPage() {
         <form onSubmit={handleLogin} className="space-y-6">
           <Input
             label="Seu e-mail"
+            name="email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          {/* Campo de senha desativado temporariamente. O login é feito apenas buscando o e-mail no db.json. */}
-          {/* <Input
+          
+          <Input
             label="Sua senha"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            name="senha"
+            type="senha"
+            value={senha}
+            onChange={(e) => setsenha(e.target.value)}
             required
-          /> */}
+          />
 
           <Button
             type="submit"
@@ -113,5 +127,8 @@ export function LoginPage() {
         </form>
       </Card>
     </div>
+    // =================================================================
+    //  FIM DA MUDANÇA
+    // =================================================================
   );
 }

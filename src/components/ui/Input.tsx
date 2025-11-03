@@ -1,49 +1,66 @@
 // src/components/ui/Input.tsx
-import { ComponentProps, useState, ReactNode } from 'react';
+import { ComponentProps, ReactNode } from 'react';
 
 type InputProps = ComponentProps<'input'> & {
   label: string;
   icon?: ReactNode; // Ícone opcional
+  name: string;
 };
 
-export function Input({ label, type = 'text', icon, ...props }: InputProps) {
-  const [isFocused, setIsFocused] = useState(false);
-  const [hasValue, setHasValue] = useState(false);
+// =================================================================
+//  MUDANÇA ZIKA: Borda 'primary' (verde fraco) por padrão
+// =================================================================
 
-  const handleFocus = () => setIsFocused(true);
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    setIsFocused(false);
-    setHasValue(!!e.target.value);
-  };
-
-  const isLabelActive = isFocused || hasValue;
+export function Input({ label, type = 'text', icon, name, ...props }: InputProps) {
+  const hasIcon = !!icon;
 
   return (
-    <div className="relative">
-      {icon && (
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-subtle">
-          {icon}
-        </span>
-      )}
+    <div className="relative w-full">
+      {/* 1. Label (Verde fraco por padrão, muda no foco) */}
       <label
-        className={`absolute transition-all duration-300 pointer-events-none ${
-          isLabelActive
-            ? 'top-[-0.75rem] left-2 bg-dark-surface px-1 text-xs text-accent'
-            : `top-1/2 left-${icon ? '10' : '4'} -translate-y-1/2 text-dark-subtle`
-        }`}
+        htmlFor={name}
+        className="block text-sm font-medium text-primary mb-2 transition-colors duration-300
+                   peer-focus:text-accent"
       >
         {label}
       </label>
-      <input
-        type={type}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-        onChange={(e) => setHasValue(!!e.target.value)}
-        className={`w-full bg-transparent border-2 border-dark-surface rounded-lg p-3 text-dark-text focus:outline-none focus:border-accent ${
-          icon ? 'pl-10' : ''
-        }`}
-        {...props}
-      />
+
+      {/* 2. Wrapper relativo para o ícone */}
+      <div className="relative">
+        {icon && (
+          <span
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-primary
+                             peer-focus:text-accent transition-colors duration-300"
+          >
+            {icon}
+          </span>
+        )}
+        <input
+          id={name}
+          name={name}
+          type={type}
+          className={`
+            peer 
+            w-full 
+            bg-dark-surface 
+            border-2 
+            border-primary/50 
+            rounded-lg 
+            p-3 
+            text-dark-text 
+            placeholder-dark-subtle/50
+            transition-all duration-300
+            focus:outline-none 
+            focus:border-accent 
+            focus:shadow-glow-accent/50
+            ${hasIcon ? 'pl-10' : 'pl-4'}
+          `} // 👆 MUDANÇAS AQUI: bg-dark-surface (sólido) e border-primary/50 (verde fraco)
+          {...props}
+        />
+      </div>
     </div>
   );
 }
+// =================================================================
+//  FIM DA MUDANÇA
+// =================================================================

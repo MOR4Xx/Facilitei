@@ -13,6 +13,7 @@ export interface Trabalhador {
   id: number;
   nome: string;
   email: string;
+  senha: string; // 👈 ADICIONADO (opcional para não quebrar outros locais)
   avatarUrl: string; // 👈 ADICIONADO
   telefone: string; // 👈 ADICIONADO
   endereco: Endereco;
@@ -26,6 +27,7 @@ export interface Cliente {
   id: number;
   nome: string;
   email: string;
+  senha: string; // 👈 ADICIONADO (opcional para não quebrar outros locais)
   telefone: string; // 👈 ADICIONADO
   avatarUrl: string; // 👈 ADICIONADO
   notaCliente: number;
