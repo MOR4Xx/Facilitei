@@ -222,6 +222,8 @@ export function TrabalhadorProfilePage() {
   const isLoadingRequest =
     mutationCreateServico.isPending || mutationCreateSolicitacao.isPending;
 
+  const isSuccessRequest = mutationCreateSolicitacao.isSuccess;
+
   // Função chamada pelo botão "Enviar" do Modal
   const handleSubmitRequest = () => {
     // 1. Validação
@@ -484,7 +486,7 @@ export function TrabalhadorProfilePage() {
               variant="outline"
               className="w-full"
               onClick={() => setIsModalOpen(false)}
-              disabled={isLoadingRequest}
+              disabled={isLoadingRequest || isSuccessRequest}
             >
               Cancelar
             </Button>
@@ -492,9 +494,13 @@ export function TrabalhadorProfilePage() {
               variant="secondary"
               className="w-full"
               onClick={handleSubmitRequest}
-              disabled={isLoadingRequest}
+              disabled={isLoadingRequest || isSuccessRequest}
             >
-              {isLoadingRequest ? "Enviando..." : "Enviar Solicitação"}
+              {isLoadingRequest
+                ? "Enviando..."
+                : isSuccessRequest
+                ? "Enviado!"
+                : "Enviar Solicitação"}
             </Button>
           </div>
         </div>

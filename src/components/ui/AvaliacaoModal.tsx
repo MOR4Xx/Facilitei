@@ -169,6 +169,8 @@ toast.success("Avaliação enviada com sucesso! Obrigado!");      setTimeout(() 
     mutationPostAvaliacaoTrabalhador.isPending ||
     mutationUpdateWorker.isPending;
 
+    const isSuccess = mutationUpdateWorker.isSuccess;
+
   return (
     <Modal isOpen={!!servico} onClose={onClose} title="Avalie o Serviço">
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -194,7 +196,7 @@ toast.success("Avaliação enviada com sucesso! Obrigado!");      setTimeout(() 
             variant="outline"
             className="w-full"
             onClick={onClose}
-            disabled={isLoading}
+            disabled={isLoading || isSuccess}
           >
             Cancelar
           </Button>
@@ -202,9 +204,9 @@ toast.success("Avaliação enviada com sucesso! Obrigado!");      setTimeout(() 
             type="submit"
             variant="secondary"
             className="w-full"
-            disabled={isLoading}
+            disabled={isLoading || isSuccess}
           >
-            {isLoading ? "Enviando..." : "Enviar Avaliação"}
+            {isLoading ? "Enviando..." : isSuccess ? "Enviado!" : "Enviar Avaliação"}
           </Button>
         </div>
       </form>

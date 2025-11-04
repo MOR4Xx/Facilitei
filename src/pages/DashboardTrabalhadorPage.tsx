@@ -1,8 +1,9 @@
 // src/pages/DashboardTrabalhadorPage.tsx
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion, LayoutGroup } from "framer-motion"; // 👈 IMPORTA LayoutGroup
 import { Card } from "../components/ui/Card";
+import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
+import { useMemo, useState } from "react";
 import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
 import { useAuthStore } from "../store/useAuthStore";
@@ -12,6 +13,7 @@ import type {
   Trabalhador,
   Cliente,
   StatusServico,
+  AvaliacaoCliente,
 } from "../types/api";
 // 👈 IMPORTA OS ÍCONES
 import {
@@ -22,6 +24,7 @@ import {
   CheckIcon,
   XMarkIcon,
 } from "../components/ui/Icons";
+import { AvaliacaoClienteModal } from "../components/ui/AvaliacaoClienteModal";
 
 // ... (Interface SolicitacaoServico e WorkerData permanecem iguais)
 interface SolicitacaoServico {
@@ -35,6 +38,7 @@ interface SolicitacaoServico {
 interface WorkerData {
   newRequests: (SolicitacaoServico & { cliente: Cliente; servico: Servico })[];
   activeServices: (Servico & { cliente: Cliente })[];
+  finishedServices: (Servico & { cliente: Cliente })[];
 }
 
 // --- VARIANTES DE ANIMAÇÃO ---
@@ -72,6 +76,16 @@ const fetchCliente = async (id: number): Promise<Cliente> => {
   return res.json();
 };
 
+const fetchAvaliacoesClienteFeitas = async (
+  trabalhadorId: number
+): Promise<AvaliacaoCliente[]> => {
+  const res = await fetch(
+    `http://localhost:3333/avaliacoes-cliente?trabalhadorId=${trabalhadorId}`
+  );
+  if (!res.ok) return [];
+  return res.json();
+};
+
 const fetchWorkerData = async (workerId: number): Promise<WorkerData> => {
   const servicesResponse = await fetch(
     `http://localhost:3333/servicos?trabalhadorId=${workerId}`
@@ -95,6 +109,10 @@ const fetchWorkerData = async (workerId: number): Promise<WorkerData> => {
   const pendingServiceIds = allServices
     .filter((s) => s.statusServico === "PENDENTE")
     .map((s) => s.id);
+
+  const finishedServices = allServices.filter(
+    (s) => s.statusServico === "FINALIZADO"
+  );
 
   const solicitationsResponse = await fetch(
     `http://localhost:3333/solicitacoes-servico?statusSolicitacao=PENDENTE`
@@ -123,9 +141,17 @@ const fetchWorkerData = async (workerId: number): Promise<WorkerData> => {
     })
   );
 
+  const finishedServicesWithClient = await Promise.all(
+    finishedServices.map(async (servico) => {
+      const cliente = await fetchCliente(servico.clienteId);
+      return { ...servico, cliente };
+    })
+  );
+
   return {
     newRequests: newRequestsWithClient,
     activeServices: activeServicesWithClient,
+    finishedServices: finishedServicesWithClient,
   };
 };
 
@@ -171,12 +197,26 @@ export function DashboardTrabalhadorPage() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const trabalhador = user as Trabalhador;
+  const [reviewingClientService, setReviewingClientService] =
+    useState<Servico | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["workerData", trabalhador.id],
     queryFn: () => fetchWorkerData(trabalhador.id),
     enabled: !!trabalhador.id,
   });
+
+  // 👈 NOVA QUERY: Busca avaliações que este trabalhador já fez
+  const { data: avaliacoesFeitas } = useQuery({
+    queryKey: ["avaliacoesClienteFeitas", trabalhador.id],
+    queryFn: () => fetchAvaliacoesClienteFeitas(trabalhador.id),
+    enabled: !!trabalhador.id,
+  });
+
+  // 👈 NOVO MEMO: Cria um Set com IDs dos serviços já avaliados
+  const reviewedClientServiceIds = useMemo(() => {
+    return new Set(avaliacoesFeitas?.map((av) => av.servicoId));
+  }, [avaliacoesFeitas]);
 
   const servicoMutation = useMutation({
     mutationFn: updateServicoStatus,
@@ -333,7 +373,6 @@ export function DashboardTrabalhadorPage() {
 
       {/* LAYOUT DE 2 COLUNAS: AÇÕES E ATIVOS */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        
         {/* COLUNA PRINCIPAL: NOVAS SOLICITAÇÕES */}
         <section className="space-y-6 lg:col-span-2">
           <motion.div variants={itemVariants}>
@@ -459,7 +498,7 @@ export function DashboardTrabalhadorPage() {
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                       <img
+                      <img
                         src={servico.cliente.avatarUrl}
                         alt={servico.cliente.nome}
                         className="w-10 h-10 rounded-full object-cover mr-3"
@@ -472,7 +511,7 @@ export function DashboardTrabalhadorPage() {
                           Cliente: {servico.cliente.nome}
                         </p>
                       </div>
-                       <Button
+                      <Button
                         size="sm"
                         variant="outline"
                         className="!p-2"
@@ -483,7 +522,7 @@ export function DashboardTrabalhadorPage() {
                         <ChatBubbleLeftRightIcon className="w-5 h-5" />
                       </Button>
                     </div>
-                    
+
                     {/* Botão de Ação Inferior */}
                     {servico.statusServico === "EM_ANDAMENTO" ? (
                       <Button
@@ -497,7 +536,7 @@ export function DashboardTrabalhadorPage() {
                         Solicitar Finalização
                       </Button>
                     ) : (
-                       <Button
+                      <Button
                         size="sm"
                         variant="outline"
                         className="w-full mt-3 !text-status-pending !border-status-pending"
@@ -521,6 +560,87 @@ export function DashboardTrabalhadorPage() {
           </LayoutGroup>
         </aside>
       </div>
+      {/* --- SEÇÃO HISTÓRICO DE SERVIÇOS --- */}
+      {data?.finishedServices && data.finishedServices.length > 0 && (
+        <section className="space-y-6 lg:col-span-3">
+          <motion.div variants={itemVariants}>
+            <Typography
+              as="h2"
+              className="!text-2xl border-b border-dark-surface/50 pb-2"
+            >
+              ✅ Histórico de Serviços ({data.finishedServices.length})
+            </Typography>
+          </motion.div>
+
+          <motion.div className="grid md:grid-cols-2 gap-4">
+            {data.finishedServices.map((servico) => {
+              // Checa se este serviço já foi avaliado pelo trabalhador
+              const isReviewed = reviewedClientServiceIds.has(servico.id);
+
+              return (
+                <Card
+                  key={servico.id}
+                  variants={itemVariants}
+                  className={`p-5 ${
+                    isReviewed
+                      ? "opacity-60 !border-dark-surface"
+                      : "!border-dark-surface/50"
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={servico.cliente.avatarUrl}
+                        alt={servico.cliente.nome}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                      <div>
+                        <Typography as="h3" className="!text-lg">
+                          {servico.titulo}
+                        </Typography>
+                        <p className="text-sm text-dark-subtle mt-1">
+                          Cliente: {servico.cliente.nome} (Finalizado)
+                        </p>
+                      </div>
+                    </div>
+                    {/* Lógica do Botão de Avaliação */}
+                    {isReviewed ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled
+                        className="!text-accent !border-accent/50"
+                      >
+                        <CheckIcon className="w-4 h-4 mr-1" />
+                        Avaliado
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="secondary" // Botão de ação
+                        onClick={() => setReviewingClientService(servico)} // 👈 Abre o modal
+                      >
+                        <CalendarDaysIcon className="w-4 h-4 mr-1" />
+                        Avaliar Cliente
+                      </Button>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </motion.div>
+        </section>
+      )}
+
+      {/* --- O MODAL (Renderização Condicional) --- */}
+      <AnimatePresence>
+        {reviewingClientService && (
+          <AvaliacaoClienteModal
+            servico={reviewingClientService}
+            onClose={() => setReviewingClientService(null)}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
