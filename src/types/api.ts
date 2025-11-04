@@ -34,13 +34,78 @@ export interface Cliente {
   endereco: Endereco;
 }
 
-// Usando os Enums que você tem no backend
 export type TipoServico =
+  // Construção e Reformas
   | "PEDREIRO"
   | "ELETRICISTA"
   | "ENCANADOR"
-  // ... adicionar todos os outros tipos do seu Enum TipoServico.java
-  | "INSTALADOR_AR_CONDICIONADO";
+  | "PINTOR"
+  | "GESSEIRO"
+  | "AZULEJISTA"
+  | "MARCENEIRO"
+  | "SERRALHEIRO"
+  // Serviços Domésticos
+  | "DIARISTA"
+  | "FAXINEIRA"
+  | "PASSADEIRA"
+  | "COZINHEIRA"
+  | "CUIDADOR_IDOSOS"
+  | "BABA"
+  // Serviços Técnicos
+  | "TECNICO_INFORMATICA"
+  | "TECNICO_ELETRODOMESTICOS"
+  | "INSTALADOR_AR_CONDICIONADO"
+  | "TECNICO_REDES"
+  | "INSTALADOR_CAMERAS"
+  // Jardinagem e Exteriores
+  | "JARDINEIRO"
+  | "PAISAGISTA"
+  | "DEDETIZADOR"
+  | "LIMPADOR_PISCINA"
+  // Educação e Aulas Particulares
+  | "REFORCO_ESCOLAR"
+  | "AULAS_INGLES"
+  | "AULAS_MUSICA"
+  | "AULAS_INFORMATICA"
+  | "PERSONAL_TRAINER";
+
+// --- 👇 ARRAY HELPER (para RegisterPage) ---
+export const allServicosList: TipoServico[] = [
+  "PEDREIRO", "ELETRICISTA", "ENCANADOR", "PINTOR", "GESSEIRO", "AZULEJISTA", "MARCENEIRO", "SERRALHEIRO",
+  "DIARISTA", "FAXINEIRA", "PASSADEIRA", "COZINHEIRA", "CUIDADOR_IDOSOS", "BABA",
+  "TECNICO_INFORMATICA", "TECNICO_ELETRODOMESTICOS", "INSTALADOR_AR_CONDICIONADO", "TECNICO_REDES", "INSTALADOR_CAMERAS",
+  "JARDINEIRO", "PAISAGISTA", "DEDETIZADOR", "LIMPADOR_PISCINA",
+  "REFORCO_ESCOLAR", "AULAS_INGLES", "AULAS_MUSICA", "AULAS_INFORMATICA", "PERSONAL_TRAINER",
+];
+
+// --- 👇 ESTRUTURA DE CATEGORIAS (O "SUSTO") ---
+export type CategoriaGrupo =
+  | 'Construção e Reformas'
+  | 'Serviços Domésticos'
+  | 'Serviços Técnicos'
+  | 'Jardinagem e Exteriores'
+  | 'Educação e Aulas';
+
+export const serviceCategories: Record<CategoriaGrupo, TipoServico[]> = {
+  'Construção e Reformas': [
+    "PEDREIRO", "ELETRICISTA", "ENCANADOR", "PINTOR", "GESSEIRO", "AZULEJISTA", "MARCENEIRO", "SERRALHEIRO"
+  ],
+  'Serviços Domésticos': [
+    "DIARISTA", "FAXINEIRA", "PASSADEIRA", "COZINHEIRA", "CUIDADOR_IDOSOS", "BABA"
+  ],
+  'Serviços Técnicos': [
+    "TECNICO_INFORMATICA", "TECNICO_ELETRODOMESTICOS", "INSTALADOR_AR_CONDICIONADO", "TECNICO_REDES", "INSTALADOR_CAMERAS"
+  ],
+  'Jardinagem e Exteriores': [
+    "JARDINEIRO", "PAISAGISTA", "DEDETIZADOR", "LIMPADOR_PISCINA"
+  ],
+  'Educação e Aulas': [
+    "REFORCO_ESCOLAR", "AULAS_INGLES", "AULAS_MUSICA", "AULAS_INFORMATICA", "PERSONAL_TRAINER"
+  ]
+};
+
+// Helper para pegar todos os nomes dos grupos
+export const allCategoryGroups = Object.keys(serviceCategories) as CategoriaGrupo[];
 
 export type StatusServico =
   | "SOLICITADO" // Cliente enviou, mas trabalhador não viu

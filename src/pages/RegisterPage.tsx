@@ -7,19 +7,21 @@ import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Typography } from '../components/ui/Typography';
 import { useAuthStore } from '../store/useAuthStore';
-import type { Cliente, Trabalhador, TipoServico } from '../types/api';
+// 👇 IMPORTA A NOVA LISTA E O TIPO
+import {
+  type Cliente,
+  type Trabalhador,
+  type TipoServico,
+  allServicosList,
+} from '../types/api';
 
 type UserRole = 'cliente' | 'trabalhador';
 
-// Lista de todos os serviços disponíveis (copiado do original)
-const allServices: TipoServico[] = [
-  "PEDREIRO",
-  "ELETRICISTA",
-  "ENCANADOR",
-  "INSTALADOR_AR_CONDICIONADO",
-];
+// ⛔️ REMOVE A LISTA ANTIGA
+// const allServices: TipoServico[] = [ ... ];
 
 // --- COMPONENTE INTERNO: INDICADOR DE ETAPAS (O CAMINHO) ---
+// ... (Componente Stepper permanece o mesmo) ...
 interface StepperProps {
   currentStep: number;
   userType: UserRole | null;
@@ -67,7 +69,6 @@ function Stepper({ currentStep, userType }: StepperProps) {
                 {label}
               </span>
               
-              {/* Linha conectora */}
               {index < steps.length - 1 && (
                 <div
                   className={`
@@ -85,8 +86,10 @@ function Stepper({ currentStep, userType }: StepperProps) {
 }
 // --- FIM DO COMPONENTE STEPPER ---
 
-
 export function RegisterPage() {
+  // ... (useState, handlers, lógica de submit, etc... permanecem os mesmos) ...
+  // (Nenhuma mudança necessária no handleSubmit ou na lógica de etapas)
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     userType: 'cliente' as UserRole,
@@ -137,15 +140,13 @@ export function RegisterPage() {
 
   const handleUserTypeSelect = (type: UserRole) => {
     setFormData((prev) => ({ ...prev, userType: type }));
-    nextStep(); // Avança automaticamente ao selecionar o tipo
+    nextStep();
   };
 
   // --- Lógica de Navegação ---
   const nextStep = () => {
-    // Validação simples antes de avançar (pode ser melhorada com Zod)
     setError('');
     
-    // Validação Etapa 2 (Dados Pessoais)
     if (step === 2) {
       if (!formData.nome || !formData.email || !formData.senha || !formData.telefone) {
         setError('Preencha todos os dados pessoais para continuar.');
@@ -157,7 +158,6 @@ export function RegisterPage() {
       }
     }
     
-    // Validação Etapa 3 (Endereço)
     if (step === 3) {
        if (!formData.endereco.rua || !formData.endereco.cidade || !formData.endereco.cep) {
          setError('Preencha pelo menos CEP, Rua e Cidade para continuar.');
@@ -173,13 +173,12 @@ export function RegisterPage() {
     setStep((s) => s - 1);
   };
 
-  // --- Lógica de Submissão (Adaptada do original) ---
+  // --- Lógica de Submissão ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
 
-    // Validação final específica do Trabalhador
     if (formData.userType === 'trabalhador' && formData.selectedServices.length === 0) {
       setError(
         'Como profissional, você precisa selecionar pelo menos um serviço.'
@@ -281,10 +280,8 @@ export function RegisterPage() {
     }
   };
 
-  // Define o total de etapas
   const totalSteps = formData.userType === 'trabalhador' ? 4 : 3;
   
-  // Animação dos painéis
   const variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 500 : -500,
@@ -300,13 +297,12 @@ export function RegisterPage() {
     }),
   };
   
-  // (Guardando a direção para a animação)
   const [direction, setDirection] = useState(1); 
   
   const handleNext = () => {
     setDirection(1);
     if (step === totalSteps) {
-      handleSubmit(new Event('submit') as any); // Chama o submit na última etapa
+      handleSubmit(new Event('submit') as any);
     } else {
       nextStep();
     }
@@ -317,18 +313,17 @@ export function RegisterPage() {
     prevStep();
   };
 
-
   return (
     <div className="flex justify-center items-center py-12">
       <Card className="w-full max-w-lg overflow-hidden">
-        <Typography as="h2" className="text-center mb-2">
+        {/* ... (Header do Card, Stepper, Error/Success - permanecem os mesmos) ... */}
+         <Typography as="h2" className="text-center mb-2">
           Crie sua conta
         </Typography>
         <Typography as="p" className="text-center text-dark-subtle mb-8">
           Siga as etapas para começar no Facilitei.
         </Typography>
 
-        {/* O CAMINHO (STEPPER) */}
         <Stepper currentStep={step} userType={formData.userType} />
 
         {error && (
@@ -343,6 +338,7 @@ export function RegisterPage() {
         )}
 
         {/* Área do Formulário com Animação */}
+        {/* ... (Etapa 1, 2, 3 - permanecem as mesmas) ... */}
         <div className="relative h-auto min-h-[400px]">
           <AnimatePresence initial={false} custom={direction}>
             
@@ -439,7 +435,7 @@ export function RegisterPage() {
                   <Input
                     label="Crie uma senha"
                     name="senha"
-                    type="senha"
+                    type="password" /* 👈 Corrigido para 'password' */
                     value={formData.senha}
                     onChange={handleChange}
                     required
@@ -524,7 +520,7 @@ export function RegisterPage() {
               </motion.div>
             )}
 
-            {/* ETAPA 4: SERVIÇOS (SÓ TRABALHADOR) */}
+            {/* 👇 ETAPA 4 ATUALIZADA (SÓ TRABALHADOR) */}
             {step === 4 && formData.userType === 'trabalhador' && (
               <motion.div
                 key={4}
@@ -544,8 +540,10 @@ export function RegisterPage() {
                     Quais serviços você oferece?
                     <span className="text-red-500">*</span>
                   </Typography>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                    {allServices.map((service) => (
+                  {/* 👇 Aumenta a altura máxima para a lista maior */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 max-h-[300px] overflow-y-auto">
+                    {/* 👇 Mapeia a nova 'allServicosList' */}
+                    {allServicosList.map((service) => (
                       <button
                         type="button"
                         key={service}
@@ -553,9 +551,10 @@ export function RegisterPage() {
                         disabled={isLoading}
                         className={`
                           p-3 rounded-lg border-2 text-left transition-all duration-200
-                          ${formData.selectedServices.includes(service)
-                            ? 'bg-accent border-accent text-dark-background font-bold'
-                            : 'bg-dark-surface border-primary/50 text-dark-subtle hover:border-accent/50'
+                          ${
+                            formData.selectedServices.includes(service)
+                              ? 'bg-accent border-accent text-dark-background font-bold'
+                              : 'bg-dark-surface border-primary/50 text-dark-subtle hover:border-accent/50'
                           }
                         `}
                       >
@@ -572,7 +571,7 @@ export function RegisterPage() {
           </AnimatePresence>
         </div>
         
-        {/* BOTÕES DE NAVEGAÇÃO E SUBMIT */}
+        {/* ... (Botões de Navegação e Link de Login - permanecem os mesmos) ... */}
         <div className="flex gap-4 pt-8">
           {step > 1 && (
             <Button
