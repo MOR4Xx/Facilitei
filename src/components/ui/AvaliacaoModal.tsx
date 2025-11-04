@@ -8,6 +8,7 @@ import { RatingInput } from "./RatingInput";
 import { Textarea } from "./Textarea";
 import { Button } from "./Button";
 import { Typography } from "./Typography";
+import { toast } from "react-hot-toast";
 
 // --- API ---
 // (No futuro, mover isso para um arquivo 'api.ts')
@@ -67,8 +68,6 @@ interface AvaliacaoModalProps {
 export function AvaliacaoModal({ servico, onClose }: AvaliacaoModalProps) {
   const [nota, setNota] = useState(5);
   const [comentario, setComentario] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
@@ -82,13 +81,11 @@ export function AvaliacaoModal({ servico, onClose }: AvaliacaoModalProps) {
       // Sucesso final! Invalida tudo
       queryClient.invalidateQueries({ queryKey: ["trabalhador", servico?.trabalhadorId] });
       queryClient.invalidateQueries({ queryKey: ["trabalhadores"] });
-      setSuccess("Avaliação enviada com sucesso! Obrigado!");
-      setTimeout(() => {
+toast.success("Avaliação enviada com sucesso! Obrigado!");      setTimeout(() => {
         onClose();
-        setSuccess("");
       }, 2000);
     },
-    onError: (err) => setError(`Erro ao atualizar média: ${err.message}`),
+    onError: (err) => toast.error(`Erro ao atualizar média: ${err.message}`),
   });
 
   // Mutation 2: Posta a avaliação no perfil do trabalhador
@@ -117,12 +114,12 @@ export function AvaliacaoModal({ servico, onClose }: AvaliacaoModalProps) {
           novaNotaMedia: novaMedia,
         });
       } catch (err) {
-        setError(
+        toast.error(
           err instanceof Error ? err.message : "Erro ao recalcular média."
         );
       }
     },
-    onError: (err) => setError(`Erro (Av. Trab): ${err.message}`),
+    onError: (err) => toast.error(`Erro (Av. Trab): ${err.message}`),
   });
 
   // Mutation 1: Posta a avaliação do serviço (para marcar como "feito")
@@ -142,21 +139,19 @@ export function AvaliacaoModal({ servico, onClose }: AvaliacaoModalProps) {
         comentario: comentario,
       });
     },
-    onError: (err) => setError(`Erro (Av. Serv): ${err.message}`),
+    onError: (err) => toast.error(`Erro (Av. Serv): ${err.message}`),
   });
   // -------------
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
 
     if (!user || !servico) {
-      setError("Usuário ou Serviço não encontrado.");
+      toast.error("Usuário ou Serviço não encontrado.");
       return;
     }
     if (comentario.length < 5) {
-      setError("Por favor, deixe um comentário (mín. 5 caracteres).");
+      toast.error("Por favor, deixe um comentário (mín. 5 caracteres).");
       return;
     }
 
@@ -192,17 +187,6 @@ export function AvaliacaoModal({ servico, onClose }: AvaliacaoModalProps) {
           placeholder="Ex: O profissional foi pontual e resolveu meu problema..."
           required
         />
-
-        {error && (
-          <Typography className="text-status-danger text-center">
-            {error}
-          </Typography>
-        )}
-        {success && (
-          <Typography className="text-accent text-center">
-            {success}
-          </Typography>
-        )}
 
         <div className="flex gap-4 pt-4">
           <Button

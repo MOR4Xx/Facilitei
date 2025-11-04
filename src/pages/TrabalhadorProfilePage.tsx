@@ -6,11 +6,18 @@ import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
-import type { Trabalhador, Cliente, TipoServico, Servico, AvaliacaoTrabalhador, } from "../types/api";
+import type {
+  Trabalhador,
+  Cliente,
+  TipoServico,
+  Servico,
+  AvaliacaoTrabalhador,
+} from "../types/api";
 import { useEffect, useState } from "react"; // useEffect ainda é usado para o modal
 import { useAuthStore } from "../store/useAuthStore";
 import { Modal } from "../components/ui/Modal";
 import { Textarea } from "../components/ui/Textarea";
+import { toast } from "react-hot-toast";
 
 interface NewServicoRequest {
   titulo: string;
@@ -71,21 +78,21 @@ const fetchAvaliacoesTrabalhador = async (
 // --- FUNÇÕES DE ENVIO (MUTATION) ---
 const createServico = async (data: NewServicoRequest): Promise<Servico> => {
   const response = await fetch(`http://localhost:3333/servicos`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  if (!response.ok) throw new Error('Falha ao criar o serviço.');
+  if (!response.ok) throw new Error("Falha ao criar o serviço.");
   return response.json();
 };
 
 const createSolicitacao = async (data: NewSolicitacaoRequest) => {
   const response = await fetch(`http://localhost:3333/solicitacoes-servico`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });
-  if (!response.ok) throw new Error('Falha ao criar a solicitação.');
+  if (!response.ok) throw new Error("Falha ao criar a solicitação.");
   return response.json();
 };
 
@@ -125,7 +132,6 @@ const Rating = ({ score }: { score: number }) => {
   return <div className="flex space-x-1">{stars}</div>;
 };
 
-
 // --- COMPONENTE PRINCIPAL: TRABALHADOR PROFILE PAGE ---
 export function TrabalhadorProfilePage() {
   const { id } = useParams<{ id: string }>();
@@ -138,7 +144,6 @@ export function TrabalhadorProfilePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [descricao, setDescricao] = useState("");
   const [selectedServico, setSelectedServico] = useState<TipoServico | "">("");
-  const [modalMessage, setModalMessage] = useState({ type: "", text: "" });
 
   const queryClient = useQueryClient();
 
@@ -155,11 +160,11 @@ export function TrabalhadorProfilePage() {
   // =================================================================
   //  MUDANÇA ZIKA 2: SUBSTITUIR useEffect+useState POR useQuery
   // =================================================================
-  const { 
-    data: avaliacoes, 
-    isLoading: isLoadingAvaliacoes // Novo estado de loading
+  const {
+    data: avaliacoes,
+    isLoading: isLoadingAvaliacoes, // Novo estado de loading
   } = useQuery({
-    queryKey: ['avaliacoesTrabalhador', trabalhador?.id], // A key depende do ID do trabalhador
+    queryKey: ["avaliacoesTrabalhador", trabalhador?.id], // A key depende do ID do trabalhador
     queryFn: () => fetchAvaliacoesTrabalhador(trabalhador!.id),
     enabled: !!trabalhador, // SÓ RODA QUANDO O 'trabalhador' TIVER CARREGADO
   });
@@ -170,7 +175,7 @@ export function TrabalhadorProfilePage() {
       setSelectedServico(trabalhador.servicoPrincipal);
     }
   }, [trabalhador]); // Dependência correta
-  
+
   // =================================================================
   //  FIM DA MUDANÇA 2
   // =================================================================
@@ -189,7 +194,7 @@ export function TrabalhadorProfilePage() {
       mutationCreateSolicitacao.mutate(solicitacaoData);
     },
     onError: (error) => {
-       setModalMessage({ type: "error", text: `Erro: ${error.message}` });
+      toast.error(`Erro: ${error.message}`);
     },
   });
 
@@ -198,40 +203,38 @@ export function TrabalhadorProfilePage() {
     mutationFn: createSolicitacao,
     onSuccess: () => {
       // SUCESSO TOTAL!
-      setModalMessage({ type: "success", text: "Solicitação enviada! O profissional foi notificado." });
-      
+      toast.success("Solicitação enviada! O profissional foi notificado.");
+
       // Limpa os campos e fecha o modal após um tempo
       setTimeout(() => {
         setIsModalOpen(false);
         setDescricao("");
-        setModalMessage({ type: "", text: "" });
       }, 2000);
 
-      queryClient.invalidateQueries({ queryKey: ['workerData'] });
-      queryClient.invalidateQueries({ queryKey: ['servicos'] });
+      queryClient.invalidateQueries({ queryKey: ["workerData"] });
+      queryClient.invalidateQueries({ queryKey: ["servicos"] });
     },
     onError: (error) => {
-      setModalMessage({ type: "error", text: `Erro final: ${error.message}` });
+      toast.error(`Erro final: ${error.message}`);
     },
   });
 
-  const isLoadingRequest = mutationCreateServico.isPending || mutationCreateSolicitacao.isPending;
+  const isLoadingRequest =
+    mutationCreateServico.isPending || mutationCreateSolicitacao.isPending;
 
   // Função chamada pelo botão "Enviar" do Modal
   const handleSubmitRequest = () => {
-    setModalMessage({ type: "", text: "" });
-
     // 1. Validação
-    if (!isAuthenticated || user?.role !== 'cliente') {
-      setModalMessage({ type: "error", text: "Você precisa estar logado como cliente." });
+    if (!isAuthenticated || user?.role !== "cliente") {
+      toast.error("Você precisa estar logado como cliente.");
       return;
     }
     if (!selectedServico) {
-      setModalMessage({ type: "error", text: "Selecione um tipo de serviço." });
+      toast.error("Selecione um tipo de serviço.");
       return;
     }
-     if (descricao.length < 10) {
-      setModalMessage({ type: "error", text: "Descreva um pouco mais o que precisa (mín. 10 caracteres)." });
+    if (descricao.length < 10) {
+      toast.error("Descreva um pouco mais o que precisa (mín. 10 caracteres).");
       return;
     }
 
@@ -254,17 +257,15 @@ export function TrabalhadorProfilePage() {
   // --- Funções de Handler do Modal ---
   const handleOpenModal = () => {
     if (!isAuthenticated) {
-      navigate('/login?redirect=true'); // Redireciona se não logado
+      navigate("/login?redirect=true"); // Redireciona se não logado
       return;
     }
-    if (user?.role !== 'cliente') {
-       alert("Apenas clientes podem solicitar serviços."); // Alerta se for outro trabalhador
-       return;
+    if (user?.role !== "cliente") {
+      alert("Apenas clientes podem solicitar serviços."); // Alerta se for outro trabalhador
+      return;
     }
-    setModalMessage({ type: "", text: "" });
     setIsModalOpen(true);
   };
-
 
   if (isError) {
     return (
@@ -369,9 +370,9 @@ export function TrabalhadorProfilePage() {
             </Typography>
             <Typography as="p">
               Olá! Sou {primeiroNome}, um profissional dedicado e com vasta
-              experiência em {readableService}. Meu compromisso é com a qualidade
-              e a satisfação do cliente, buscando sempre a melhor solução para
-              suas necessidades. Estou pronto para te ajudar!
+              experiência em {readableService}. Meu compromisso é com a
+              qualidade e a satisfação do cliente, buscando sempre a melhor
+              solução para suas necessidades. Estou pronto para te ajudar!
             </Typography>
           </Card>
 
@@ -399,12 +400,13 @@ export function TrabalhadorProfilePage() {
               as="h3"
               className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
             >
-              Avaliações de Clientes ({avaliacoes?.length || 0}) {/* Atualizado */}
+              Avaliações de Clientes ({avaliacoes?.length || 0}){" "}
+              {/* Atualizado */}
             </Typography>
             <div className="space-y-6">
               {/* ATUALIZADO: Checa o novo isLoading das avaliações */}
               {isLoadingAvaliacoes ? (
-                 <p className="text-dark-subtle italic text-center py-4">
+                <p className="text-dark-subtle italic text-center py-4">
                   Carregando avaliações...
                 </p>
               ) : avaliacoes && avaliacoes.length > 0 ? (
@@ -441,19 +443,25 @@ export function TrabalhadorProfilePage() {
         title={`Solicitar ${primeiroNome}`}
       >
         <div className="space-y-6">
-          
           {/* O "MARCADOR" (SELECT) */}
           <div className="relative">
-            <label htmlFor="servicoTipo" className="block text-sm font-medium text-dark-subtle mb-2">
+            <label
+              htmlFor="servicoTipo"
+              className="block text-sm font-medium text-dark-subtle mb-2"
+            >
               Qual serviço você precisa? (o "marcador")
             </label>
             <select
               id="servicoTipo"
               value={selectedServico}
-              onChange={(e) => setSelectedServico(e.target.value as TipoServico)}
+              onChange={(e) =>
+                setSelectedServico(e.target.value as TipoServico)
+              }
               className="w-full bg-transparent border-2 border-dark-surface rounded-lg p-3 text-dark-text focus:outline-none focus:border-accent"
             >
-              <option value="" disabled>Selecione um serviço...</option>
+              <option value="" disabled>
+                Selecione um serviço...
+              </option>
               {trabalhador.servicos.map((tipo) => (
                 <option key={tipo} value={tipo} className="bg-dark-surface">
                   {tipo.replace(/_/g, " ")}
@@ -461,7 +469,7 @@ export function TrabalhadorProfilePage() {
               ))}
             </select>
           </div>
-          
+
           {/* A "BREVE DESCRIÇÃO" (TEXTAREA) */}
           <Textarea
             label="Breve descrição do serviço"
@@ -469,15 +477,6 @@ export function TrabalhadorProfilePage() {
             onChange={(e) => setDescricao(e.target.value)}
             placeholder="Ex: Preciso instalar um ar condicionado de 9000 BTUs na sala."
           />
-
-          {/* Mensagens de Status */}
-          {modalMessage.text && (
-            <Typography className={
-              modalMessage.type === 'error' ? 'text-red-500 text-center' : 'text-accent text-center'
-            }>
-              {modalMessage.text}
-            </Typography>
-          )}
 
           {/* Botões de Ação */}
           <div className="flex gap-4 pt-4">

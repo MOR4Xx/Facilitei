@@ -8,18 +8,17 @@ import { Input } from "../components/ui/Input";
 import { Typography } from "../components/ui/Typography";
 import { useAuthStore } from "../store/useAuthStore";
 import type { Cliente, Trabalhador } from "../types/api";
+import { toast } from 'react-hot-toast';
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
   const [senha, setsenha] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { login } = useAuthStore();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setIsLoading(true);
 
     try {
@@ -50,9 +49,9 @@ export function LoginPage() {
       }
 
       // 3. Se não encontrou em nenhum, exibe o erro
-      setError("E-mail ou senha incorretos. Verifique suas credenciais.");
+      toast.error("E-mail ou senha incorretos. Verifique suas credenciais.");
     } catch (err) {
-      setError("Ocorreu um erro ao conectar com o servidor.");
+      toast.error("Ocorreu um erro ao conectar com o servidor.");
     } finally {
       setIsLoading(false);
     }
@@ -76,12 +75,6 @@ export function LoginPage() {
         <Typography as="p" className="text-center text-dark-subtle mb-8">
           Acesse sua conta para continuar.
         </Typography>
-
-        {error && (
-          <Typography className="text-red-500 text-center mb-4">
-            {error}
-          </Typography>
-        )}
 
         <form onSubmit={handleLogin} className="space-y-6">
           <Input

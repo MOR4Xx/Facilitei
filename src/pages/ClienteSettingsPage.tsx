@@ -8,6 +8,7 @@ import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import type { Cliente } from '../types/api';
 import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 
 // Define o tipo de usuário esperado do store
 type AuthUser = Cliente & { role: 'cliente' | 'trabalhador' };
@@ -22,7 +23,6 @@ export function ClienteSettingsPage() {
 
   const [formData, setFormData] = useState<Cliente>(user as Cliente);
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -43,7 +43,6 @@ export function ClienteSettingsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage("");
 
     try {
       // Envia os dados atualizados para a API (db.json)
@@ -63,10 +62,10 @@ export function ClienteSettingsPage() {
 
       // Atualiza o usuário no store global (zustand)
       login({ ...updatedUser, role: 'cliente' });
-      setMessage("Perfil atualizado com sucesso!");
+      toast.success("Perfil atualizado com sucesso!");
 
     } catch (err) {
-      setMessage(err instanceof Error ? err.message : "Ocorreu um erro.");
+      toast.error(err instanceof Error ? err.message : "Ocorreu um erro.");
     } finally {
       setIsLoading(false);
     }
@@ -165,11 +164,6 @@ export function ClienteSettingsPage() {
           />
 
           <div className="pt-6">
-            {message && (
-              <Typography className={`text-center mb-4 ${message.includes('sucesso') ? 'text-accent' : 'text-red-500'}`}>
-                {message}
-              </Typography>
-            )}
             <Button
               type="submit"
               size="lg"

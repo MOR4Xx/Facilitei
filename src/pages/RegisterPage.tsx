@@ -1,20 +1,21 @@
 // src/pages/RegisterPage.tsx
-import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { Input } from '../components/ui/Input';
-import { Typography } from '../components/ui/Typography';
-import { useAuthStore } from '../store/useAuthStore';
+import { useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
+import { Typography } from "../components/ui/Typography";
+import { useAuthStore } from "../store/useAuthStore";
+import { toast } from "react-hot-toast";
 import {
   type Cliente,
   type Trabalhador,
   type TipoServico,
   allServicosList,
-} from '../types/api';
+} from "../types/api";
 
-type UserRole = 'cliente' | 'trabalhador';
+type UserRole = "cliente" | "trabalhador";
 
 // --- (O componente Stepper permanece o mesmo) ---
 interface StepperProps {
@@ -25,14 +26,17 @@ interface StepperProps {
 function Stepper({ currentStep, userType }: StepperProps) {
   const steps = useMemo(() => {
     const baseSteps = ["Conta", "Dados", "Endereço"];
-    if (userType === 'trabalhador') {
+    if (userType === "trabalhador") {
       return [...baseSteps, "Serviços"];
     }
     return baseSteps;
   }, [userType]);
 
   return (
-    <nav className="flex items-center justify-center mb-8" aria-label="Progresso">
+    <nav
+      className="flex items-center justify-center mb-8"
+      aria-label="Progresso"
+    >
       <ol className="flex items-center space-x-4">
         {steps.map((label, index) => {
           const stepNumber = index + 1;
@@ -45,30 +49,37 @@ function Stepper({ currentStep, userType }: StepperProps) {
                 className={`
                   flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold
                   transition-all duration-300
-                  ${isActive
-                    ? 'bg-accent text-dark-background scale-110 shadow-glow-accent'
-                    : isCompleted
-                    ? 'bg-primary text-white'
-                    : 'bg-dark-surface border-2 border-primary/50 text-primary/70'
+                  ${
+                    isActive
+                      ? "bg-accent text-dark-background scale-110 shadow-glow-accent"
+                      : isCompleted
+                      ? "bg-primary text-white"
+                      : "bg-dark-surface border-2 border-primary/50 text-primary/70"
                   }
                 `}
               >
-                {isCompleted ? '✓' : stepNumber}
+                {isCompleted ? "✓" : stepNumber}
               </span>
               <span
                 className={`
                   ml-2 text-sm font-semibold
-                  ${isActive ? 'text-accent' : isCompleted ? 'text-dark-text' : 'text-dark-subtle'}
+                  ${
+                    isActive
+                      ? "text-accent"
+                      : isCompleted
+                      ? "text-dark-text"
+                      : "text-dark-subtle"
+                  }
                 `}
               >
                 {label}
               </span>
-              
+
               {index < steps.length - 1 && (
                 <div
                   className={`
                     flex-auto h-0.5 mx-3
-                    ${isCompleted ? 'bg-primary' : 'bg-dark-surface'}
+                    ${isCompleted ? "bg-primary" : "bg-dark-surface"}
                   `}
                 />
               )}
@@ -81,68 +92,65 @@ function Stepper({ currentStep, userType }: StepperProps) {
 }
 // --- FIM DO COMPONENTE STEPPER ---
 
-
 // --- FUNÇÕES DE FORMATAÇÃO ---
 const formatTelefone = (value: string) => {
-  let v = value.replace(/\D/g, ''); // Remove tudo que não é dígito
+  let v = value.replace(/\D/g, ""); // Remove tudo que não é dígito
   if (v.length > 11) v = v.slice(0, 11); // Limita a 11 dígitos
 
   if (v.length > 10) {
     // Celular (XX) XXXXX-XXXX
-    v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
   } else if (v.length > 6) {
     // Fixo (XX) XXXX-XXXX
-    v = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+    v = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, "($1) $2-$3");
   } else if (v.length > 2) {
     // (XX) XXXX
-    v = v.replace(/^(\d{2})(\d{0,4})$/, '($1) $2');
+    v = v.replace(/^(\d{2})(\d{0,4})$/, "($1) $2");
   } else if (v.length > 0) {
     // (XX
-    v = v.replace(/^(\d*)$/, '($1');
+    v = v.replace(/^(\d*)$/, "($1");
   }
   return v;
 };
 
 const formatCEP = (value: string) => {
   return value
-    .replace(/\D/g, '') // Remove não-dígitos
-    .replace(/^(\d{5})(\d)/, '$1-$2') // Adiciona hífen (XXXXX-XXX)
+    .replace(/\D/g, "") // Remove não-dígitos
+    .replace(/^(\d{5})(\d)/, "$1-$2") // Adiciona hífen (XXXXX-XXX)
     .slice(0, 9); // Limita a 9 caracteres
 };
 
 const formatUF = (value: string) => {
   return value
-    .replace(/[^a-zA-Z]/g, '') // Remove não-letras
+    .replace(/[^a-zA-Z]/g, "") // Remove não-letras
     .toUpperCase()
     .slice(0, 2); // Limita a 2 caracteres
 };
 // --- FIM DAS FUNÇÕES DE FORMATAÇÃO ---
 
-
 export function RegisterPage() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    userType: 'cliente' as UserRole,
-    nome: '',
-    email: '',
-    telefone: '',
-    senha: '',
+    userType: "cliente" as UserRole,
+    nome: "",
+    email: "",
+    telefone: "",
+    senha: "",
     endereco: {
-      rua: '',
-      numero: '',
-      bairro: '',
-      cidade: '',
-      estado: '',
-      cep: '',
+      rua: "",
+      numero: "",
+      bairro: "",
+      cidade: "",
+      estado: "",
+      cep: "",
     },
     selectedServices: [] as TipoServico[],
   });
 
   const [isLoading, setIsLoading] = useState(false);
   const [isCepLoading, setIsCepLoading] = useState(false); // 👈 NOVO: Loading do CEP
-  const [error, setError] = useState('');
-  const [cepError, setCepError] = useState(''); // 👈 NOVO: Erro específico do CEP
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState(""); // 👈 2. REMOVA OS ESTADOS DE MENSAGEM
+  const [cepError, setCepError] = useState("");
 
   const navigate = useNavigate();
   const { login } = useAuthStore();
@@ -150,8 +158,8 @@ export function RegisterPage() {
   // --- Handlers de Mudança (Atualizados) ---
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
-    if (name === 'telefone') {
+
+    if (name === "telefone") {
       setFormData((prev) => ({ ...prev, telefone: formatTelefone(value) }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -162,15 +170,15 @@ export function RegisterPage() {
     const { name, value } = e.target;
     let formattedValue = value;
 
-    if (name === 'cep') {
+    if (name === "cep") {
       formattedValue = formatCEP(value);
-      if (cepError) setCepError(''); // Limpa o erro ao digitar
+      if (cepError) setCepError("");
     }
-    if (name === 'estado') {
+    if (name === "estado") {
       formattedValue = formatUF(value);
     }
-    if (name === 'numero') {
-      formattedValue = value.replace(/\D/g, ''); // Permite apenas números
+    if (name === "numero") {
+      formattedValue = value.replace(/\D/g, ""); // Permite apenas números
     }
 
     setFormData((prev) => ({
@@ -178,36 +186,40 @@ export function RegisterPage() {
       endereco: { ...prev.endereco, [name]: formattedValue },
     }));
   };
-  
+
   // 👈 NOVO: Handler para buscar CEP (ViaCEP)
   const handleCepBlur = async () => {
-    const cep = formData.endereco.cep.replace(/\D/g, '');
+    const cep = formData.endereco.cep.replace(/\D/g, "");
     if (cep.length !== 8) {
       if (formData.endereco.cep.length > 0) {
-        setCepError('CEP inválido.');
+        toast.error("CEP inválido.");
       }
       return;
     }
 
     setIsCepLoading(true);
-    setCepError('');
-    setError('');
 
     try {
       const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-      if (!res.ok) throw new Error('Falha na rede ao buscar CEP.');
-      
+      if (!res.ok) throw new Error("Falha na rede ao buscar CEP.");
+
       const data = await res.json();
 
       if (data.erro) {
-        setCepError('CEP não encontrado.');
-        setFormData(prev => ({
+        toast.error("CEP não encontrado.");
+        setFormData((prev) => ({
           ...prev,
-          endereco: { ...prev.endereco, rua: '', bairro: '', cidade: '', estado: '' }
+          endereco: {
+            ...prev.endereco,
+            rua: "",
+            bairro: "",
+            cidade: "",
+            estado: "",
+          },
         }));
       } else {
         // Sucesso! Preenche os campos
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           endereco: {
             ...prev.endereco,
@@ -215,13 +227,13 @@ export function RegisterPage() {
             bairro: data.bairro,
             cidade: data.localidade,
             estado: data.uf,
-          }
+          },
         }));
         // Foca no campo "número" após o sucesso
-        document.getElementsByName('numero')[0]?.focus();
+        document.getElementsByName("numero")[0]?.focus();
       }
     } catch (err) {
-      setCepError(err instanceof Error ? err.message : 'Falha ao buscar CEP.');
+      toast.error(err instanceof Error ? err.message : "Falha ao buscar CEP.");
     } finally {
       setIsCepLoading(false);
     }
@@ -243,67 +255,68 @@ export function RegisterPage() {
 
   // --- Lógica de Navegação (Validação Aprimorada) ---
   const nextStep = () => {
-    setError('');
-    
+    setError("");
+
     if (step === 2) {
       // 1. Validação do Nome (exige nome e sobrenome)
-      if (formData.nome.trim().split(' ').length < 2) {
-        setError('Por favor, insira seu nome completo (nome e sobrenome).');
+      if (formData.nome.trim().split(" ").length < 2) {
+        toast.error("Por favor, insira seu nome completo (nome e sobrenome).");
         return;
       }
       // 2. Validação de E-mail (básica)
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(formData.email)) {
-        setError('Por favor, insira um e-mail válido.');
+        toast.error("Por favor, insira um e-mail válido.");
         return;
       }
       // 3. Validação do Telefone (10 ou 11 dígitos)
-      const telefoneDigits = formData.telefone.replace(/\D/g, '');
+      const telefoneDigits = formData.telefone.replace(/\D/g, "");
       if (telefoneDigits.length < 10 || telefoneDigits.length > 11) {
-        setError('Por favor, insira um telefone válido (com DDD).');
+        toast.error("Por favor, insira um telefone válido (com DDD).");
         return;
       }
       // 4. Validação da Senha (mínimo 6 caracteres)
       if (formData.senha.length < 6) {
-         setError('A senha precisa ter pelo menos 6 caracteres.');
-         return;
-      }
-    }
-    
-    if (step === 3) {
-      const cepDigits = formData.endereco.cep.replace(/\D/g, '');
-      if (cepDigits.length !== 8) {
-        setError('Por favor, insira um CEP válido.');
+        toast.error("A senha precisa ter pelo menos 6 caracteres.");
         return;
       }
-       if (!formData.endereco.rua || !formData.endereco.cidade || !formData.endereco.bairro || !formData.endereco.numero) {
-         setError('Preencha todos os campos de endereço para continuar.');
-         return;
-       }
     }
-    
+
+    if (step === 3) {
+      const cepDigits = formData.endereco.cep.replace(/\D/g, "");
+      if (
+        cepDigits.length !== 8 ||
+        !formData.endereco.rua ||
+        !formData.endereco.cidade ||
+        !formData.endereco.bairro ||
+        !formData.endereco.numero
+      ) {
+        toast.error("Preencha todos os campos de endereço para continuar.");
+        return;
+      }
+    }
+
     setStep((s) => s + 1);
   };
 
   const prevStep = () => {
-    setError('');
-    setCepError('');
     setStep((s) => s - 1);
   };
 
   // --- Lógica de Submissão (Permanece a mesma) ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
 
-    if (formData.userType === 'trabalhador' && formData.selectedServices.length === 0) {
-      setError(
-        'Como profissional, você precisa selecionar pelo menos um serviço.'
+    if (
+      formData.userType === "trabalhador" &&
+      formData.selectedServices.length === 0
+    ) {
+      toast.error(
+        "Como profissional, você precisa selecionar pelo menos um serviço."
       );
       return;
     }
-    
+
     setIsLoading(true);
 
     try {
@@ -320,7 +333,7 @@ export function RegisterPage() {
         await emailCheckTrabalhador.json();
 
       if (existingClientes.length > 0 || existingTrabalhadores.length > 0) {
-        setError('Este e-mail já está em uso.');
+        toast.error("Este e-mail já está em uso.");
         setIsLoading(false);
         return;
       }
@@ -329,83 +342,86 @@ export function RegisterPage() {
       let postResponse;
       let endpoint;
 
-      if (formData.userType === 'cliente') {
-        const newCliente: Omit<Cliente, 'id'> = {
+      if (formData.userType === "cliente") {
+        const newCliente: Omit<Cliente, "id"> = {
           nome: formData.nome,
           email: formData.email,
           senha: formData.senha,
           telefone: formData.telefone, // Já formatado
-          avatarUrl: '/avatars/cliente-1.png',
+          avatarUrl: "/avatars/cliente-1.png",
           notaCliente: 0,
           endereco: {
             ...formData.endereco,
-            cep: formData.endereco.cep.replace(/\D/g, '') // Salva só os números
+            cep: formData.endereco.cep.replace(/\D/g, ""), // Salva só os números
           },
         };
-        endpoint = 'clientes';
+        endpoint = "clientes";
         postResponse = await fetch(`http://localhost:3333/clientes`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newCliente),
         });
       } else {
-        const newTrabalhador: Omit<Trabalhador, 'id'> = {
+        const newTrabalhador: Omit<Trabalhador, "id"> = {
           nome: formData.nome,
           email: formData.email,
           senha: formData.senha,
           telefone: formData.telefone, // Já formatado
-          avatarUrl: '/avatars/trabalhador-2.png',
+          avatarUrl: "/avatars/trabalhador-2.png",
           endereco: {
-             ...formData.endereco,
-            cep: formData.endereco.cep.replace(/\D/g, '') // Salva só os números
+            ...formData.endereco,
+            cep: formData.endereco.cep.replace(/\D/g, ""), // Salva só os números
           },
-          disponibilidade: 'Segunda a Sexta, 8h às 18h',
+          disponibilidade: "Segunda a Sexta, 8h às 18h",
           notaTrabalhador: 0,
           servicos: formData.selectedServices,
           servicoPrincipal: formData.selectedServices[0],
         };
-        endpoint = 'trabalhadores';
+        endpoint = "trabalhadores";
         postResponse = await fetch(`http://localhost:3333/trabalhadores`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newTrabalhador),
         });
       }
 
       if (!postResponse.ok) {
-        throw new Error('Falha ao criar a conta no servidor.');
+        throw new Error("Falha ao criar a conta no servidor.");
       }
 
       // 3. Buscar o usuário recém-criado
       const getResponse = await fetch(
         `http://localhost:3333/${endpoint}?email=${formData.email}`
       );
-      const createdUserArray: (Cliente[] | Trabalhador[]) = await getResponse.json();
+      const createdUserArray: Cliente[] | Trabalhador[] =
+        await getResponse.json();
 
       if (createdUserArray.length === 0) {
-        throw new Error('Erro ao recuperar o usuário recém-criado.');
+        throw new Error("Erro ao recuperar o usuário recém-criado.");
       }
       const finalNewUser = createdUserArray[0];
 
       // 4. Fazer login e redirecionar
-      setSuccess('Conta criada com sucesso! Redirecionando...');
-      login({ ...(finalNewUser as Cliente | Trabalhador), role: formData.userType });
+      toast.success('Conta criada com sucesso! Redirecionando...');
+      login({
+        ...(finalNewUser as Cliente | Trabalhador),
+        role: formData.userType,
+      });
 
       setTimeout(() => {
-        navigate('/dashboard');
+        navigate("/dashboard");
       }, 1500);
-
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Ocorreu um erro desconhecido.'
-      );
+      toast.error( 
+         err instanceof Error ? err.message : 'Ocorreu um erro desconhecido.'
+       );
     } finally {
       setIsLoading(false);
     }
   };
 
-  const totalSteps = formData.userType === 'trabalhador' ? 4 : 3;
-  
+  const totalSteps = formData.userType === "trabalhador" ? 4 : 3;
+
   const variants = {
     enter: (direction: number) => ({
       x: direction > 0 ? 500 : -500,
@@ -420,13 +436,13 @@ export function RegisterPage() {
       opacity: 0,
     }),
   };
-  
-  const [direction, setDirection] = useState(1); 
-  
+
+  const [direction, setDirection] = useState(1);
+
   const handleNext = () => {
     setDirection(1);
     if (step === totalSteps) {
-      handleSubmit(new Event('submit') as any);
+      handleSubmit(new Event("submit") as any);
     } else {
       nextStep();
     }
@@ -440,7 +456,7 @@ export function RegisterPage() {
   return (
     <div className="flex justify-center items-center py-12">
       <Card className="w-full max-w-lg overflow-hidden p-8">
-         <Typography as="h2" className="text-center mb-2">
+        <Typography as="h2" className="text-center mb-2">
           Crie sua conta
         </Typography>
         <Typography as="p" className="text-center text-dark-subtle mb-8">
@@ -449,20 +465,8 @@ export function RegisterPage() {
 
         <Stepper currentStep={step} userType={formData.userType} />
 
-        {error && (
-          <Typography className="text-red-500 text-center mb-4">
-            {error}
-          </Typography>
-        )}
-        {success && (
-          <Typography className="text-accent text-center mb-4">
-            {success}
-          </Typography>
-        )}
-
         <div className="relative h-auto min-h-[400px]">
           <AnimatePresence initial={false} custom={direction}>
-            
             {/* ETAPA 1: TIPO DE CONTA */}
             {step === 1 && (
               <motion.div
@@ -472,7 +476,7 @@ export function RegisterPage() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="w-full space-y-6"
               >
                 <fieldset className="space-y-3">
@@ -482,11 +486,11 @@ export function RegisterPage() {
                   >
                     O que você busca?
                   </Typography>
-                  
+
                   <div className="grid grid-cols-1 gap-4 pt-2">
                     <button
                       type="button"
-                      onClick={() => handleUserTypeSelect('cliente')}
+                      onClick={() => handleUserTypeSelect("cliente")}
                       disabled={isLoading}
                       className={`
                         p-6 rounded-lg border-2 transition-all duration-300 text-center
@@ -494,11 +498,13 @@ export function RegisterPage() {
                       `}
                     >
                       Quero Contratar
-                      <span className="block text-xs opacity-80">(Cliente)</span>
+                      <span className="block text-xs opacity-80">
+                        (Cliente)
+                      </span>
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleUserTypeSelect('trabalhador')}
+                      onClick={() => handleUserTypeSelect("trabalhador")}
                       disabled={isLoading}
                       className={`
                         p-6 rounded-lg border-2 transition-all duration-300 text-center
@@ -506,7 +512,9 @@ export function RegisterPage() {
                       `}
                     >
                       Quero Trabalhar
-                      <span className="block text-xs opacity-80">(Profissional)</span>
+                      <span className="block text-xs opacity-80">
+                        (Profissional)
+                      </span>
                     </button>
                   </div>
                 </fieldset>
@@ -522,7 +530,7 @@ export function RegisterPage() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="w-full absolute top-0 left-0"
               >
                 <fieldset className="space-y-6">
@@ -580,7 +588,7 @@ export function RegisterPage() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="w-full absolute top-0 left-0"
               >
                 <fieldset className="space-y-6">
@@ -604,12 +612,6 @@ export function RegisterPage() {
                       </span>
                     )}
                   </div>
-                  {cepError && (
-                    <Typography className="text-red-500 text-center -mt-4">
-                      {cepError}
-                    </Typography>
-                  )}
-                  
                   <Input
                     label="Rua / Avenida"
                     name="rua"
@@ -666,7 +668,7 @@ export function RegisterPage() {
             )}
 
             {/* ETAPA 4: SERVIÇOS (Permanece a mesma) */}
-            {step === 4 && formData.userType === 'trabalhador' && (
+            {step === 4 && formData.userType === "trabalhador" && (
               <motion.div
                 key={4}
                 custom={direction}
@@ -674,7 +676,7 @@ export function RegisterPage() {
                 initial="enter"
                 animate="center"
                 exit="exit"
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="w-full absolute top-0 left-0"
               >
                 <fieldset className="space-y-3">
@@ -696,13 +698,13 @@ export function RegisterPage() {
                           p-3 rounded-lg border-2 text-left transition-all duration-200
                           ${
                             formData.selectedServices.includes(service)
-                              ? 'bg-accent border-accent text-dark-background font-bold'
-                              : 'bg-dark-surface border-primary/50 text-dark-subtle hover:border-accent/50'
+                              ? "bg-accent border-accent text-dark-background font-bold"
+                              : "bg-dark-surface border-primary/50 text-dark-subtle hover:border-accent/50"
                           }
                         `}
                       >
                         <span className="capitalize">
-                          {service.replace(/_/g, ' ').toLowerCase()}
+                          {service.replace(/_/g, " ").toLowerCase()}
                         </span>
                       </button>
                     ))}
@@ -710,10 +712,9 @@ export function RegisterPage() {
                 </fieldset>
               </motion.div>
             )}
-            
           </AnimatePresence>
         </div>
-        
+
         {/* Botões de Navegação */}
         <div className="flex gap-4 pt-8">
           {step > 1 && (
@@ -727,21 +728,23 @@ export function RegisterPage() {
             </Button>
           )}
           {step > 1 && (
-             <Button
+            <Button
               variant="secondary"
               className="w-full"
               onClick={handleNext}
               disabled={isLoading || isCepLoading}
             >
               {isLoading
-                ? 'Salvando...'
-                : (step === totalSteps ? 'Finalizar Cadastro' : 'Próximo')}
+                ? "Salvando..."
+                : step === totalSteps
+                ? "Finalizar Cadastro"
+                : "Próximo"}
             </Button>
           )}
         </div>
 
         <Typography as="p" className="text-center !text-sm mt-6">
-          Já tem uma conta?{' '}
+          Já tem uma conta?{" "}
           <Link
             to="/login"
             className="text-accent hover:underline font-semibold"
@@ -749,7 +752,6 @@ export function RegisterPage() {
             Faça login
           </Link>
         </Typography>
-
       </Card>
     </div>
   );
