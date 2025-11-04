@@ -63,4 +63,33 @@ export interface Servico {
   statusServico: StatusServico;
 }
 
-// Adicione aqui as outras interfaces conforme necessário (Avaliacao, Solicitacao, etc.)
+export interface AvaliacaoServico {
+  id?: number; // O ID é opcional ao criar
+  clienteId: number;
+  servicoId: number;
+  nota: number;
+  comentario: string;
+  fotos?: string[];
+}
+
+export interface AvaliacaoTrabalhador {
+  id?: number;
+  clienteId: number;
+  trabalhadorId: number;
+  servicoId: number; // 👈 Adicionado para rastreio
+  nota: number;
+  comentario: string;
+  fotos?: string[];
+  clienteNome?: string; // Para exibição
+}
+
+export interface AvaliacaoCliente {
+  id?: number;
+  trabalhadorId: number;
+  clienteId: number;
+  servicoId: number; // 👈 Adicionado para rastreio
+  nota: number;
+  comentario: string;
+  fotos?: string[];
+  trabalhadorNome?: string; // Para exibição
+}

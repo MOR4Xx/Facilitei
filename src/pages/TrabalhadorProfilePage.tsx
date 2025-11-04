@@ -6,21 +6,11 @@ import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
-import type { Trabalhador, Cliente, TipoServico, Servico } from "../types/api";
+import type { Trabalhador, Cliente, TipoServico, Servico, AvaliacaoTrabalhador, } from "../types/api";
 import { useEffect, useState } from "react"; // useEffect ainda é usado para o modal
 import { useAuthStore } from "../store/useAuthStore";
 import { Modal } from "../components/ui/Modal";
 import { Textarea } from "../components/ui/Textarea";
-
-// --- INTERFACES ADICIONAIS ---
-interface AvaliacaoTrabalhador {
-  id: number;
-  clienteId: number;
-  trabalhadorId: number;
-  nota: number;
-  comentario: string;
-  clienteNome?: string;
-}
 
 interface NewServicoRequest {
   titulo: string;

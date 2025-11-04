@@ -6,19 +6,9 @@ import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
-import type { Trabalhador, Cliente } from "../types/api";
+import type { Trabalhador, Cliente, AvaliacaoCliente } from "../types/api";
 // ⛔️ Removido: import { useEffect, useState } from "react";
-import { useAuthStore } from "../store/useAuthStore";
-
-// --- INTERFACES ADICIONAIS ---
-interface AvaliacaoCliente {
-  id: number;
-  clienteId: number;
-  trabalhadorId: number;
-  nota: number;
-  comentario: string;
-  trabalhadorNome?: string; // Nome do trabalhador será adicionado
-}
+import { useAuthStore } from "../store/useAuthStore"; // 👈 IMPORTADO
 
 // =================================================================
 //  MUDANÇA ZIKA 1: MOVER FUNÇÕES DE FETCH PARA FORA DO COMPONENTE
@@ -102,8 +92,8 @@ export function ClienteProfilePage() {
   const { id } = useParams<{ id: string }>();
   const clienteId = id ? parseInt(id, 10) : 0;
 
-  const { user } = useAuthStore();
-  const navigate = useNavigate();
+  const { user } = useAuthStore(); // 👈 PEGA O USUÁRIO LOGADO
+  const navigate = useNavigate(); // 👈 PEGA O HOOK DE NAVEGAÇÃO
 
   const {
     data: cliente,
@@ -132,6 +122,7 @@ export function ClienteProfilePage() {
   //  FIM DA MUDANÇA 2
   // =================================================================
 
+  // 👇 VERIFICA SE O USUÁRIO LOGADO É O DONO DESTE PERFIL
   const isOwner = user?.id === clienteId && user?.role === "cliente";
 
   if (isError) {

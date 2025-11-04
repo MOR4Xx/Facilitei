@@ -1,7 +1,7 @@
 // src/components/ui/TrabalhadorCard.tsx
-import { motion, type Variants } from 'framer-motion'; // 👈 IMPORTE O 'Variants' AQUI
+import { type Variants } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Card } from './Card';
+import { Card } from './Card'; // 👈 Nosso Card base
 import { Typography } from './Typography';
 import type { Trabalhador } from '../../types/api';
 
@@ -20,20 +20,23 @@ const Rating = ({ score }: { score: number }) => {
   return <div className="flex space-x-0.5">{stars}</div>;
 };
 
-// --- VARIANTES DE ANIMAÇÃO ---
-const itemVariants: Variants = { 
+// --- VARIANTES DE ANIMAÇÃO (Passadas pelo componente pai) ---
+// Esta variante é um 'item' de um 'container'
+export const itemVariants: Variants = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 100 } },
 };
 
-
 interface TrabalhadorCardProps {
   trabalhador: Trabalhador;
+  variants?: Variants; // 👈 Permite que o pai passe variantes
 }
 
-export function TrabalhadorCard({ trabalhador }: TrabalhadorCardProps) {
+export function TrabalhadorCard({
+  trabalhador,
+  variants = itemVariants, // 👈 Usa a variante padrão se nenhuma for passada
+}: TrabalhadorCardProps) {
   const navigate = useNavigate();
-  const [primeiroNome] = trabalhador.nome.split(' ');
 
   const readableService =
     trabalhador.servicoPrincipal
@@ -42,29 +45,30 @@ export function TrabalhadorCard({ trabalhador }: TrabalhadorCardProps) {
       : 'Serviço Não Informado';
 
   return (
-    <motion.div variants={itemVariants}>
-      <Card
-        className="p-5 flex flex-col items-center text-center cursor-pointer
-                         hover:shadow-glow-primary transition-shadow border-2 border-transparent
-                         hover:border-primary/40 h-full"
-        onClick={() => navigate(`/dashboard/trabalhador/${trabalhador.id}`)}
-      >
-        <img
-          src={trabalhador.avatarUrl}
-          alt={trabalhador.nome}
-          className="w-16 h-16 rounded-full object-cover mb-3 border-4 border-accent"
-        />
-        <Typography as="h3" className="!text-xl !text-primary mb-1">
-          {trabalhador.nome}
-        </Typography>
-        <p className="text-sm text-accent font-semibold mb-3">
-          {readableService}
-        </p>
-        <Rating score={trabalhador.notaTrabalhador} />
-        <p className="text-xs text-dark-subtle mt-2">
-          {trabalhador.endereco.cidade} - {trabalhador.endereco.estado}
-        </p>
-      </Card>
-    </motion.div>
+    // 👇 O 'Card' base agora recebe as 'variants'
+    <Card
+      variants={variants}
+      layout // 👈 Adiciona 'layout' para animar mudanças de posição
+      className="p-5 flex flex-col items-center text-center cursor-pointer
+                 h-full !border-primary/10" // 👈 Estilo base (o hover vem do Card)
+      onClick={() => navigate(`/dashboard/trabalhador/${trabalhador.id}`)}
+      whileHover={{ y: -5 }} // 👈 Mantém a animação de 'lift' no hover
+    >
+      <img
+        src={trabalhador.avatarUrl}
+        alt={trabalhador.nome}
+        className="w-16 h-16 rounded-full object-cover mb-3 border-4 border-accent"
+      />
+      <Typography as="h3" className="!text-xl !text-primary mb-1">
+        {trabalhador.nome}
+      </Typography>
+      <p className="text-sm text-accent font-semibold mb-3">
+        {readableService}
+      </p>
+      <Rating score={trabalhador.notaTrabalhador} />
+      <p className="text-xs text-dark-subtle mt-2">
+        {trabalhador.endereco.cidade} - {trabalhador.endereco.estado}
+      </p>
+    </Card>
   );
 }

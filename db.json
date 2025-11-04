@@ -15,7 +15,7 @@
         "cep": "01001-000"
       },
       "disponibilidade": "Segunda a Sexta, 8h às 18h",
-      "notaTrabalhador": 4,
+      "notaTrabalhador": 4.5,
       "servicos": [
         "ELETRICISTA",
         "INSTALADOR_AR_CONDICIONADO"
@@ -142,6 +142,7 @@
       "id": "1",
       "trabalhadorId": 1,
       "clienteId": 1,
+      "servicoId": 1,
       "nota": 5,
       "comentario": "Cliente muito educado e prestativo.",
       "fotos": []
@@ -152,9 +153,18 @@
       "id": "1",
       "clienteId": 1,
       "trabalhadorId": 1,
+      "servicoId": 1,
       "nota": 4,
       "comentario": "Ótimo profissional, resolveu meu problema rapidamente.",
       "fotos": []
+    },
+    {
+      "id": "f865",
+      "clienteId": "1",
+      "trabalhadorId": 1,
+      "servicoId": "1dd2",
+      "nota": 5,
+      "comentario": "Dahora dms"
     }
   ],
   "avaliacoes-servico": [
@@ -165,6 +175,13 @@
       "nota": 5,
       "comentario": "Serviço executado com perfeição.",
       "fotos": []
+    },
+    {
+      "id": "2385",
+      "clienteId": "1",
+      "servicoId": "1dd2",
+      "nota": 5,
+      "comentario": "Dahora dms"
     }
   ]
 }
