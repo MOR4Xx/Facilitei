@@ -3,29 +3,48 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore";
 import { Button } from "../ui/Button";
-
-// Classes base de um botão (inspirado em Button.tsx)
-const baseButtonStyles =
-  "font-bold rounded-lg transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-accent/50";
-// Classes de tamanho pequeno (inspirado em Button.tsx)
-const sizeSmStyles = "px-4 py-2 text-sm";
+import { useEffect, useState } from "react";
 
 export function Header() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
+
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  const activeClass = "text-accent font-semibold";
-  const inactiveClass =
+  // --- ESTILOS DOS LINKS ---
+
+  // 1. Estilos PADRÃO para links (Home, Sobre, FAQ)
+  const navActive = "text-accent font-semibold";
+  const navInactive =
     "text-dark-text/80 font-medium hover:text-accent transition-colors duration-200";
 
-  const dashboardActiveClass = `${baseButtonStyles} ${sizeSmStyles} bg-accent text-dark-background scale-105 shadow-glow-accent`;
-  const dashboardInactiveClass = `${baseButtonStyles} ${sizeSmStyles} bg-primary text-white hover:bg-primary-hover`;
+  // 2. Estilos de ÊNFASE para o "Dashboard" (O que você pediu!)
+  const dashActive =
+    "text-accent font-semibold bg-accent/10 px-3 py-2 rounded-lg";
+  const dashInactive =
+    "text-dark-text/80 font-medium hover:text-accent hover:bg-accent/10 px-3 py-2 rounded-lg transition-all duration-200";
 
+  // --- ESTILOS DO HEADER (com transição) ---
+  const headerBaseStyle =
+    "sticky top-0 z-50 transition-all duration-300 ease-in-out";
+  const headerScrolledStyle =
+    "bg-dark-surface/70 backdrop-blur-lg border-b border-primary/20 shadow-lg";
+  const headerTopStyle = "bg-transparent border-b border-transparent";
+
+  // URL do perfil
   const profileUrl = user
     ? user.role === "cliente"
       ? `/dashboard/cliente/${user.id}`
@@ -33,34 +52,41 @@ export function Header() {
     : "/login";
 
   return (
-    <header className="bg-dark-surface/70 backdrop-blur-lg sticky top-0 z-50 border-b border-dark-surface/50">
+    <header
+      className={`${headerBaseStyle} ${
+        isScrolled ? headerScrolledStyle : headerTopStyle
+      }`}
+    >
       <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-        {/* 1. LOGO MAIS FORTE */}
+        {/* 1. LOGO */}
         <Link to="/" className="text-3xl font-extrabold text-accent">
           Facilitei
         </Link>
 
+        {/* 2. NAVEGAÇÃO E AUTH */}
         <div className="flex items-center gap-8">
-          {/* 2. LINKS DE NAVEGAÇÃO */}
-          <ul className="flex items-center space-x-8 text-base">
+          {/* Links Principais */}
+          {/* 👇 Reduzi o espaçamento para compensar o padding do botão */}
+          <ul className="flex items-center space-x-6 text-base">
             <li>
               <NavLink
                 to="/"
+                end
                 className={({ isActive }) =>
-                  isActive ? activeClass : inactiveClass
+                  isActive ? navActive : navInactive // 👈 Estilo Padrão
                 }
               >
                 Home
               </NavLink>
             </li>
 
-            {/* 3. LINK DO DASHBOARD (agora separado) */}
+            {/* 👇 LINK DO DASHBOARD COM ÊNFASE */}
             {isAuthenticated && (
               <li>
                 <NavLink
                   to="/dashboard"
                   className={({ isActive }) =>
-                    isActive ? dashboardActiveClass : dashboardInactiveClass
+                    isActive ? dashActive : dashInactive // 👈 Estilo de Ênfase
                   }
                 >
                   Dashboard
@@ -72,7 +98,7 @@ export function Header() {
               <NavLink
                 to="/about"
                 className={({ isActive }) =>
-                  isActive ? activeClass : inactiveClass
+                  isActive ? navActive : navInactive // 👈 Estilo Padrão
                 }
               >
                 Sobre
@@ -82,7 +108,7 @@ export function Header() {
               <NavLink
                 to="/faq"
                 className={({ isActive }) =>
-                  isActive ? activeClass : inactiveClass
+                  isActive ? navActive : navInactive // 👈 Estilo Padrão
                 }
               >
                 FAQ
@@ -90,7 +116,7 @@ export function Header() {
             </li>
           </ul>
 
-          {/* 4. ÁREA DE LOGIN/USUÁRIO */}
+          {/* 3. ÁREA DE LOGIN/USUÁRIO */}
           {isAuthenticated && user ? (
             <div className="flex items-center gap-4">
               <Button onClick={handleLogout} variant="outline" size="sm">
@@ -111,7 +137,7 @@ export function Header() {
               variant="secondary"
               size="sm"
             >
-              Login
+              Login / Cadastro
             </Button>
           )}
         </div>

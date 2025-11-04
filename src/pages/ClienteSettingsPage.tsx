@@ -130,7 +130,6 @@ export function ClienteSettingsPage() {
               value={formData.endereco.numero}
               onChange={handleAddressChange}
               required
-              className="md:col-span-1"
             />
             <Input
               label="Bairro"
@@ -138,7 +137,6 @@ export function ClienteSettingsPage() {
               value={formData.endereco.bairro}
               onChange={handleAddressChange}
               required
-              className="md:col-span-2"
             />
           </div>
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -148,7 +146,6 @@ export function ClienteSettingsPage() {
               value={formData.endereco.cidade}
               onChange={handleAddressChange}
               required
-              className="md:col-span-2"
             />
              <Input
               label="Estado (UF)"
@@ -157,7 +154,6 @@ export function ClienteSettingsPage() {
               onChange={handleAddressChange}
               required
               maxLength={2}
-              className="md:col-span-1"
             />
           </div>
            <Input
