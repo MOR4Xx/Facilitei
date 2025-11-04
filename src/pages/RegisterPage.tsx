@@ -7,7 +7,6 @@ import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Typography } from '../components/ui/Typography';
 import { useAuthStore } from '../store/useAuthStore';
-// 👇 IMPORTA A NOVA LISTA E O TIPO
 import {
   type Cliente,
   type Trabalhador,
@@ -17,11 +16,7 @@ import {
 
 type UserRole = 'cliente' | 'trabalhador';
 
-// ⛔️ REMOVE A LISTA ANTIGA
-// const allServices: TipoServico[] = [ ... ];
-
-// --- COMPONENTE INTERNO: INDICADOR DE ETAPAS (O CAMINHO) ---
-// ... (Componente Stepper permanece o mesmo) ...
+// --- (O componente Stepper permanece o mesmo) ---
 interface StepperProps {
   currentStep: number;
   userType: UserRole | null;
@@ -86,10 +81,45 @@ function Stepper({ currentStep, userType }: StepperProps) {
 }
 // --- FIM DO COMPONENTE STEPPER ---
 
-export function RegisterPage() {
-  // ... (useState, handlers, lógica de submit, etc... permanecem os mesmos) ...
-  // (Nenhuma mudança necessária no handleSubmit ou na lógica de etapas)
 
+// --- FUNÇÕES DE FORMATAÇÃO ---
+const formatTelefone = (value: string) => {
+  let v = value.replace(/\D/g, ''); // Remove tudo que não é dígito
+  if (v.length > 11) v = v.slice(0, 11); // Limita a 11 dígitos
+
+  if (v.length > 10) {
+    // Celular (XX) XXXXX-XXXX
+    v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+  } else if (v.length > 6) {
+    // Fixo (XX) XXXX-XXXX
+    v = v.replace(/^(\d{2})(\d{4})(\d{0,4})$/, '($1) $2-$3');
+  } else if (v.length > 2) {
+    // (XX) XXXX
+    v = v.replace(/^(\d{2})(\d{0,4})$/, '($1) $2');
+  } else if (v.length > 0) {
+    // (XX
+    v = v.replace(/^(\d*)$/, '($1');
+  }
+  return v;
+};
+
+const formatCEP = (value: string) => {
+  return value
+    .replace(/\D/g, '') // Remove não-dígitos
+    .replace(/^(\d{5})(\d)/, '$1-$2') // Adiciona hífen (XXXXX-XXX)
+    .slice(0, 9); // Limita a 9 caracteres
+};
+
+const formatUF = (value: string) => {
+  return value
+    .replace(/[^a-zA-Z]/g, '') // Remove não-letras
+    .toUpperCase()
+    .slice(0, 2); // Limita a 2 caracteres
+};
+// --- FIM DAS FUNÇÕES DE FORMATAÇÃO ---
+
+
+export function RegisterPage() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     userType: 'cliente' as UserRole,
@@ -109,24 +139,92 @@ export function RegisterPage() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isCepLoading, setIsCepLoading] = useState(false); // 👈 NOVO: Loading do CEP
   const [error, setError] = useState('');
+  const [cepError, setCepError] = useState(''); // 👈 NOVO: Erro específico do CEP
   const [success, setSuccess] = useState('');
 
   const navigate = useNavigate();
   const { login } = useAuthStore();
 
-  // --- Handlers de Mudança ---
+  // --- Handlers de Mudança (Atualizados) ---
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    if (name === 'telefone') {
+      setFormData((prev) => ({ ...prev, telefone: formatTelefone(value) }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleEnderecoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    let formattedValue = value;
+
+    if (name === 'cep') {
+      formattedValue = formatCEP(value);
+      if (cepError) setCepError(''); // Limpa o erro ao digitar
+    }
+    if (name === 'estado') {
+      formattedValue = formatUF(value);
+    }
+    if (name === 'numero') {
+      formattedValue = value.replace(/\D/g, ''); // Permite apenas números
+    }
+
     setFormData((prev) => ({
       ...prev,
-      endereco: { ...prev.endereco, [name]: value },
+      endereco: { ...prev.endereco, [name]: formattedValue },
     }));
+  };
+  
+  // 👈 NOVO: Handler para buscar CEP (ViaCEP)
+  const handleCepBlur = async () => {
+    const cep = formData.endereco.cep.replace(/\D/g, '');
+    if (cep.length !== 8) {
+      if (formData.endereco.cep.length > 0) {
+        setCepError('CEP inválido.');
+      }
+      return;
+    }
+
+    setIsCepLoading(true);
+    setCepError('');
+    setError('');
+
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+      if (!res.ok) throw new Error('Falha na rede ao buscar CEP.');
+      
+      const data = await res.json();
+
+      if (data.erro) {
+        setCepError('CEP não encontrado.');
+        setFormData(prev => ({
+          ...prev,
+          endereco: { ...prev.endereco, rua: '', bairro: '', cidade: '', estado: '' }
+        }));
+      } else {
+        // Sucesso! Preenche os campos
+        setFormData(prev => ({
+          ...prev,
+          endereco: {
+            ...prev.endereco,
+            rua: data.logradouro,
+            bairro: data.bairro,
+            cidade: data.localidade,
+            estado: data.uf,
+          }
+        }));
+        // Foca no campo "número" após o sucesso
+        document.getElementsByName('numero')[0]?.focus();
+      }
+    } catch (err) {
+      setCepError(err instanceof Error ? err.message : 'Falha ao buscar CEP.');
+    } finally {
+      setIsCepLoading(false);
+    }
   };
 
   const handleServiceChange = (service: TipoServico) => {
@@ -143,24 +241,43 @@ export function RegisterPage() {
     nextStep();
   };
 
-  // --- Lógica de Navegação ---
+  // --- Lógica de Navegação (Validação Aprimorada) ---
   const nextStep = () => {
     setError('');
     
     if (step === 2) {
-      if (!formData.nome || !formData.email || !formData.senha || !formData.telefone) {
-        setError('Preencha todos os dados pessoais para continuar.');
+      // 1. Validação do Nome (exige nome e sobrenome)
+      if (formData.nome.trim().split(' ').length < 2) {
+        setError('Por favor, insira seu nome completo (nome e sobrenome).');
         return;
       }
-      if (formData.senha.length < 3) {
-         setError('A senha precisa ter pelo menos 3 caracteres.');
+      // 2. Validação de E-mail (básica)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        setError('Por favor, insira um e-mail válido.');
+        return;
+      }
+      // 3. Validação do Telefone (10 ou 11 dígitos)
+      const telefoneDigits = formData.telefone.replace(/\D/g, '');
+      if (telefoneDigits.length < 10 || telefoneDigits.length > 11) {
+        setError('Por favor, insira um telefone válido (com DDD).');
+        return;
+      }
+      // 4. Validação da Senha (mínimo 6 caracteres)
+      if (formData.senha.length < 6) {
+         setError('A senha precisa ter pelo menos 6 caracteres.');
          return;
       }
     }
     
     if (step === 3) {
-       if (!formData.endereco.rua || !formData.endereco.cidade || !formData.endereco.cep) {
-         setError('Preencha pelo menos CEP, Rua e Cidade para continuar.');
+      const cepDigits = formData.endereco.cep.replace(/\D/g, '');
+      if (cepDigits.length !== 8) {
+        setError('Por favor, insira um CEP válido.');
+        return;
+      }
+       if (!formData.endereco.rua || !formData.endereco.cidade || !formData.endereco.bairro || !formData.endereco.numero) {
+         setError('Preencha todos os campos de endereço para continuar.');
          return;
        }
     }
@@ -170,10 +287,11 @@ export function RegisterPage() {
 
   const prevStep = () => {
     setError('');
+    setCepError('');
     setStep((s) => s - 1);
   };
 
-  // --- Lógica de Submissão ---
+  // --- Lógica de Submissão (Permanece a mesma) ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -216,10 +334,13 @@ export function RegisterPage() {
           nome: formData.nome,
           email: formData.email,
           senha: formData.senha,
-          telefone: formData.telefone,
+          telefone: formData.telefone, // Já formatado
           avatarUrl: '/avatars/cliente-1.png',
           notaCliente: 0,
-          endereco: formData.endereco,
+          endereco: {
+            ...formData.endereco,
+            cep: formData.endereco.cep.replace(/\D/g, '') // Salva só os números
+          },
         };
         endpoint = 'clientes';
         postResponse = await fetch(`http://localhost:3333/clientes`, {
@@ -232,9 +353,12 @@ export function RegisterPage() {
           nome: formData.nome,
           email: formData.email,
           senha: formData.senha,
-          telefone: formData.telefone,
+          telefone: formData.telefone, // Já formatado
           avatarUrl: '/avatars/trabalhador-2.png',
-          endereco: formData.endereco,
+          endereco: {
+             ...formData.endereco,
+            cep: formData.endereco.cep.replace(/\D/g, '') // Salva só os números
+          },
           disponibilidade: 'Segunda a Sexta, 8h às 18h',
           notaTrabalhador: 0,
           servicos: formData.selectedServices,
@@ -315,8 +439,7 @@ export function RegisterPage() {
 
   return (
     <div className="flex justify-center items-center py-12">
-      <Card className="w-full max-w-lg overflow-hidden">
-        {/* ... (Header do Card, Stepper, Error/Success - permanecem os mesmos) ... */}
+      <Card className="w-full max-w-lg overflow-hidden p-8">
          <Typography as="h2" className="text-center mb-2">
           Crie sua conta
         </Typography>
@@ -337,8 +460,6 @@ export function RegisterPage() {
           </Typography>
         )}
 
-        {/* Área do Formulário com Animação */}
-        {/* ... (Etapa 1, 2, 3 - permanecem as mesmas) ... */}
         <div className="relative h-auto min-h-[400px]">
           <AnimatePresence initial={false} custom={direction}>
             
@@ -392,7 +513,7 @@ export function RegisterPage() {
               </motion.div>
             )}
 
-            {/* ETAPA 2: DADOS PESSOAIS */}
+            {/* ETAPA 2: DADOS PESSOAIS (ATUALIZADO) */}
             {step === 2 && (
               <motion.div
                 key={2}
@@ -413,6 +534,7 @@ export function RegisterPage() {
                     onChange={handleChange}
                     required
                     disabled={isLoading}
+                    placeholder="Ex: João da Silva"
                   />
                   <Input
                     label="Seu melhor e-mail"
@@ -422,30 +544,34 @@ export function RegisterPage() {
                     onChange={handleChange}
                     required
                     disabled={isLoading}
+                    placeholder="Ex: joao.silva@email.com"
                   />
                   <Input
                     label="Telefone (WhatsApp)"
                     name="telefone"
-                    type="tel"
+                    type="tel" // 👈 'tel' para teclado numérico no mobile
                     value={formData.telefone}
                     onChange={handleChange}
                     required
                     disabled={isLoading}
+                    maxLength={15} // (XX) XXXXX-XXXX
+                    placeholder="(00) 00000-0000"
                   />
                   <Input
                     label="Crie uma senha"
                     name="senha"
-                    type="password" /* 👈 Corrigido para 'password' */
+                    type="password"
                     value={formData.senha}
                     onChange={handleChange}
                     required
                     disabled={isLoading}
+                    placeholder="Mínimo 6 caracteres"
                   />
                 </fieldset>
               </motion.div>
             )}
 
-            {/* ETAPA 3: ENDEREÇO */}
+            {/* ETAPA 3: ENDEREÇO (ATUALIZADO COM ViaCEP) */}
             {step === 3 && (
               <motion.div
                 key={3}
@@ -458,32 +584,50 @@ export function RegisterPage() {
                 className="w-full absolute top-0 left-0"
               >
                 <fieldset className="space-y-6">
-                  <Input
-                    label="CEP"
-                    name="cep"
-                    value={formData.endereco.cep}
-                    onChange={handleEnderecoChange}
-                    required
-                    disabled={isLoading}
-                    maxLength={9}
-                  />
+                  {/* CAMPO CEP COM LOADING E ERRO */}
+                  <div className="relative">
+                    <Input
+                      label="CEP"
+                      name="cep"
+                      type="tel" // 👈 'tel' para teclado numérico
+                      value={formData.endereco.cep}
+                      onChange={handleEnderecoChange}
+                      onBlur={handleCepBlur} // 👈 CHAMA A API AQUI
+                      required
+                      disabled={isLoading || isCepLoading} // 👈 Desabilita na busca
+                      maxLength={9} // XXXXX-XXX
+                      placeholder="00000-000"
+                    />
+                    {isCepLoading && (
+                      <span className="absolute right-3 top-10 text-xs text-accent animate-pulse">
+                        Buscando...
+                      </span>
+                    )}
+                  </div>
+                  {cepError && (
+                    <Typography className="text-red-500 text-center -mt-4">
+                      {cepError}
+                    </Typography>
+                  )}
+                  
                   <Input
                     label="Rua / Avenida"
                     name="rua"
                     value={formData.endereco.rua}
                     onChange={handleEnderecoChange}
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || isCepLoading} // 👈 Desabilita na busca
+                    readOnly={isCepLoading} // 👈 Impede edição na busca
                   />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <Input
                       label="Número"
                       name="numero"
+                      type="tel" // 👈 'tel' para teclado numérico
                       value={formData.endereco.numero}
                       onChange={handleEnderecoChange}
                       required
                       disabled={isLoading}
-                      className="md:col-span-1"
                     />
                     <Input
                       label="Bairro"
@@ -491,8 +635,8 @@ export function RegisterPage() {
                       value={formData.endereco.bairro}
                       onChange={handleEnderecoChange}
                       required
-                      disabled={isLoading}
-                      className="md:col-span-2"
+                      disabled={isLoading || isCepLoading} // 👈 Desabilita na busca
+                      readOnly={isCepLoading} // 👈 Impede edição na busca
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -502,8 +646,8 @@ export function RegisterPage() {
                       value={formData.endereco.cidade}
                       onChange={handleEnderecoChange}
                       required
-                      disabled={isLoading}
-                      className="md:col-span-2"
+                      disabled={isLoading || isCepLoading} // 👈 Desabilita na busca
+                      readOnly={isCepLoading} // 👈 Impede edição na busca
                     />
                     <Input
                       label="Estado (UF)"
@@ -511,16 +655,17 @@ export function RegisterPage() {
                       value={formData.endereco.estado}
                       onChange={handleEnderecoChange}
                       required
-                      disabled={isLoading}
+                      disabled={isLoading || isCepLoading} // 👈 Desabilita na busca
+                      readOnly={isCepLoading} // 👈 Impede edição na busca
                       maxLength={2}
-                      className="md:col-span-1"
+                      placeholder="UF"
                     />
                   </div>
                 </fieldset>
               </motion.div>
             )}
 
-            {/* 👇 ETAPA 4 ATUALIZADA (SÓ TRABALHADOR) */}
+            {/* ETAPA 4: SERVIÇOS (Permanece a mesma) */}
             {step === 4 && formData.userType === 'trabalhador' && (
               <motion.div
                 key={4}
@@ -540,9 +685,7 @@ export function RegisterPage() {
                     Quais serviços você oferece?
                     <span className="text-red-500">*</span>
                   </Typography>
-                  {/* 👇 Aumenta a altura máxima para a lista maior */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 max-h-[300px] overflow-y-auto">
-                    {/* 👇 Mapeia a nova 'allServicosList' */}
                     {allServicosList.map((service) => (
                       <button
                         type="button"
@@ -571,14 +714,14 @@ export function RegisterPage() {
           </AnimatePresence>
         </div>
         
-        {/* ... (Botões de Navegação e Link de Login - permanecem os mesmos) ... */}
+        {/* Botões de Navegação */}
         <div className="flex gap-4 pt-8">
           {step > 1 && (
             <Button
               variant="outline"
               className="w-full"
               onClick={handlePrev}
-              disabled={isLoading}
+              disabled={isLoading || isCepLoading}
             >
               Voltar
             </Button>
@@ -588,7 +731,7 @@ export function RegisterPage() {
               variant="secondary"
               className="w-full"
               onClick={handleNext}
-              disabled={isLoading}
+              disabled={isLoading || isCepLoading}
             >
               {isLoading
                 ? 'Salvando...'

@@ -70,7 +70,7 @@ export function LoginPage() {
       </Typography>
 
       {/* 2. CARD DE LOGIN */}
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md p-8">
         
         {/* Título "Bem-vindo!" */}
         <Typography as="p" className="text-center text-dark-subtle mb-8">
