@@ -101,127 +101,6 @@
       "disponibilidadeId": 2,
       "tipoServico": "ELETRICISTA",
       "statusServico": "FINALIZADO"
-    },
-    {
-      "id": "1dd2",
-      "titulo": "Solicitação de INSTALADOR AR CONDICIONADO",
-      "descricao": "Preciso de uma ajuda aqui em casa para instalar um ar condicionado ",
-      "preco": 0,
-      "trabalhadorId": 1,
-      "clienteId": "1",
-      "disponibilidadeId": 1,
-      "tipoServico": "INSTALADOR_AR_CONDICIONADO",
-      "statusServico": "FINALIZADO"
-    },
-    {
-      "id": "c08a",
-      "titulo": "Solicitação de ELETRICISTA",
-      "descricao": "ssssssssssssssssssssssssssss",
-      "preco": 0,
-      "trabalhadorId": 1,
-      "clienteId": "1",
-      "disponibilidadeId": 1,
-      "tipoServico": "ELETRICISTA",
-      "statusServico": "RECUSADO"
-    },
-    {
-      "id": "e568",
-      "titulo": "Solicitação de ELETRICISTA",
-      "descricao": "ssssssssssssssssssssss",
-      "preco": 0,
-      "trabalhadorId": 1,
-      "clienteId": "1",
-      "disponibilidadeId": 1,
-      "tipoServico": "ELETRICISTA",
-      "statusServico": "RECUSADO"
-    },
-    {
-      "id": "c9be",
-      "titulo": "Solicitação de ELETRICISTA",
-      "descricao": "ssssssssssssssssssssss",
-      "preco": 0,
-      "trabalhadorId": 1,
-      "clienteId": "1",
-      "disponibilidadeId": 1,
-      "tipoServico": "ELETRICISTA",
-      "statusServico": "RECUSADO"
-    },
-    {
-      "id": "2846",
-      "titulo": "Solicitação de ELETRICISTA",
-      "descricao": "ssssssssssssssssssssss",
-      "preco": 0,
-      "trabalhadorId": 1,
-      "clienteId": "1",
-      "disponibilidadeId": 1,
-      "tipoServico": "ELETRICISTA",
-      "statusServico": "RECUSADO"
-    },
-    {
-      "id": "f395",
-      "titulo": "Solicitação de ELETRICISTA",
-      "descricao": "ssssssssssssssssssssss",
-      "preco": 0,
-      "trabalhadorId": 1,
-      "clienteId": "1",
-      "disponibilidadeId": 1,
-      "tipoServico": "ELETRICISTA",
-      "statusServico": "PENDENTE"
-    },
-    {
-      "id": "c782",
-      "titulo": "Solicitação de ELETRICISTA",
-      "descricao": "ssssssssssssssssssssss",
-      "preco": 0,
-      "trabalhadorId": 1,
-      "clienteId": "1",
-      "disponibilidadeId": 1,
-      "tipoServico": "ELETRICISTA",
-      "statusServico": "RECUSADO"
-    },
-    {
-      "id": "5470",
-      "titulo": "Solicitação de ELETRICISTA",
-      "descricao": "ssssssssssssssssssssss",
-      "preco": 0,
-      "trabalhadorId": 1,
-      "clienteId": "1",
-      "disponibilidadeId": 1,
-      "tipoServico": "ELETRICISTA",
-      "statusServico": "RECUSADO"
-    },
-    {
-      "id": "3150",
-      "titulo": "Solicitação de ELETRICISTA",
-      "descricao": "ssssssssssssssssssssss",
-      "preco": 0,
-      "trabalhadorId": 1,
-      "clienteId": "1",
-      "disponibilidadeId": 1,
-      "tipoServico": "ELETRICISTA",
-      "statusServico": "RECUSADO"
-    },
-    {
-      "id": "f97f",
-      "titulo": "Solicitação de ELETRICISTA",
-      "descricao": "ssssssssssssssssssssss",
-      "preco": 0,
-      "trabalhadorId": 1,
-      "clienteId": "1",
-      "disponibilidadeId": 1,
-      "tipoServico": "ELETRICISTA",
-      "statusServico": "RECUSADO"
-    },
-    {
-      "id": "fa03",
-      "titulo": "Solicitação de ELETRICISTA",
-      "descricao": "ssssssssssssssssssssss",
-      "preco": 0,
-      "trabalhadorId": 1,
-      "clienteId": "1",
-      "disponibilidadeId": 1,
-      "tipoServico": "ELETRICISTA",
-      "statusServico": "FINALIZADO"
     }
   ],
   "solicitacoes-servico": [
@@ -238,76 +117,6 @@
       "servicoId": 2,
       "descricao": "Verificar curto-circuito na cozinha.",
       "statusSolicitacao": "ACEITA"
-    },
-    {
-      "id": "a842",
-      "clienteId": "1",
-      "servicoId": "1dd2",
-      "descricao": "Preciso de uma ajuda aqui em casa para instalar um ar condicionado ",
-      "statusSolicitacao": "ACEITA"
-    },
-    {
-      "id": "49b0",
-      "clienteId": "1",
-      "servicoId": "c08a",
-      "descricao": "ssssssssssssssssssssssssssss",
-      "statusSolicitacao": "RECUSADA"
-    },
-    {
-      "id": "b23d",
-      "clienteId": "1",
-      "servicoId": "e568",
-      "descricao": "ssssssssssssssssssssss",
-      "statusSolicitacao": "RECUSADA"
-    },
-    {
-      "id": "95ed",
-      "clienteId": "1",
-      "servicoId": "c9be",
-      "descricao": "ssssssssssssssssssssss",
-      "statusSolicitacao": "RECUSADA"
-    },
-    {
-      "id": "d894",
-      "clienteId": "1",
-      "servicoId": "2846",
-      "descricao": "ssssssssssssssssssssss",
-      "statusSolicitacao": "RECUSADA"
-    },
-    {
-      "id": "9b8a",
-      "clienteId": "1",
-      "servicoId": "c782",
-      "descricao": "ssssssssssssssssssssss",
-      "statusSolicitacao": "RECUSADA"
-    },
-    {
-      "id": "8435",
-      "clienteId": "1",
-      "servicoId": "5470",
-      "descricao": "ssssssssssssssssssssss",
-      "statusSolicitacao": "RECUSADA"
-    },
-    {
-      "id": "6f8b",
-      "clienteId": "1",
-      "servicoId": "3150",
-      "descricao": "ssssssssssssssssssssss",
-      "statusSolicitacao": "RECUSADA"
-    },
-    {
-      "id": "6d30",
-      "clienteId": "1",
-      "servicoId": "f97f",
-      "descricao": "ssssssssssssssssssssss",
-      "statusSolicitacao": "RECUSADA"
-    },
-    {
-      "id": "961a",
-      "clienteId": "1",
-      "servicoId": "fa03",
-      "descricao": "ssssssssssssssssssssss",
-      "statusSolicitacao": "ACEITA"
     }
   ],
   "avaliacoes-cliente": [
@@ -319,14 +128,6 @@
       "nota": 5,
       "comentario": "Cliente muito educado e prestativo.",
       "fotos": []
-    },
-    {
-      "id": "6be1",
-      "trabalhadorId": "1",
-      "clienteId": "1",
-      "servicoId": "1dd2",
-      "nota": 5,
-      "comentario": "Ele é gente boa "
     }
   ],
   "avaliacoes-trabalhador": [
@@ -338,22 +139,6 @@
       "nota": 4,
       "comentario": "Ótimo profissional, resolveu meu problema rapidamente.",
       "fotos": []
-    },
-    {
-      "id": "f865",
-      "clienteId": "1",
-      "trabalhadorId": 1,
-      "servicoId": "1dd2",
-      "nota": 5,
-      "comentario": "Dahora dms"
-    },
-    {
-      "id": "0eac",
-      "clienteId": "1",
-      "trabalhadorId": 1,
-      "servicoId": "fa03",
-      "nota": 5,
-      "comentario": "Muito top"
     }
   ],
   "avaliacoes-servico": [
@@ -364,20 +149,6 @@
       "nota": 5,
       "comentario": "Serviço executado com perfeição.",
       "fotos": []
-    },
-    {
-      "id": "2385",
-      "clienteId": "1",
-      "servicoId": "1dd2",
-      "nota": 5,
-      "comentario": "Dahora dms"
-    },
-    {
-      "id": "3766",
-      "clienteId": "1",
-      "servicoId": "fa03",
-      "nota": 5,
-      "comentario": "Muito top"
     }
   ]
 }

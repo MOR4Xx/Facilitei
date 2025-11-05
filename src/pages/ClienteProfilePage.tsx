@@ -5,11 +5,10 @@ import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
 import type { Trabalhador, Cliente, AvaliacaoCliente } from "../types/api";
-import { useAuthStore } from "../store/useAuthStore"; 
-
+import { useAuthStore } from "../store/useAuthStore";
 
 // --- FUNÇÕES DE BUSCA ---
-const fetchClienteById = async (id: number): Promise<Cliente> => {
+const fetchClienteById = async (id: string): Promise<Cliente> => {
   const response = await fetch(`http://localhost:3333/clientes/${id}`);
   if (!response.ok) {
     throw new Error("Cliente não encontrado.");
@@ -18,7 +17,7 @@ const fetchClienteById = async (id: number): Promise<Cliente> => {
 };
 
 const fetchAvaliacoesCliente = async (
-  clienteId: number
+  clienteId: string
 ): Promise<AvaliacaoCliente[]> => {
   // 1. Busca todas as avaliações de clientes
   const response = await fetch(
@@ -76,13 +75,12 @@ const Rating = ({ score }: { score: number }) => {
   return <div className="flex space-x-1">{stars}</div>;
 };
 
-
 // --- COMPONENTE PRINCIPAL: CLIENTE PROFILE PAGE ---
 export function ClienteProfilePage() {
   const { id } = useParams<{ id: string }>();
-  const clienteId = id ? parseInt(id, 10) : 0;
+  const clienteId = id ? id : "0";
 
-  const { user } = useAuthStore(); 
+  const { user } = useAuthStore();
   const navigate = useNavigate();
 
   const {
@@ -95,16 +93,11 @@ export function ClienteProfilePage() {
     enabled: clienteId > 0,
   });
 
-
-  const { 
-    data: avaliacoes, 
-    isLoading: isLoadingAvaliacoes 
-  } = useQuery({
-    queryKey: ['avaliacoesCliente', cliente?.id],
+  const { data: avaliacoes, isLoading: isLoadingAvaliacoes } = useQuery({
+    queryKey: ["avaliacoesCliente", cliente?.id],
     queryFn: () => fetchAvaliacoesCliente(cliente!.id),
     enabled: !!cliente, // SÓ RODA QUANDO O 'cliente' TIVER CARREGADO
   });
-  
 
   const isOwner = user?.id === clienteId && user?.role === "cliente";
 
@@ -126,7 +119,8 @@ export function ClienteProfilePage() {
     );
   }
 
-  if (isLoadingCliente) { // Atualizado
+  if (isLoadingCliente) {
+    // Atualizado
     return (
       <div className="text-center py-20">
         <Typography as="h2">Carregando Perfil do Cliente...</Typography>
@@ -224,7 +218,7 @@ export function ClienteProfilePage() {
             {/* ATUALIZADO: Checa o novo isLoading das avaliações */}
             {isLoadingAvaliacoes ? (
               <p className="text-dark-subtle italic text-center py-4">
-                  Carregando avaliações...
+                Carregando avaliações...
               </p>
             ) : avaliacoes && avaliacoes.length > 0 ? (
               avaliacoes.map((avaliacao) => (

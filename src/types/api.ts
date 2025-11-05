@@ -10,26 +10,25 @@ export interface Endereco {
 }
 
 export interface Trabalhador {
-  id: number;
+  id: string;
   nome: string;
   email: string;
-  senha: string; 
-  avatarUrl: string; 
-  telefone: string; 
+  senha: string;
+  avatarUrl: string;
+  telefone: string;
   endereco: Endereco;
   disponibilidade: string;
   notaTrabalhador: number;
-  servicos: TipoServico[]; 
+  servicos: TipoServico[];
   servicoPrincipal: TipoServico;
 }
 
 export interface Cliente {
-  id: number;
-  nome: string;
+  id: string;
   email: string;
-  senha: string; 
+  senha: string;
   telefone: string;
-  avatarUrl: string; 
+  avatarUrl: string;
   notaCliente: number;
   endereco: Endereco;
 }
@@ -71,41 +70,89 @@ export type TipoServico =
 
 // --- 👇 ARRAY HELPER (para RegisterPage) ---
 export const allServicosList: TipoServico[] = [
-  "PEDREIRO", "ELETRICISTA", "ENCANADOR", "PINTOR", "GESSEIRO", "AZULEJISTA", "MARCENEIRO", "SERRALHEIRO",
-  "DIARISTA", "FAXINEIRA", "PASSADEIRA", "COZINHEIRA", "CUIDADOR_IDOSOS", "BABA",
-  "TECNICO_INFORMATICA", "TECNICO_ELETRODOMESTICOS", "INSTALADOR_AR_CONDICIONADO", "TECNICO_REDES", "INSTALADOR_CAMERAS",
-  "JARDINEIRO", "PAISAGISTA", "DEDETIZADOR", "LIMPADOR_PISCINA",
-  "REFORCO_ESCOLAR", "AULAS_INGLES", "AULAS_MUSICA", "AULAS_INFORMATICA", "PERSONAL_TRAINER",
+  "PEDREIRO",
+  "ELETRICISTA",
+  "ENCANADOR",
+  "PINTOR",
+  "GESSEIRO",
+  "AZULEJISTA",
+  "MARCENEIRO",
+  "SERRALHEIRO",
+  "DIARISTA",
+  "FAXINEIRA",
+  "PASSADEIRA",
+  "COZINHEIRA",
+  "CUIDADOR_IDOSOS",
+  "BABA",
+  "TECNICO_INFORMATICA",
+  "TECNICO_ELETRODOMESTICOS",
+  "INSTALADOR_AR_CONDICIONADO",
+  "TECNICO_REDES",
+  "INSTALADOR_CAMERAS",
+  "JARDINEIRO",
+  "PAISAGISTA",
+  "DEDETIZADOR",
+  "LIMPADOR_PISCINA",
+  "REFORCO_ESCOLAR",
+  "AULAS_INGLES",
+  "AULAS_MUSICA",
+  "AULAS_INFORMATICA",
+  "PERSONAL_TRAINER",
 ];
 
 // --- 👇 ESTRUTURA DE CATEGORIAS (O "SUSTO") ---
 export type CategoriaGrupo =
-  | 'Construção e Reformas'
-  | 'Serviços Domésticos'
-  | 'Serviços Técnicos'
-  | 'Jardinagem e Exteriores'
-  | 'Educação e Aulas';
+  | "Construção e Reformas"
+  | "Serviços Domésticos"
+  | "Serviços Técnicos"
+  | "Jardinagem e Exteriores"
+  | "Educação e Aulas";
 
 export const serviceCategories: Record<CategoriaGrupo, TipoServico[]> = {
-  'Construção e Reformas': [
-    "PEDREIRO", "ELETRICISTA", "ENCANADOR", "PINTOR", "GESSEIRO", "AZULEJISTA", "MARCENEIRO", "SERRALHEIRO"
+  "Construção e Reformas": [
+    "PEDREIRO",
+    "ELETRICISTA",
+    "ENCANADOR",
+    "PINTOR",
+    "GESSEIRO",
+    "AZULEJISTA",
+    "MARCENEIRO",
+    "SERRALHEIRO",
   ],
-  'Serviços Domésticos': [
-    "DIARISTA", "FAXINEIRA", "PASSADEIRA", "COZINHEIRA", "CUIDADOR_IDOSOS", "BABA"
+  "Serviços Domésticos": [
+    "DIARISTA",
+    "FAXINEIRA",
+    "PASSADEIRA",
+    "COZINHEIRA",
+    "CUIDADOR_IDOSOS",
+    "BABA",
   ],
-  'Serviços Técnicos': [
-    "TECNICO_INFORMATICA", "TECNICO_ELETRODOMESTICOS", "INSTALADOR_AR_CONDICIONADO", "TECNICO_REDES", "INSTALADOR_CAMERAS"
+  "Serviços Técnicos": [
+    "TECNICO_INFORMATICA",
+    "TECNICO_ELETRODOMESTICOS",
+    "INSTALADOR_AR_CONDICIONADO",
+    "TECNICO_REDES",
+    "INSTALADOR_CAMERAS",
   ],
-  'Jardinagem e Exteriores': [
-    "JARDINEIRO", "PAISAGISTA", "DEDETIZADOR", "LIMPADOR_PISCINA"
+  "Jardinagem e Exteriores": [
+    "JARDINEIRO",
+    "PAISAGISTA",
+    "DEDETIZADOR",
+    "LIMPADOR_PISCINA",
   ],
-  'Educação e Aulas': [
-    "REFORCO_ESCOLAR", "AULAS_INGLES", "AULAS_MUSICA", "AULAS_INFORMATICA", "PERSONAL_TRAINER"
-  ]
+  "Educação e Aulas": [
+    "REFORCO_ESCOLAR",
+    "AULAS_INGLES",
+    "AULAS_MUSICA",
+    "AULAS_INFORMATICA",
+    "PERSONAL_TRAINER",
+  ],
 };
 
 // Helper para pegar todos os nomes dos grupos
-export const allCategoryGroups = Object.keys(serviceCategories) as CategoriaGrupo[];
+export const allCategoryGroups = Object.keys(
+  serviceCategories
+) as CategoriaGrupo[];
 
 export type StatusServico =
   | "SOLICITADO" // Cliente enviou, mas trabalhador não viu
@@ -117,31 +164,31 @@ export type StatusServico =
   | "RECUSADO"; // Trabalhador recusou
 
 export interface Servico {
-  id: number;
+  id: string;
   titulo: string;
   descricao: string;
   preco: number;
-  trabalhadorId: number;
-  clienteId: number;
+  trabalhadorId: string;
+  clienteId: string;
   disponibilidadeId: number;
   tipoServico: TipoServico;
   statusServico: StatusServico;
 }
 
 export interface AvaliacaoServico {
-  id?: number; // O ID é opcional ao criar
-  clienteId: number;
-  servicoId: number;
+  id?: string; // O ID é opcional ao criar
+  clienteId: string;
+  servicoId: string;
   nota: number;
   comentario: string;
   fotos?: string[];
 }
 
 export interface AvaliacaoTrabalhador {
-  id?: number;
-  clienteId: number;
-  trabalhadorId: number;
-  servicoId: number; // 👈 Adicionado para rastreio
+  id?: string;
+  clienteId: string;
+  trabalhadorId: string;
+  servicoId: string; // 👈 Adicionado para rastreio
   nota: number;
   comentario: string;
   fotos?: string[];
@@ -149,10 +196,10 @@ export interface AvaliacaoTrabalhador {
 }
 
 export interface AvaliacaoCliente {
-  id?: number;
-  trabalhadorId: number;
-  clienteId: number;
-  servicoId: number; // 👈 Adicionado para rastreio
+  id?: string;
+  trabalhadorId: string;
+  clienteId: string;
+  servicoId: string; // 👈 Adicionado para rastreio
   nota: number;
   comentario: string;
   fotos?: string[];

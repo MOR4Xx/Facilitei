@@ -319,6 +319,7 @@ export function RegisterPage() {
     setIsLoading(true);
 
     try {
+      const newId = String(Date.now());
       // 1. Verificar se o e-mail já existe
       const emailCheckCliente = await fetch(
         `http://localhost:3333/clientes?email=${formData.email}`
@@ -342,7 +343,8 @@ export function RegisterPage() {
       let endpoint;
 
       if (formData.userType === "cliente") {
-        const newCliente: Omit<Cliente, "id"> = {
+        const newCliente: Cliente = {
+          id: newId,
           nome: formData.nome,
           email: formData.email,
           senha: formData.senha,
@@ -361,7 +363,8 @@ export function RegisterPage() {
           body: JSON.stringify(newCliente),
         });
       } else {
-        const newTrabalhador: Omit<Trabalhador, "id"> = {
+        const newTrabalhador: Trabalhador = {
+          id: newId,
           nome: formData.nome,
           email: formData.email,
           senha: formData.senha,
@@ -401,7 +404,7 @@ export function RegisterPage() {
       const finalNewUser = createdUserArray[0];
 
       // 4. Fazer login e redirecionar
-      toast.success('Conta criada com sucesso! Redirecionando...');
+      toast.success("Conta criada com sucesso! Redirecionando...");
       login({
         ...(finalNewUser as Cliente | Trabalhador),
         role: formData.userType,
@@ -411,9 +414,9 @@ export function RegisterPage() {
         navigate("/dashboard");
       }, 1500);
     } catch (err) {
-      toast.error( 
-         err instanceof Error ? err.message : 'Ocorreu um erro desconhecido.'
-       );
+      toast.error(
+        err instanceof Error ? err.message : "Ocorreu um erro desconhecido."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -556,7 +559,7 @@ export function RegisterPage() {
                   <Input
                     label="Telefone (WhatsApp)"
                     name="telefone"
-                    type="tel" 
+                    type="tel"
                     value={formData.telefone}
                     onChange={handleChange}
                     required
@@ -601,7 +604,7 @@ export function RegisterPage() {
                       onChange={handleEnderecoChange}
                       onBlur={handleCepBlur}
                       required
-                      disabled={isLoading || isCepLoading} 
+                      disabled={isLoading || isCepLoading}
                       maxLength={9}
                       placeholder="00000-000"
                     />
@@ -617,7 +620,7 @@ export function RegisterPage() {
                     value={formData.endereco.rua}
                     onChange={handleEnderecoChange}
                     required
-                    disabled={isLoading || isCepLoading} 
+                    disabled={isLoading || isCepLoading}
                     readOnly={isCepLoading}
                   />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -636,8 +639,8 @@ export function RegisterPage() {
                       value={formData.endereco.bairro}
                       onChange={handleEnderecoChange}
                       required
-                      disabled={isLoading || isCepLoading} 
-                      readOnly={isCepLoading} 
+                      disabled={isLoading || isCepLoading}
+                      readOnly={isCepLoading}
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -647,8 +650,8 @@ export function RegisterPage() {
                       value={formData.endereco.cidade}
                       onChange={handleEnderecoChange}
                       required
-                      disabled={isLoading || isCepLoading} 
-                      readOnly={isCepLoading} 
+                      disabled={isLoading || isCepLoading}
+                      readOnly={isCepLoading}
                     />
                     <Input
                       label="Estado (UF)"
@@ -656,7 +659,7 @@ export function RegisterPage() {
                       value={formData.endereco.estado}
                       onChange={handleEnderecoChange}
                       required
-                      disabled={isLoading || isCepLoading} 
+                      disabled={isLoading || isCepLoading}
                       readOnly={isCepLoading}
                       maxLength={2}
                       placeholder="UF"

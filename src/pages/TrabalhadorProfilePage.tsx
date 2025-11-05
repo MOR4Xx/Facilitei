@@ -21,21 +21,21 @@ interface NewServicoRequest {
   titulo: string;
   descricao: string;
   preco: number;
-  trabalhadorId: number;
-  clienteId: number;
+  trabalhadorId: string;
+  clienteId: string;
   disponibilidadeId: number; // Mockado
   tipoServico: TipoServico;
   statusServico: "PENDENTE" | "SOLICITADO";
 }
 
 interface NewSolicitacaoRequest {
-  clienteId: number;
-  servicoId: number;
+  clienteId: string;
+  servicoId: string;
   descricao: string;
   statusSolicitacao: "PENDENTE";
 }
 // --- FUNÇÕES DE BUSCA ---
-const fetchTrabalhadorById = async (id: number): Promise<Trabalhador> => {
+const fetchTrabalhadorById = async (id: string): Promise<Trabalhador> => {
   const response = await fetch(`http://localhost:3333/trabalhadores/${id}`);
   if (!response.ok) {
     throw new Error("Profissional não encontrado.");
@@ -44,7 +44,7 @@ const fetchTrabalhadorById = async (id: number): Promise<Trabalhador> => {
 };
 
 const fetchAvaliacoesTrabalhador = async (
-  workerId: number
+  workerId: string
 ): Promise<AvaliacaoTrabalhador[]> => {
   const response = await fetch(
     `http://localhost:3333/avaliacoes-trabalhador?trabalhadorId=${workerId}`
@@ -124,7 +124,7 @@ const Rating = ({ score }: { score: number }) => {
 // --- COMPONENTE PRINCIPAL: TRABALHADOR PROFILE PAGE ---
 export function TrabalhadorProfilePage() {
   const { id } = useParams<{ id: string }>();
-  const trabalhadorId = id ? parseInt(id, 10) : 0;
+  const trabalhadorId = id ? id : "0";
 
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
@@ -161,7 +161,6 @@ export function TrabalhadorProfilePage() {
       setSelectedServico(trabalhador.servicoPrincipal);
     }
   }, [trabalhador]);
-
 
   // --- LÓGICA DE MUTATION (ENVIO DA SOLICITAÇÃO) ---
   const mutationCreateServico = useMutation({
