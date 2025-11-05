@@ -1,11 +1,9 @@
-// src/pages/HomePage.tsx
 import { Link } from "react-router-dom";
 import { motion, type Variants } from "framer-motion"; 
 import { Card } from "../components/ui/Card"; 
 import { Typography } from "../components/ui/Typography"; 
 
 // --- ÍCONES SVG ---
-// (Você pode colocar isso no final do arquivo ou criar arquivos .tsx separados para eles)
 
 function ClipboardListIcon(props: React.ComponentProps<'svg'>) {
   return (
@@ -104,7 +102,6 @@ export function HomePage() {
             <div className="relative w-64 h-64">
               <motion.img
                 initial={{ x: 0, y: 0, rotate: -15 }}
-                // 👇 AQUI: "Mexendo menos" e mais rápido
                 animate={{ x: -10, y: 10, rotate: -8 }}
                 transition={{ type: 'spring', stiffness: 120, repeat: Infinity, repeatType: 'reverse', duration: 2.5 }}
                 src="/avatars/trabalhador-1.png"
@@ -113,7 +110,6 @@ export function HomePage() {
               />
               <motion.img
                 initial={{ x: 0, y: 0, rotate: 10 }}
-                // 👇 AQUI: "Mexendo menos" e mais rápido
                 animate={{ x: 10, y: -10, rotate: 3 }}
                 transition={{ type: 'spring', stiffness: 120, repeat: Infinity, repeatType: 'reverse', duration: 2.5, delay: 0.3 }}
                 src="/avatars/trabalhador-2.png"
@@ -138,7 +134,7 @@ export function HomePage() {
           
           {/* --- CARD 1 (COM TRANSIÇÃO DETALHADA) --- */}
           <Card 
-            className="p-8 text-center flex flex-col items-center cursor-pointer group" // 👈 AQUI: Adiciona 'group'
+            className="p-8 text-center flex flex-col items-center cursor-pointer group"
             variants={itemVariants}
             whileHover={{ // Animação do Card
               scale: 1.03,
@@ -150,27 +146,27 @@ export function HomePage() {
             {/* Ícone Detalhado */}
             <div className="flex-shrink-0 w-16 h-16 rounded-full bg-dark-background border-2 border-dark-surface/50 flex items-center justify-center mb-6
                           transition-all duration-300 ease-in-out
-                          group-hover:bg-accent/10 group-hover:border-accent/50" // 👈 AQUI: Transição de cor no ícone
+                          group-hover:bg-accent/10 group-hover:border-accent/50"
             >
               <ClipboardListIcon className="w-8 h-8 text-accent transition-all duration-300 ease-in-out
-                                          group-hover:scale-110" /> {/* 👈 AQUI: Transição de escala no ícone */}
+                                          group-hover:scale-110" />
             </div>
             
             <Typography as="h3" className="!text-2xl mb-3 transition-colors duration-300
-                                         group-hover:text-accent" // 👈 AQUI: Transição de cor no Título
+                                         group-hover:text-accent"
             >
               1. Descreva o Serviço
             </Typography>
             <Typography as="p" className="!text-base transition-colors duration-300
-                                         group-hover:text-dark-text" // 👈 AQUI: Clareia o texto
+                                         group-hover:text-dark-text"
             >
               Diga-nos o que você precisa. Detalhes ajudam a encontrar o profissional ideal.
             </Typography>
           </Card>
 
-          {/* --- CARD 2 (COM TRANSIÇÃO DETALHADA) --- */}
+          {/* --- CARD 2 --- */}
           <Card 
-            className="p-8 text-center flex flex-col items-center cursor-pointer group" // 👈 AQUI: Adiciona 'group'
+            className="p-8 text-center flex flex-col items-center cursor-pointer group" 
             variants={itemVariants}
             whileHover={{
               scale: 1.03,
@@ -182,27 +178,27 @@ export function HomePage() {
             {/* Ícone Detalhado */}
             <div className="flex-shrink-0 w-16 h-16 rounded-full bg-dark-background border-2 border-dark-surface/50 flex items-center justify-center mb-6
                           transition-all duration-300 ease-in-out
-                          group-hover:bg-accent/10 group-hover:border-accent/50" // 👈 AQUI: Transição de cor no ícone
+                          group-hover:bg-accent/10 group-hover:border-accent/50" 
             >
               <UsersIcon className="w-8 h-8 text-accent transition-all duration-300 ease-in-out
-                                  group-hover:scale-110" /> {/* 👈 AQUI: Transição de escala no ícone */}
+                                  group-hover:scale-110" /> 
             </div>
             
             <Typography as="h3" className="!text-2xl mb-3 transition-colors duration-300
-                                         group-hover:text-accent" // 👈 AQUI: Transição de cor no Título
+                                         group-hover:text-accent" 
             >
               2. Receba Propostas
             </Typography>
             <Typography as="p" className="!text-base transition-colors duration-300
-                                         group-hover:text-dark-text" // 👈 AQUI: Clareia o texto
+                                         group-hover:text-dark-text" 
             >
               Profissionais qualificados enviam orçamentos diretamente para você.
             </Typography>
           </Card>
 
-          {/* --- CARD 3 (COM TRANSIÇÃO DETALHADA) --- */}
+          {/* --- CARD 3 --- */}
           <Card 
-            className="p-8 text-center flex flex-col items-center cursor-pointer group" // 👈 AQUI: Adiciona 'group'
+            className="p-8 text-center flex flex-col items-center cursor-pointer group"
             variants={itemVariants}
             whileHover={{
               scale: 1.03,
@@ -214,19 +210,19 @@ export function HomePage() {
             {/* Ícone Detalhado */}
             <div className="flex-shrink-0 w-16 h-16 rounded-full bg-dark-background border-2 border-dark-surface/50 flex items-center justify-center mb-6
                           transition-all duration-300 ease-in-out
-                          group-hover:bg-accent/10 group-hover:border-accent/50" // 👈 AQUI: Transição de cor no ícone
+                          group-hover:bg-accent/10 group-hover:border-accent/50" 
             >
               <CheckBadgeIcon className="w-8 h-8 text-accent transition-all duration-300 ease-in-out
-                                      group-hover:scale-110" /> {/* 👈 AQUI: Transição de escala no ícone */}
+                                      group-hover:scale-110" /> 
             </div>
             
             <Typography as="h3" className="!text-2xl mb-3 transition-colors duration-300
-                                         group-hover:text-accent" // 👈 AQUI: Transição de cor no Título
+                                         group-hover:text-accent" 
             >
               3. Contrate com Segurança
             </Typography>
             <Typography as="p" className="!text-base transition-colors duration-300
-                                         group-hover:text-dark-text" // 👈 AQUI: Clareia o texto
+                                         group-hover:text-dark-text" 
             >
               Escolha a melhor opção, agende e realize o pagamento com tranquilidade.
             </Typography>

@@ -1,4 +1,3 @@
-// src/components/ui/RatingInput.tsx
 import { useState } from 'react';
 
 interface RatingInputProps {

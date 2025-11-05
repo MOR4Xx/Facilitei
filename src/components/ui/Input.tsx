@@ -1,4 +1,3 @@
-// src/components/ui/Input.tsx
 import { ComponentProps, ReactNode } from 'react';
 
 type InputProps = ComponentProps<'input'> & {

@@ -1,4 +1,3 @@
-// src/components/ui/Textarea.tsx
 import { ComponentProps } from 'react';
 
 type TextareaProps = ComponentProps<'textarea'> & {
@@ -12,7 +11,7 @@ export function Textarea({ label, name, ...props }: TextareaProps) {
       <label
         htmlFor={name}
         className="block text-sm font-medium text-primary mb-2 transition-colors duration-300
-                   peer-focus:text-accent" // 👈 Foco muda para 'accent'
+                   peer-focus:text-accent" 
       >
         {label}
       </label>

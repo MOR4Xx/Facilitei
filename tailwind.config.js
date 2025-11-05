@@ -1,6 +1,6 @@
 // tailwind.config.js
 
-import { fontFamily } from 'tailwindcss/defaultTheme'; // 👈 IMPORTE O TEMA PADRÃO
+import { fontFamily } from 'tailwindcss/defaultTheme';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -11,14 +11,13 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // Adiciona 'Inter' e a stack de fontes do sistema como padrão
         sans: ['Inter', ...fontFamily.sans],
       },
       colors: {
         primary: {
           DEFAULT: '#0D9488', 
           hover: '#0F766E',
-          soft: '#115E59', // 👈 Nova cor sutil
+          soft: '#115E59', 
         },
         accent: {
           DEFAULT: '#A3E635', 
@@ -28,7 +27,7 @@ export default {
         dark: {
           background: '#081426',
           surface: '#111E35', // Superfície principal
-          surface_hover: '#182946', // 👈 Nova cor de hover
+          surface_hover: '#182946', 
           text: '#E2E8F0',
           subtle: '#94A3B8',
         },
@@ -43,7 +42,7 @@ export default {
       boxShadow: {
         'glow-accent': '0 0 16px 0 rgba(163, 230, 53, 0.3)',
         'glow-primary': '0 0 16px 0 rgba(13, 148, 136, 0.3)',
-        'glow-danger': '0 0 16px 0 rgba(239, 68, 68, 0.3)', // 👈 Nova sombra
+        'glow-danger': '0 0 16px 0 rgba(239, 68, 68, 0.3)',
       },
       // Animação de pulso mais sutil
       keyframes: {
@@ -53,7 +52,7 @@ export default {
         }
       },
       animation: {
-        'subtle-pulse': 'subtlePulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite', // 👈 Nova animação
+        'subtle-pulse': 'subtlePulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       }
     },
   },

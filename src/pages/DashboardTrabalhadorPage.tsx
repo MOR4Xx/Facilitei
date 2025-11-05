@@ -1,4 +1,3 @@
-// src/pages/DashboardTrabalhadorPage.tsx
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "../components/ui/Card";
@@ -15,7 +14,6 @@ import type {
   StatusServico,
   AvaliacaoCliente,
 } from "../types/api";
-// 👈 IMPORTA OS ÍCONES
 import {
   BellIcon,
   BriefcaseIcon,
@@ -206,14 +204,12 @@ export function DashboardTrabalhadorPage() {
     enabled: !!trabalhador.id,
   });
 
-  // 👈 NOVA QUERY: Busca avaliações que este trabalhador já fez
   const { data: avaliacoesFeitas } = useQuery({
     queryKey: ["avaliacoesClienteFeitas", trabalhador.id],
     queryFn: () => fetchAvaliacoesClienteFeitas(trabalhador.id),
     enabled: !!trabalhador.id,
   });
 
-  // 👈 NOVO MEMO: Cria um Set com IDs dos serviços já avaliados
   const reviewedClientServiceIds = useMemo(() => {
     return new Set(avaliacoesFeitas?.map((av) => av.servicoId));
   }, [avaliacoesFeitas]);

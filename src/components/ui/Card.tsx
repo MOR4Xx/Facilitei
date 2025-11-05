@@ -23,7 +23,6 @@ export function Card({ children, className = "", ...props }: CardProps) {
       variants={variants}
       // Removemos initial/animate daqui, pois serão controlados pelo 'LayoutGroup' ou 'AnimatePresence' no componente pai
       
-      // 👇 ESTILOS ATUALIZADOS PARA O EFEITO "GLASS"
       className={`
         bg-dark-surface/70 
         backdrop-blur-lg 

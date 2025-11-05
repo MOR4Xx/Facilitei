@@ -1,10 +1,7 @@
-// src/store/useAuthStore.ts
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Cliente, Trabalhador } from '../types/api';
 
-// Define um tipo unificado para o usuário, adicionando o papel (role)
 type User = (Cliente | Trabalhador) & { role: 'cliente' | 'trabalhador' };
 
 type AuthState = {
@@ -23,7 +20,7 @@ export const useAuthStore = create<AuthState>()(
       logout: () => set({ user: null, isAuthenticated: false }),
     }),
     {
-      name: 'auth-storage', // Nome da chave no localStorage
+      name: 'auth-storage',
     }
   )
 );

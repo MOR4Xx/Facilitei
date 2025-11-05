@@ -1,5 +1,3 @@
-// src/pages/ClienteProfilePage.tsx
-
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -7,12 +5,8 @@ import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
 import type { Trabalhador, Cliente, AvaliacaoCliente } from "../types/api";
-// ⛔️ Removido: import { useEffect, useState } from "react";
-import { useAuthStore } from "../store/useAuthStore"; // 👈 IMPORTADO
+import { useAuthStore } from "../store/useAuthStore"; 
 
-// =================================================================
-//  MUDANÇA ZIKA 1: MOVER FUNÇÕES DE FETCH PARA FORA DO COMPONENTE
-// =================================================================
 
 // --- FUNÇÕES DE BUSCA ---
 const fetchClienteById = async (id: number): Promise<Cliente> => {
@@ -49,10 +43,6 @@ const fetchAvaliacoesCliente = async (
 
   return avaliacoesComNomes;
 };
-
-// =================================================================
-//  FIM DA MUDANÇA 1
-// =================================================================
 
 // --- VARIANTES DE ANIMAÇÃO ---
 const pageVariants = {
@@ -92,8 +82,8 @@ export function ClienteProfilePage() {
   const { id } = useParams<{ id: string }>();
   const clienteId = id ? parseInt(id, 10) : 0;
 
-  const { user } = useAuthStore(); // 👈 PEGA O USUÁRIO LOGADO
-  const navigate = useNavigate(); // 👈 PEGA O HOOK DE NAVEGAÇÃO
+  const { user } = useAuthStore(); 
+  const navigate = useNavigate();
 
   const {
     data: cliente,
@@ -105,9 +95,7 @@ export function ClienteProfilePage() {
     enabled: clienteId > 0,
   });
 
-  // =================================================================
-  //  MUDANÇA ZIKA 2: SUBSTITUIR useEffect+useState POR useQuery
-  // =================================================================
+
   const { 
     data: avaliacoes, 
     isLoading: isLoadingAvaliacoes 
@@ -117,12 +105,7 @@ export function ClienteProfilePage() {
     enabled: !!cliente, // SÓ RODA QUANDO O 'cliente' TIVER CARREGADO
   });
   
-  // ⛔️ REMOVIDO: O useEffect que fazia fetchAvaliacoes
-  // =================================================================
-  //  FIM DA MUDANÇA 2
-  // =================================================================
 
-  // 👇 VERIFICA SE O USUÁRIO LOGADO É O DONO DESTE PERFIL
   const isOwner = user?.id === clienteId && user?.role === "cliente";
 
   if (isError) {
@@ -188,7 +171,7 @@ export function ClienteProfilePage() {
           </p>
         </Card>
 
-        {/* 👇 BOTÃO DE EDITAR PERFIL ADICIONADO AQUI */}
+        {/* BOTÃO DE EDITAR PERFIL */}
         {isOwner && (
           <Button
             variant="secondary"

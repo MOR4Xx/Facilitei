@@ -167,7 +167,7 @@ export function AvaliacaoClienteModal({
             variant="outline"
             className="w-full"
             onClick={onClose}
-            disabled={isLoading || isSuccess} // 👈 BUG FIX
+            disabled={isLoading || isSuccess} 
           >
             Cancelar
           </Button>
@@ -175,7 +175,7 @@ export function AvaliacaoClienteModal({
             type="submit"
             variant="secondary"
             className="w-full"
-            disabled={isLoading || isSuccess} // 👈 BUG FIX
+            disabled={isLoading || isSuccess} 
           >
             {isLoading
               ? "Enviando..."

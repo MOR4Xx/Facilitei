@@ -1,5 +1,3 @@
-// src/pages/TrabalhadorProfilePage.tsx
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -13,7 +11,7 @@ import type {
   Servico,
   AvaliacaoTrabalhador,
 } from "../types/api";
-import { useEffect, useState } from "react"; // useEffect ainda é usado para o modal
+import { useEffect, useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Modal } from "../components/ui/Modal";
 import { Textarea } from "../components/ui/Textarea";
@@ -36,11 +34,6 @@ interface NewSolicitacaoRequest {
   descricao: string;
   statusSolicitacao: "PENDENTE";
 }
-
-// =================================================================
-//  MUDANÇA ZIKA 1: MOVER FUNÇÕES DE FETCH PARA FORA DO COMPONENTE
-// =================================================================
-
 // --- FUNÇÕES DE BUSCA ---
 const fetchTrabalhadorById = async (id: number): Promise<Trabalhador> => {
   const response = await fetch(`http://localhost:3333/trabalhadores/${id}`);
@@ -95,10 +88,6 @@ const createSolicitacao = async (data: NewSolicitacaoRequest) => {
   if (!response.ok) throw new Error("Falha ao criar a solicitação.");
   return response.json();
 };
-
-// =================================================================
-//  FIM DA MUDANÇA 1
-// =================================================================
 
 // --- VARIANTES DE ANIMAÇÃO ---
 const pageVariants = {
@@ -157,9 +146,6 @@ export function TrabalhadorProfilePage() {
     enabled: trabalhadorId > 0,
   });
 
-  // =================================================================
-  //  MUDANÇA ZIKA 2: SUBSTITUIR useEffect+useState POR useQuery
-  // =================================================================
   const {
     data: avaliacoes,
     isLoading: isLoadingAvaliacoes, // Novo estado de loading
@@ -174,11 +160,8 @@ export function TrabalhadorProfilePage() {
     if (trabalhador) {
       setSelectedServico(trabalhador.servicoPrincipal);
     }
-  }, [trabalhador]); // Dependência correta
+  }, [trabalhador]);
 
-  // =================================================================
-  //  FIM DA MUDANÇA 2
-  // =================================================================
 
   // --- LÓGICA DE MUTATION (ENVIO DA SOLICITAÇÃO) ---
   const mutationCreateServico = useMutation({
@@ -474,6 +457,7 @@ export function TrabalhadorProfilePage() {
 
           {/* A "BREVE DESCRIÇÃO" (TEXTAREA) */}
           <Textarea
+            name="textarea"
             label="Breve descrição do serviço"
             value={descricao}
             onChange={(e) => setDescricao(e.target.value)}

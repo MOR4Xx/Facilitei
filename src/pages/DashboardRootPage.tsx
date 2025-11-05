@@ -1,5 +1,3 @@
-// src/pages/DashboardRootPage.tsx
-
 import { useAuthStore } from '../store/useAuthStore';
 import { DashboardClientePage } from './DashboardClientePage';
 import { DashboardTrabalhadorPage } from './DashboardTrabalhadorPage';

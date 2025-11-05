@@ -1,7 +1,6 @@
-// src/components/ui/TrabalhadorCard.tsx
 import { type Variants } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Card } from './Card'; // 👈 Nosso Card base
+import { Card } from './Card';
 import { Typography } from './Typography';
 import type { Trabalhador } from '../../types/api';
 
@@ -29,12 +28,12 @@ export const itemVariants: Variants = {
 
 interface TrabalhadorCardProps {
   trabalhador: Trabalhador;
-  variants?: Variants; // 👈 Permite que o pai passe variantes
+  variants?: Variants; 
 }
 
 export function TrabalhadorCard({
   trabalhador,
-  variants = itemVariants, // 👈 Usa a variante padrão se nenhuma for passada
+  variants = itemVariants, 
 }: TrabalhadorCardProps) {
   const navigate = useNavigate();
 
@@ -45,14 +44,14 @@ export function TrabalhadorCard({
       : 'Serviço Não Informado';
 
   return (
-    // 👇 O 'Card' base agora recebe as 'variants'
+
     <Card
       variants={variants}
-      layout // 👈 Adiciona 'layout' para animar mudanças de posição
+      layout 
       className="p-5 flex flex-col items-center text-center cursor-pointer
                  h-full !border-primary/10" // 👈 Estilo base (o hover vem do Card)
       onClick={() => navigate(`/dashboard/trabalhador/${trabalhador.id}`)}
-      whileHover={{ y: -5 }} // 👈 Mantém a animação de 'lift' no hover
+      whileHover={{ y: -5 }}
     >
       <img
         src={trabalhador.avatarUrl}

@@ -1,4 +1,3 @@
-// src/pages/RegisterPage.tsx
 import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -557,7 +556,7 @@ export function RegisterPage() {
                   <Input
                     label="Telefone (WhatsApp)"
                     name="telefone"
-                    type="tel" // 👈 'tel' para teclado numérico no mobile
+                    type="tel" 
                     value={formData.telefone}
                     onChange={handleChange}
                     required
@@ -597,13 +596,13 @@ export function RegisterPage() {
                     <Input
                       label="CEP"
                       name="cep"
-                      type="tel" // 👈 'tel' para teclado numérico
+                      type="tel"
                       value={formData.endereco.cep}
                       onChange={handleEnderecoChange}
-                      onBlur={handleCepBlur} // 👈 CHAMA A API AQUI
+                      onBlur={handleCepBlur}
                       required
-                      disabled={isLoading || isCepLoading} // 👈 Desabilita na busca
-                      maxLength={9} // XXXXX-XXX
+                      disabled={isLoading || isCepLoading} 
+                      maxLength={9}
                       placeholder="00000-000"
                     />
                     {isCepLoading && (
@@ -618,14 +617,14 @@ export function RegisterPage() {
                     value={formData.endereco.rua}
                     onChange={handleEnderecoChange}
                     required
-                    disabled={isLoading || isCepLoading} // 👈 Desabilita na busca
-                    readOnly={isCepLoading} // 👈 Impede edição na busca
+                    disabled={isLoading || isCepLoading} 
+                    readOnly={isCepLoading}
                   />
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <Input
                       label="Número"
                       name="numero"
-                      type="tel" // 👈 'tel' para teclado numérico
+                      type="tel"
                       value={formData.endereco.numero}
                       onChange={handleEnderecoChange}
                       required
@@ -637,8 +636,8 @@ export function RegisterPage() {
                       value={formData.endereco.bairro}
                       onChange={handleEnderecoChange}
                       required
-                      disabled={isLoading || isCepLoading} // 👈 Desabilita na busca
-                      readOnly={isCepLoading} // 👈 Impede edição na busca
+                      disabled={isLoading || isCepLoading} 
+                      readOnly={isCepLoading} 
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -648,8 +647,8 @@ export function RegisterPage() {
                       value={formData.endereco.cidade}
                       onChange={handleEnderecoChange}
                       required
-                      disabled={isLoading || isCepLoading} // 👈 Desabilita na busca
-                      readOnly={isCepLoading} // 👈 Impede edição na busca
+                      disabled={isLoading || isCepLoading} 
+                      readOnly={isCepLoading} 
                     />
                     <Input
                       label="Estado (UF)"
@@ -657,8 +656,8 @@ export function RegisterPage() {
                       value={formData.endereco.estado}
                       onChange={handleEnderecoChange}
                       required
-                      disabled={isLoading || isCepLoading} // 👈 Desabilita na busca
-                      readOnly={isCepLoading} // 👈 Impede edição na busca
+                      disabled={isLoading || isCepLoading} 
+                      readOnly={isCepLoading}
                       maxLength={2}
                       placeholder="UF"
                     />

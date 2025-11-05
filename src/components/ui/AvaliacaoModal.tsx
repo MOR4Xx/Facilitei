@@ -1,4 +1,3 @@
-// src/components/ui/AvaliacaoModal.tsx
 import { useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

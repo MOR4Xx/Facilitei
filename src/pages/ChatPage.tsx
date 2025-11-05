@@ -1,7 +1,6 @@
-// src/pages/ChatPage.tsx
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { Client, type IMessage } from '@stomp/stompjs'; // 👈 Importa o cliente STOMP
+import { Client, type IMessage } from '@stomp/stompjs';
 import { useAuthStore } from '../store/useAuthStore';
 import { Typography } from '../components/ui/Typography';
 import { Input } from '../components/ui/Input';
@@ -19,7 +18,7 @@ interface ChatMessage {
 
 // Configuração do cliente STOMP
 const stompConfig = {
-  brokerURL: `ws://${window.location.hostname}:8080/buildrun-livechat-websocket`, // 👈 URL do seu backend Java
+  brokerURL: `ws://${window.location.hostname}:8080/buildrun-livechat-websocket`,
   reconnectDelay: 5000,
   heartbeatIncoming: 4000,
   heartbeatOutgoing: 4000,

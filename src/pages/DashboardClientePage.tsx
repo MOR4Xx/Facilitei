@@ -1,27 +1,25 @@
-// src/pages/DashboardClientePage.tsx
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion, LayoutGroup, AnimatePresence } from "framer-motion"; // 👈 IMPORTA AnimatePresence
+import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { useAuthStore } from "../store/useAuthStore";
-import type { Servico, Trabalhador, StatusServico, AvaliacaoServico } from "../types/api"; // 👈 IMPORTA AvaliacaoServico
+import type { Servico, Trabalhador, StatusServico, AvaliacaoServico } from "../types/api"; 
 import { useNavigate } from "react-router-dom";
 import {
   TrabalhadorCard,
   itemVariants as cardItemVariants,
 } from "../components/ui/TrabalhadorCard";
-import { useMemo, useState } from "react"; // 👈 IMPORTA useState
+import { useMemo, useState } from "react"; 
 import {
   BriefcaseIcon,
   CheckIcon,
   CogIcon,
   WrenchScrewdriverIcon,
   XMarkIcon,
-  CalendarDaysIcon, // 👈 IMPORTA ÍCONE DE AVALIAÇÃO
+  CalendarDaysIcon, 
 } from "../components/ui/Icons";
-import { AvaliacaoModal } from "../components/ui/AvaliacaoModal"; // 👈 IMPORTA O MODAL
+import { AvaliacaoModal } from "../components/ui/AvaliacaoModal";
 
 // --- FUNÇÕES DE BUSCA (API) ---
 
@@ -116,7 +114,6 @@ export function DashboardClientePage() {
     queryFn: fetchTrabalhadores,
   });
 
-  // 👇 NOVA QUERY: Busca avaliações existentes
   const { data: servicosAvaliados, isLoading: isLoadingAvaliados } = useQuery({
     queryKey: ["servicosAvaliados", user?.id],
     queryFn: () => fetchServicosAvaliados(user!.id),
@@ -435,7 +432,7 @@ export function DashboardClientePage() {
                         <Button
                           size="sm"
                           variant="secondary" // Botão de ação
-                          onClick={() => setReviewingService(servico)} // 👈 Abre o modal
+                          onClick={() => setReviewingService(servico)}
                         >
                           <CalendarDaysIcon className="w-4 h-4 mr-1" />
                           Avaliar Serviço

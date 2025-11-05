@@ -1,4 +1,3 @@
-// src/components/ui/RatingFilter.tsx
 import { useState } from 'react';
 
 interface RatingFilterProps {

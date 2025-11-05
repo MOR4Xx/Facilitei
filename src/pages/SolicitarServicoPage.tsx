@@ -1,5 +1,3 @@
-// src/pages/SolicitarServicoPage.tsx
-
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
@@ -35,13 +33,11 @@ const containerVariants: Variants = {
   },
 };
 
-// 👇 --- CORREÇÃO AQUI --- 👇
-// (Este objeto estava faltando)
+
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100 } },
 };
-// 👆 --- FIM DA CORREÇÃO --- 👆
 
 // --- FUNÇÃO DE BUSCA ---
 const fetchTrabalhadores = async (): Promise<Trabalhador[]> => {
@@ -186,9 +182,9 @@ export function SolicitarServicoPage() {
         </Typography>
       </motion.div>
 
-      {/* --- O "SUSTO" (SELETOR DE CATEGORIAS VISUAL) --- */}
+      {/* --- (SELETOR DE CATEGORIAS VISUAL) --- */}
       <motion.div
-        variants={itemVariants} // 👈 Agora 'itemVariants' existe
+        variants={itemVariants}
         className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
       >
         {['TODOS', ...allCategoryGroups].map(group => {
@@ -274,7 +270,7 @@ export function SolicitarServicoPage() {
             placeholder="Ex: São Paulo ou SP"
           />
           
-          {/* Filtro 4: Nota Mínima (NOVO COMPONENTE) */}
+          {/* Filtro 4: Nota Mínima */}
            <div>
             <label className="block text-sm font-medium text-primary mb-2">
               Nota Mínima

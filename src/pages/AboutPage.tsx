@@ -1,4 +1,3 @@
-// src/pages/AboutPage.tsx
 import { motion } from 'framer-motion'; // Importe para animações modernas
 import { Typography } from '../components/ui/Typography';
 import { Card } from '../components/ui/Card';
