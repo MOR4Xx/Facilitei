@@ -88,6 +88,10 @@ export function AvaliacaoClienteModal({
       queryClient.invalidateQueries({
         queryKey: ["avaliacoesClienteFeitas", novaAvaliacao.trabalhadorId],
       });
+      // Invalida o dashboard principal do trabalhador para atualizar a lista
+      queryClient.invalidateQueries({
+        queryKey: ["workerData", novaAvaliacao.trabalhadorId],
+      });
 
       // Agora, recalcula a média
       try {

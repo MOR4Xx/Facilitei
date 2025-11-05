@@ -127,6 +127,9 @@ export function DashboardClientePage() {
       queryClient.invalidateQueries({
         queryKey: ["servicosCliente", user?.id],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["servicosAvaliados", user?.id],
+      });
       queryClient.invalidateQueries({ queryKey: ["workerData"] });
     },
   });
