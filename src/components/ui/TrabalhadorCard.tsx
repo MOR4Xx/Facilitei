@@ -51,8 +51,8 @@ export function TrabalhadorCard({
       className="p-5 flex flex-col items-center text-center cursor-pointer
                  h-full !border-primary/10" // 👈 Estilo base (o hover vem do Card)
       
-      // --- CORREÇÃO AQUI ---
-      // Removido "/dashboard" do link
+      // --- CORREÇÃO DO BUG 404 ---
+      // O link agora aponta para a rota pública correta
       onClick={() => navigate(`/trabalhador/${trabalhador.id}`)}
       whileHover={{ y: -5 }}
     >

@@ -32,7 +32,7 @@ export function LoginPage() {
         // Se encontrado, faz login e assume a role 'cliente'
         login({ ...users[0], role: "cliente" });
         toast.success("Login efetuado com sucesso!");
-        // 👇 LÓGICA DE REDIRECIONAMENTO APRIMORADA
+        // 👇 LÓGICA DE REDIRECIONAMENTO CORRIGIDA
         navigate(redirectTo || "/dashboard", { replace: true });
         return;
       }
@@ -47,7 +47,7 @@ export function LoginPage() {
         // Se encontrado, faz login e assume a role 'trabalhador'
         login({ ...workers[0], role: "trabalhador" });
         toast.success("Login efetuado com sucesso!");
-        // 👇 LÓGICA DE REDIRECIONAMENTO APRIMORADA
+        // 👇 LÓGICA DE REDIRECIONAMENTO CORRIGIDA
         navigate(redirectTo || "/dashboard", { replace: true });
         return;
       }

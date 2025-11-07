@@ -239,7 +239,7 @@ export function TrabalhadorProfilePage() {
     mutationCreateServico.mutate(servicoData);
   };
 
-  // --- Funções de Handler do Modal (MODIFICADA) ---
+  // --- Funções de Handler do Modal (COM A CORREÇÃO DE REDIRECT) ---
   const handleOpenModal = () => {
     // 1. Se NÃO ESTÁ LOGADO
     if (!isAuthenticated) {
@@ -390,7 +390,7 @@ export function TrabalhadorProfilePage() {
               as="h3"
               className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
             >
-              Avaliações de Clientes ({avaliacoes?.length || 0})
+              Avaliações de Clientes ({avaliacoes?.length || 0})}{" "}
               {/* Atualizado */}
             </Typography>
             <div className="space-y-6">
