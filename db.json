@@ -60,14 +60,15 @@
         "cep": "75200000"
       },
       "disponibilidade": "Segunda a Sexta, 8h às 18h",
-      "notaTrabalhador": 0,
+      "notaTrabalhador": 5,
       "servicos": [
         "PEDREIRO",
         "ENCANADOR",
         "GESSEIRO",
         "MARCENEIRO"
       ],
-      "servicoPrincipal": "PEDREIRO"
+      "servicoPrincipal": "ENCANADOR",
+      "role": "trabalhador"
     }
   ],
   "clientes": [
@@ -110,7 +111,7 @@
       "senha": "123456",
       "telefone": "(64) 99999-9999",
       "avatarUrl": "/avatars/cliente-1.png",
-      "notaCliente": 0,
+      "notaCliente": 5,
       "endereco": {
         "rua": "Rua Francisco de Souza Lobo",
         "numero": "51",
@@ -154,6 +155,17 @@
       "disponibilidadeId": 1,
       "tipoServico": "PEDREIRO",
       "statusServico": "FINALIZADO"
+    },
+    {
+      "id": "89a3",
+      "titulo": "Solicitação de ENCANADOR",
+      "descricao": "Encana aqui ",
+      "preco": 0,
+      "trabalhadorId": "1762480754882",
+      "clienteId": "1762477587005",
+      "disponibilidadeId": 1,
+      "tipoServico": "ENCANADOR",
+      "statusServico": "FINALIZADO"
     }
   ],
   "solicitacoes-servico": [
@@ -177,6 +189,13 @@
       "servicoId": "1b56",
       "descricao": "Bater uma laje aqui em casa",
       "statusSolicitacao": "ACEITA"
+    },
+    {
+      "id": "8b53",
+      "clienteId": "1762477587005",
+      "servicoId": "89a3",
+      "descricao": "Encana aqui ",
+      "statusSolicitacao": "ACEITA"
     }
   ],
   "avaliacoes-cliente": [
@@ -188,6 +207,14 @@
       "nota": 5,
       "comentario": "Cliente muito educado e prestativo.",
       "fotos": []
+    },
+    {
+      "id": "b97e",
+      "trabalhadorId": "1762480754882",
+      "clienteId": "1762477587005",
+      "servicoId": "89a3",
+      "nota": 5,
+      "comentario": "Mlk gente boa"
     }
   ],
   "avaliacoes-trabalhador": [
@@ -199,6 +226,14 @@
       "nota": 4,
       "comentario": "Ótimo profissional, resolveu meu problema rapidamente.",
       "fotos": []
+    },
+    {
+      "id": "3cc6",
+      "clienteId": "1762477587005",
+      "trabalhadorId": "1762480754882",
+      "servicoId": "89a3",
+      "nota": 5,
+      "comentario": "Dahora"
     }
   ],
   "avaliacoes-servico": [
@@ -209,6 +244,13 @@
       "nota": 5,
       "comentario": "Serviço executado com perfeição.",
       "fotos": []
+    },
+    {
+      "id": "c8f3",
+      "clienteId": "1762477587005",
+      "servicoId": "89a3",
+      "nota": 5,
+      "comentario": "Dahora"
     }
   ]
 }

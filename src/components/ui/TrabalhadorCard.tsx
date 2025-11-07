@@ -20,7 +20,6 @@ const Rating = ({ score }: { score: number }) => {
 };
 
 // --- VARIANTES DE ANIMAÇÃO (Passadas pelo componente pai) ---
-// Esta variante é um 'item' de um 'container'
 export const itemVariants: Variants = {
   hidden: { opacity: 0, scale: 0.95 },
   visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 100 } },
@@ -49,7 +48,7 @@ export function TrabalhadorCard({
       variants={variants}
       layout 
       className="p-5 flex flex-col items-center text-center cursor-pointer
-                 h-full !border-primary/10" // 👈 Estilo base (o hover vem do Card)
+                 h-full !border-primary/10"
       
       // --- CORREÇÃO DO BUG 404 ---
       // O link agora aponta para a rota pública correta

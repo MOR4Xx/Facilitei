@@ -174,7 +174,7 @@ export function SolicitarServicoPage() {
       className="space-y-10"
     >
       <motion.div variants={itemVariants} className="text-center">
-        <Typography as="h1" className="!text-accent mb-2">
+        <Typography as="h1" className="!text-accent !text-3xl sm:!text-4xl mb-2">
           Encontre o Profissional Ideal
         </Typography>
         <Typography as="p" className="text-lg max-w-3xl mx-auto">
@@ -227,7 +227,8 @@ export function SolicitarServicoPage() {
 
       {/* --- PAINEL DE FILTROS AVANÇADOS --- */}
       <Card variants={itemVariants} className="!bg-dark-surface/90 p-6"> 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
+        {/* Grid responsivo */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-end">
           
           {/* Filtro 1: Serviço Específico (Dinâmico) */}
           <div>
@@ -271,7 +272,7 @@ export function SolicitarServicoPage() {
           />
           
           {/* Filtro 4: Nota Mínima */}
-           <div>
+           <div className="flex flex-col items-start">
             <label className="block text-sm font-medium text-primary mb-2">
               Nota Mínima
             </label>
@@ -288,7 +289,7 @@ export function SolicitarServicoPage() {
       <AnimatePresence>
         <motion.div
           layout 
-          className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         >
           {filteredTrabalhadores.length > 0 ? (
             filteredTrabalhadores.map((trabalhador) => (
@@ -299,7 +300,7 @@ export function SolicitarServicoPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="sm:col-span-2 lg:col-span-4 text-center py-10"
+              className="col-span-1 sm:col-span-2 lg:col-span-3 xl:col-span-4 text-center py-10"
             >
               <Card className="p-10 border-dashed border-dark-subtle/30">
                 <Typography as="p" className="text-xl text-dark-subtle">

@@ -1,10 +1,11 @@
 import { AccordionItem } from "../components/ui/Accordion";
+import { Typography } from '../components/ui/Typography';
 
 export function FAQPage() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="text-center mb-12">
-        <h1 className="text-5xl font-extrabold text-dark-text">Dúvidas Frequentes</h1>
+        <Typography as="h1" className="!text-4xl sm:!text-5xl font-extrabold text-dark-text">Dúvidas Frequentes</Typography>
         <p className="mt-4 text-lg text-dark-subtle">Encontre aqui as respostas para as perguntas mais comuns.</p>
       </div>
       <div className="space-y-4">

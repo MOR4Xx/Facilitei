@@ -7,7 +7,8 @@ export function MainLayout() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-grow container mx-auto px-6 py-12">
+      {/* ATUALIZADO: Padding py-6 em telas pequenas, py-12 em médias e maiores */}
+      <main className="flex-grow container mx-auto px-6 py-6 md:py-12">
         <Outlet />
       </main>
       <Footer />

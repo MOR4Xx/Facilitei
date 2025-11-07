@@ -12,7 +12,8 @@ import { DashboardRootPage } from "../pages/DashboardRootPage";
 import { SolicitarServicoPage } from "../pages/SolicitarServicoPage";
 import { TrabalhadorProfilePage } from "../pages/TrabalhadorProfilePage";
 import { ClienteProfilePage } from "../pages/ClienteProfilePage";
-import { ClienteSettingsPage } from "../pages/ClienteSettingsPage";
+// 1. Importar a nova página Raiz
+import { SettingsRootPage } from "../pages/SettingsRootPage"; 
 import { ChatPage } from "../pages/ChatPage";
 
 export const router = createBrowserRouter([
@@ -20,14 +21,12 @@ export const router = createBrowserRouter([
     path: "/",
     element: <MainLayout />,
     children: [
-      // --- Rotas de Navegação Padrão ---
       { index: true, element: <HomePage /> },
       { path: "about", element: <AboutPage /> },
       { path: "faq", element: <FAQPage /> },
       { path: "login", element: <LoginPage /> },
       { path: "cadastro", element: <RegisterPage /> },
 
-      // --- Perfis Públicos ---
       {
         path: "trabalhador/:id",
         element: <TrabalhadorProfilePage />,
@@ -37,30 +36,28 @@ export const router = createBrowserRouter([
         element: <ClienteProfilePage />,
       },
 
-      // --- Hub Principal (Público por padrão) ---
       {
         path: "dashboard",
         children: [
-          // --- Rotas Públicas do "Dashboard" ---
           {
-            index: true, // Rota /dashboard
-            element: <DashboardRootPage />, // Mostrará DashboardClientePage se não logado
+            index: true, 
+            element: <DashboardRootPage />, 
           },
           {
-            path: "solicitar", // Rota /dashboard/solicitar
+            path: "solicitar",
             element: <SolicitarServicoPage />,
           },
 
-          // --- Rotas Protegidas que EXIGEM login ---
           {
-            element: <ProtectedRoute />, // Wrapper SÓ para rotas filhas privadas
+            element: <ProtectedRoute />, 
             children: [
               {
-                path: "configuracoes", // Rota /dashboard/configuracoes
-                element: <ClienteSettingsPage />,
+                path: "configuracoes", 
+                // 2. Usar a SettingsRootPage aqui
+                element: <SettingsRootPage />, 
               },
               {
-                path: "chat/:servicoId", // Rota /dashboard/chat/:id
+                path: "chat/:servicoId",
                 element: <ChatPage />,
               },
             ],

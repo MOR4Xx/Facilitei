@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom"; // 👈 Adicionar useSearchParams
+import { Link, useNavigate, useSearchParams } from "react-router-dom"; // 👈 Importar useSearchParams
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
@@ -22,14 +22,13 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      // 1. Tenta encontrar como Cliente (agora com E-mail E Senha)
+      // 1. Tenta encontrar como Cliente
       let response = await fetch(
         `http://localhost:3333/clientes?email=${email}&senha=${senha}`
       );
       let users: Cliente[] = await response.json();
 
       if (users.length > 0) {
-        // Se encontrado, faz login e assume a role 'cliente'
         login({ ...users[0], role: "cliente" });
         toast.success("Login efetuado com sucesso!");
         // 👇 LÓGICA DE REDIRECIONAMENTO CORRIGIDA
@@ -37,14 +36,13 @@ export function LoginPage() {
         return;
       }
 
-      // 2. Se não encontrou, tenta como Trabalhador (agora com E-mail E Senha)
+      // 2. Tenta como Trabalhador
       response = await fetch(
         `http://localhost:3333/trabalhadores?email=${email}&senha=${senha}`
       );
       let workers: Trabalhador[] = await response.json();
 
       if (workers.length > 0) {
-        // Se encontrado, faz login e assume a role 'trabalhador'
         login({ ...workers[0], role: "trabalhador" });
         toast.success("Login efetuado com sucesso!");
         // 👇 LÓGICA DE REDIRECIONAMENTO CORRIGIDA
@@ -52,7 +50,7 @@ export function LoginPage() {
         return;
       }
 
-      // 3. Se não encontrou em nenhum, exibe o erro
+      // 3. Se não encontrou
       toast.error("E-mail ou senha incorretos. Verifique suas credenciais.");
     } catch (err) {
       toast.error("Ocorreu um erro ao conectar com o servidor.");
@@ -62,18 +60,18 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex flex-col justify-center items-center min-h-[80vh] py-12">
-      {/* 1. TÍTULO GRANDE "FACILITEI" */}
+    // ATUALIZADO: Padding menor em telas pequenas
+    <div className="flex flex-col justify-center items-center min-h-[80vh] py-6 md:py-12">
+      
       <Typography
         as="h1"
-        className="!text-6xl font-extrabold text-accent mb-10"
+        className="!text-5xl sm:!text-6xl font-extrabold text-accent mb-8 sm:mb-10"
       >
         Facilitei
       </Typography>
 
-      {/* 2. CARD DE LOGIN */}
-      <Card className="w-full max-w-md p-8">
-        {/* Título "Bem-vindo!" */}
+      <Card className="w-full max-w-md p-6 sm:p-8">
+        
         <Typography as="p" className="text-center text-dark-subtle mb-8">
           Acesse sua conta para continuar.
         </Typography>
@@ -87,7 +85,7 @@ export function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-
+          
           <Input
             label="Sua senha"
             name="senha"

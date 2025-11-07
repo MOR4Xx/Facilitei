@@ -33,10 +33,11 @@ function Stepper({ currentStep, userType }: StepperProps) {
 
   return (
     <nav
-      className="flex items-center justify-center mb-8"
+      // ATUALIZADO: Adicionado flex-wrap para telas muito pequenas
+      className="flex flex-wrap items-center justify-center mb-8 gap-y-2"
       aria-label="Progresso"
     >
-      <ol className="flex items-center space-x-4">
+      <ol className="flex items-center space-x-2 sm:space-x-4">
         {steps.map((label, index) => {
           const stepNumber = index + 1;
           const isCompleted = stepNumber < currentStep;
@@ -77,7 +78,7 @@ function Stepper({ currentStep, userType }: StepperProps) {
               {index < steps.length - 1 && (
                 <div
                   className={`
-                    flex-auto h-0.5 mx-3
+                    flex-auto h-0.5 mx-2 sm:mx-3
                     ${isCompleted ? "bg-primary" : "bg-dark-surface"}
                   `}
                 />
@@ -147,8 +148,8 @@ export function RegisterPage() {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [isCepLoading, setIsCepLoading] = useState(false); // 👈 NOVO: Loading do CEP
-  const [error, setError] = useState(""); // 👈 2. REMOVA OS ESTADOS DE MENSAGEM
+  const [isCepLoading, setIsCepLoading] = useState(false);
+  const [error, setError] = useState("");
   const [cepError, setCepError] = useState("");
 
   const navigate = useNavigate();
@@ -186,7 +187,7 @@ export function RegisterPage() {
     }));
   };
 
-  // 👈 NOVO: Handler para buscar CEP (ViaCEP)
+  // Handler para buscar CEP (ViaCEP)
   const handleCepBlur = async () => {
     const cep = formData.endereco.cep.replace(/\D/g, "");
     if (cep.length !== 8) {
@@ -456,9 +457,10 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="flex justify-center items-center py-12">
-      <Card className="w-full max-w-lg overflow-hidden p-8">
-        <Typography as="h2" className="text-center mb-2">
+    <div className="flex justify-center items-center py-6 md:py-12">
+      {/* Card Responsivo */}
+      <Card className="w-full max-w-lg overflow-hidden p-6 sm:p-8">
+        <Typography as="h2" className="text-center mb-2 !text-3xl sm:!text-4xl">
           Crie sua conta
         </Typography>
         <Typography as="p" className="text-center text-dark-subtle mb-8">
@@ -523,7 +525,7 @@ export function RegisterPage() {
               </motion.div>
             )}
 
-            {/* ETAPA 2: DADOS PESSOAIS (ATUALIZADO) */}
+            {/* ETAPA 2: DADOS PESSOAIS */}
             {step === 2 && (
               <motion.div
                 key={2}
@@ -536,6 +538,7 @@ export function RegisterPage() {
                 className="w-full absolute top-0 left-0"
               >
                 <fieldset className="space-y-6">
+                  {/* ... Inputs ... */}
                   <Input
                     label="Nome Completo"
                     name="nome"
@@ -581,7 +584,7 @@ export function RegisterPage() {
               </motion.div>
             )}
 
-            {/* ETAPA 3: ENDEREÇO (ATUALIZADO COM ViaCEP) */}
+            {/* ETAPA 3: ENDEREÇO (Responsivo) */}
             {step === 3 && (
               <motion.div
                 key={3}
@@ -623,6 +626,7 @@ export function RegisterPage() {
                     disabled={isLoading || isCepLoading}
                     readOnly={isCepLoading}
                   />
+                  {/* Grid Responsivo (md:grid-cols-3) */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <Input
                       label="Número"
@@ -641,8 +645,10 @@ export function RegisterPage() {
                       required
                       disabled={isLoading || isCepLoading}
                       readOnly={isCepLoading}
+                      className="md:col-span-2" // Ocupa 2 colunas no desktop
                     />
                   </div>
+                  {/* Grid Responsivo (md:grid-cols-3) */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <Input
                       label="Cidade"
@@ -652,6 +658,7 @@ export function RegisterPage() {
                       required
                       disabled={isLoading || isCepLoading}
                       readOnly={isCepLoading}
+                      className="md:col-span-2" // Ocupa 2 colunas no desktop
                     />
                     <Input
                       label="Estado (UF)"
@@ -669,7 +676,7 @@ export function RegisterPage() {
               </motion.div>
             )}
 
-            {/* ETAPA 4: SERVIÇOS (Permanece a mesma) */}
+            {/* ETAPA 4: SERVIÇOS (Responsivo) */}
             {step === 4 && formData.userType === "trabalhador" && (
               <motion.div
                 key={4}
@@ -689,6 +696,7 @@ export function RegisterPage() {
                     Quais serviços você oferece?
                     <span className="text-red-500">*</span>
                   </Typography>
+                  {/* Grid Responsivo (sm:grid-cols-2) */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 max-h-[300px] overflow-y-auto">
                     {allServicosList.map((service) => (
                       <button
@@ -717,8 +725,8 @@ export function RegisterPage() {
           </AnimatePresence>
         </div>
 
-        {/* Botões de Navegação */}
-        <div className="flex gap-4 pt-8">
+        {/* Botões de Navegação (Responsivos) */}
+        <div className="flex flex-col sm:flex-row gap-4 pt-8">
           {step > 1 && (
             <Button
               variant="outline"

@@ -78,11 +78,11 @@ export function ClienteSettingsPage() {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-3xl mx-auto"
     >
-      <Typography as="h1" className="mb-8 text-center">
+      <Typography as="h1" className="mb-8 text-center !text-3xl sm:!text-4xl">
         Minhas Configurações
       </Typography>
 
-      <Card className="p-8">
+      <Card className="p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2">
             Dados Pessoais
@@ -122,6 +122,7 @@ export function ClienteSettingsPage() {
             onChange={handleAddressChange}
             required
           />
+          {/* Grid Responsivo */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Input
               label="Número"
@@ -138,6 +139,7 @@ export function ClienteSettingsPage() {
               required
             />
           </div>
+           {/* Grid Responsivo */}
            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Input
               label="Cidade"

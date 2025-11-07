@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams, useLocation } from "react-router-dom"; // 👈 Adicionar useLocation
+import { useNavigate, useParams, useLocation } from "react-router-dom"; // 👈 Importar useLocation
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
@@ -17,6 +17,7 @@ import { Modal } from "../components/ui/Modal";
 import { Textarea } from "../components/ui/Textarea";
 import { toast } from "react-hot-toast";
 
+// ... (Interfaces NewServicoRequest e NewSolicitacaoRequest) ...
 interface NewServicoRequest {
   titulo: string;
   descricao: string;
@@ -34,6 +35,7 @@ interface NewSolicitacaoRequest {
   descricao: string;
   statusSolicitacao: "PENDENTE";
 }
+
 // --- FUNÇÕES DE BUSCA ---
 const fetchTrabalhadorById = async (id: string): Promise<Trabalhador> => {
   const response = await fetch(`http://localhost:3333/trabalhadores/${id}`);
@@ -139,7 +141,7 @@ export function TrabalhadorProfilePage() {
 
   const {
     data: trabalhador,
-    isLoading: isLoadingTrabalhador, // Renomeado para clareza
+    isLoading: isLoadingTrabalhador,
     isError,
   } = useQuery<Trabalhador>({
     queryKey: ["trabalhador", trabalhadorId],
@@ -149,14 +151,13 @@ export function TrabalhadorProfilePage() {
 
   const {
     data: avaliacoes,
-    isLoading: isLoadingAvaliacoes, // Novo estado de loading
+    isLoading: isLoadingAvaliacoes,
   } = useQuery({
-    queryKey: ["avaliacoesTrabalhador", trabalhador?.id], // A key depende do ID do trabalhador
+    queryKey: ["avaliacoesTrabalhador", trabalhador?.id],
     queryFn: () => fetchAvaliacoesTrabalhador(trabalhador!.id),
-    enabled: !!trabalhador, // SÓ RODA QUANDO O 'trabalhador' TIVER CARREGADO
+    enabled: !!trabalhador,
   });
 
-  // Efeito para ATUALIZAR o modal quando o trabalhador MUDAR
   useEffect(() => {
     if (trabalhador) {
       setSelectedServico(trabalhador.servicoPrincipal);
@@ -167,7 +168,6 @@ export function TrabalhadorProfilePage() {
   const mutationCreateServico = useMutation({
     mutationFn: createServico,
     onSuccess: (newServico) => {
-      // Sucesso! Agora, crie a solicitação
       const solicitacaoData: NewSolicitacaoRequest = {
         clienteId: user!.id,
         servicoId: newServico.id,
@@ -181,19 +181,14 @@ export function TrabalhadorProfilePage() {
     },
   });
 
-  // Mutation para criar a solicitação
   const mutationCreateSolicitacao = useMutation({
     mutationFn: createSolicitacao,
     onSuccess: () => {
-      // SUCESSO TOTAL!
       toast.success("Solicitação enviada! O profissional foi notificado.");
-
-      // Limpa os campos e fecha o modal após um tempo
       setTimeout(() => {
         setIsModalOpen(false);
         setDescricao("");
       }, 2000);
-
       queryClient.invalidateQueries({ queryKey: ["workerData"] });
       queryClient.invalidateQueries({ queryKey: ["servicos"] });
     },
@@ -204,12 +199,9 @@ export function TrabalhadorProfilePage() {
 
   const isLoadingRequest =
     mutationCreateServico.isPending || mutationCreateSolicitacao.isPending;
-
   const isSuccessRequest = mutationCreateSolicitacao.isSuccess;
 
-  // Função chamada pelo botão "Enviar" do Modal
   const handleSubmitRequest = () => {
-    // 1. Validação
     if (!isAuthenticated || user?.role !== "cliente") {
       toast.error("Você precisa estar logado como cliente.");
       return;
@@ -223,37 +215,30 @@ export function TrabalhadorProfilePage() {
       return;
     }
 
-    // 2. Monta o corpo do NOVO SERVIÇO
     const servicoData: NewServicoRequest = {
       titulo: `Solicitação de ${selectedServico.replace(/_/g, " ")}`,
       descricao: descricao,
-      preco: 0, // Preço a combinar
+      preco: 0,
       trabalhadorId: trabalhadorId,
       clienteId: user.id,
-      disponibilidadeId: 1, // Mockado, como no db.json
+      disponibilidadeId: 1,
       tipoServico: selectedServico,
-      statusServico: "PENDENTE", // Status inicial do serviço
+      statusServico: "PENDENTE",
     };
-
-    // 3. Inicia a primeira mutation
     mutationCreateServico.mutate(servicoData);
   };
 
   // --- Funções de Handler do Modal (COM A CORREÇÃO DE REDIRECT) ---
   const handleOpenModal = () => {
-    // 1. Se NÃO ESTÁ LOGADO
     if (!isAuthenticated) {
       toast.error("Você precisa fazer login como cliente para solicitar.");
-      // Redireciona para o login, guardando a página atual
       navigate(`/login?redirectTo=${location.pathname}`);
       return;
     }
-    // 2. Se ESTÁ LOGADO, MAS É UM TRABALHADOR
     if (user?.role !== "cliente") {
       toast.error("Apenas clientes podem solicitar serviços.");
       return;
     }
-    // 3. Se ESTÁ LOGADO E É UM CLIENTE
     setIsModalOpen(true);
   };
 
@@ -275,7 +260,6 @@ export function TrabalhadorProfilePage() {
     );
   }
 
-  // ATUALIZADO: Espera o perfil principal carregar
   if (isLoadingTrabalhador) {
     return (
       <div className="text-center py-20">
@@ -287,7 +271,7 @@ export function TrabalhadorProfilePage() {
     );
   }
 
-  if (!trabalhador) return null; // Se não está carregando e não tem trabalhador, não renderiza
+  if (!trabalhador) return null;
 
   const [primeiroNome] = trabalhador.nome.split(" ");
   const readableService =
@@ -300,6 +284,7 @@ export function TrabalhadorProfilePage() {
         initial="hidden"
         animate="visible"
         variants={pageVariants}
+        // Grid responsivo: 1 coluna no mobile, 3 no desktop
         className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10"
       >
         {/* Coluna da Esquerda: Perfil e Ações */}
@@ -390,11 +375,9 @@ export function TrabalhadorProfilePage() {
               as="h3"
               className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
             >
-              Avaliações de Clientes ({avaliacoes?.length || 0})}{" "}
-              {/* Atualizado */}
+              Avaliações de Clientes ({avaliacoes?.length || 0}){" "}
             </Typography>
             <div className="space-y-6">
-              {/* ATUALIZADO: Checa o novo isLoading das avaliações */}
               {isLoadingAvaliacoes ? (
                 <p className="text-dark-subtle italic text-center py-4">
                   Carregando avaliações...
@@ -405,8 +388,8 @@ export function TrabalhadorProfilePage() {
                     key={avaliacao.id}
                     className="border-b border-dark-surface/50 pb-4 last:border-b-0 last:pb-0"
                   >
-                    <div className="flex justify-between items-center mb-2">
-                      <Typography as="h3" className="!text-lg !text-dark-text">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                      <Typography as="h3" className="!text-lg !text-dark-text mb-2 sm:mb-0">
                         {avaliacao.clienteNome}
                       </Typography>
                       <Rating score={avaliacao.nota} />
@@ -433,13 +416,12 @@ export function TrabalhadorProfilePage() {
         title={`Solicitar ${primeiroNome}`}
       >
         <div className="space-y-6">
-          {/* O "MARCADOR" (SELECT) */}
           <div className="relative">
             <label
               htmlFor="servicoTipo"
               className="block text-sm font-medium text-dark-subtle mb-2"
             >
-              Qual serviço você precisa? (o "marcador")
+              Qual serviço você precisa?
             </label>
             <select
               id="servicoTipo"
@@ -460,7 +442,6 @@ export function TrabalhadorProfilePage() {
             </select>
           </div>
 
-          {/* A "BREVE DESCRIÇÃO" (TEXTAREA) */}
           <Textarea
             name="textarea"
             label="Breve descrição do serviço"
@@ -469,8 +450,7 @@ export function TrabalhadorProfilePage() {
             placeholder="Ex: Preciso instalar um ar condicionado de 9000 BTUs na sala."
           />
 
-          {/* Botões de Ação */}
-          <div className="flex gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Button
               variant="outline"
               className="w-full"

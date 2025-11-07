@@ -23,7 +23,7 @@ export function AboutPage() {
   return (
     // Animação de entrada da página
     <motion.div
-      className="max-w-5xl mx-auto space-y-20"
+      className="max-w-5xl mx-auto space-y-12 sm:space-y-20"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -34,21 +34,21 @@ export function AboutPage() {
         variants={itemVariants}
       >
         {/* Uso do componente Typography */}
-        <Typography as="h1" className="text-accent !text-6xl mb-4">
+        <Typography as="h1" className="text-accent !text-4xl sm:!text-6xl mb-4">
           Sobre o Facilitei
         </Typography>
-        <Typography as="p" className="text-xl max-w-3xl mx-auto">
+        <Typography as="p" className="text-lg sm:text-xl max-w-3xl mx-auto">
           Nossa missão é simplificar a forma como você encontra e contrata serviços locais, trazendo mais segurança, praticidade e qualidade para o seu dia a dia.
         </Typography>
       </motion.section>
 
       {/* Seção Visão e Valores (Layout em Grid) */}
-      <div className="grid lg:grid-cols-3 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         
         {/* Nossa Visão em um Card */}
         <motion.div className="lg:col-span-2" variants={itemVariants}>
-          <Card className="h-full p-10">
-            <Typography as="h2" className="text-primary mb-4 !text-4xl">
+          <Card className="h-full p-6 sm:p-10">
+            <Typography as="h2" className="text-primary mb-4 !text-3xl sm:!text-4xl">
               Nossa Visão
             </Typography>
             <Typography as="p" className="!text-lg">
@@ -92,7 +92,7 @@ export function AboutPage() {
         className="text-center pt-8"
         variants={itemVariants}
       >
-        <Typography as="h2" className="!text-accent mb-4">
+        <Typography as="h2" className="!text-accent !text-3xl sm:!text-4xl mb-4">
           O Futuro dos Serviços Locais
         </Typography>
         <Typography as="p" className="max-w-4xl mx-auto !text-lg">

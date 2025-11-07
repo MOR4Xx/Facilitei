@@ -2,8 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, type Variants } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
-import { useAuthStore } from "../store/useAuthStore"; // 👈 IMPORTAR
-import { Button } from "../components/ui/Button"; // 👈 IMPORTAR BUTTON
+import { useAuthStore } from "../store/useAuthStore";
+import { Button } from "../components/ui/Button";
 
 // --- ÍCONES SVG ---
 function ClipboardListIcon(props: React.ComponentProps<"svg">) {
@@ -102,31 +102,29 @@ export function HomePage() {
   // Lógica para o botão "Sou Trabalhador"
   const handleWorkerClick = () => {
     if (isAuthenticated) {
-      // Se já está logado (seja cliente ou worker), manda pro dashboard
-      // O DashboardRootPage vai direcionar corretamente
       navigate("/dashboard");
     } else {
-      // Se não está logado, manda pro cadastro
       navigate("/cadastro");
     }
   };
 
   return (
     <motion.div
-      className="space-y-32" // Aumentei o espaçamento
+      className="space-y-24 md:space-y-32" // Espaçamento responsivo
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
       {/* Seção Hero REFORMULADA */}
-      <section className="pt-12">
-        <div className="grid md:grid-cols-2 gap-10 items-center">
+      <section className="pt-8 md:pt-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
           {/* Coluna de Texto */}
           <motion.div
             variants={itemVariants}
             className="text-center md:text-left"
           >
-            <Typography as="h1" className="!text-5xl md:!text-6xl">
+            {/* Título Responsivo */}
+            <Typography as="h1" className="!text-4xl sm:!text-5xl md:!text-6xl">
               Sua solução de serviços <br /> em um{" "}
               <span className="text-accent">único lugar</span>.
             </Typography>
@@ -137,10 +135,10 @@ export function HomePage() {
               particulares.
             </Typography>
 
-            {/* --- BOTÕES ATUALIZADOS --- */}
+            {/* Botões Responsivos */}
             <div className="mt-10 flex flex-col sm:flex-row justify-center md:justify-start gap-4">
               <Link
-                to="/dashboard/solicitar" // Link para a busca (agora pública)
+                to="/dashboard/solicitar"
                 className="
                   bg-gradient-to-r from-accent to-lime-400 hover:from-accent-hover hover:to-lime-500 
                   text-dark-background font-bold py-3 px-8 rounded-lg text-lg 
@@ -152,11 +150,10 @@ export function HomePage() {
                 Buscar Profissional
               </Link>
               
-              {/* NOVO BOTÃO "SOU TRABALHADOR" */}
               <Button
                 onClick={handleWorkerClick}
                 variant="outline"
-                size="lg" // Tamanho grande para combinar
+                size="lg"
                 className="!text-lg !py-3 !border-2 !border-primary/50"
               >
                 Sou Trabalhador
@@ -207,30 +204,29 @@ export function HomePage() {
 
       {/* Seção "Como Funciona" REFORMULADA */}
       <motion.section variants={itemVariants}>
-        <Typography as="h2" className="text-center !text-4xl mb-6">
+        <Typography as="h2" className="text-center !text-3xl md:!text-4xl mb-6">
           É simples e rápido
         </Typography>
         <Typography
           as="p"
-          className="text-center !text-lg text-dark-subtle max-w-2xl mx-auto mb-16"
+          className="text-center !text-lg text-dark-subtle max-w-2xl mx-auto mb-12 md:mb-16"
         >
           Em apenas 3 passos você encontra o profissional ideal.
         </Typography>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* --- CARD 1 (COM TRANSIÇÃO DETALHADA) --- */}
+        {/* Grid Responsivo */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* --- CARD 1 --- */}
           <Card
             className="p-8 text-center flex flex-col items-center cursor-pointer group"
             variants={itemVariants}
             whileHover={{
-              // Animação do Card
               scale: 1.03,
               y: -8,
               boxShadow: "0 0 32px 0 rgba(163, 230, 53, 0.3)", // shadow-glow-accent
             }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }} // Animação mais rápida
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            {/* Ícone Detalhado */}
             <div
               className="flex-shrink-0 w-16 h-16 rounded-full bg-dark-background border-2 border-dark-surface/50 flex items-center justify-center mb-6
                           transition-all duration-300 ease-in-out
@@ -241,7 +237,6 @@ export function HomePage() {
                                           group-hover:scale-110"
               />
             </div>
-
             <Typography
               as="h3"
               className="!text-2xl mb-3 transition-colors duration-300
@@ -270,7 +265,6 @@ export function HomePage() {
             }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            {/* Ícone Detalhado */}
             <div
               className="flex-shrink-0 w-16 h-16 rounded-full bg-dark-background border-2 border-dark-surface/50 flex items-center justify-center mb-6
                           transition-all duration-300 ease-in-out
@@ -281,7 +275,6 @@ export function HomePage() {
                                   group-hover:scale-110"
               />
             </div>
-
             <Typography
               as="h3"
               className="!text-2xl mb-3 transition-colors duration-300
@@ -309,7 +302,6 @@ export function HomePage() {
             }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           >
-            {/* Ícone Detalhado */}
             <div
               className="flex-shrink-0 w-16 h-16 rounded-full bg-dark-background border-2 border-dark-surface/50 flex items-center justify-center mb-6
                           transition-all duration-300 ease-in-out
@@ -320,7 +312,6 @@ export function HomePage() {
                                       group-hover:scale-110"
               />
             </div>
-
             <Typography
               as="h3"
               className="!text-2xl mb-3 transition-colors duration-300
@@ -342,7 +333,7 @@ export function HomePage() {
 
       {/* (BÔNUS) Seção de Categorias Populares */}
       <motion.section variants={itemVariants} className="text-center">
-        <Typography as="h2" className="!text-4xl mb-6">
+        <Typography as="h2" className="!text-3xl md:!text-4xl mb-6">
           Categorias Populares
         </Typography>
         <Typography
@@ -351,7 +342,7 @@ export function HomePage() {
         >
           Os serviços mais buscados na plataforma.
         </Typography>
-        <div className="flex flex-wrap gap-4 justify-center">
+        <div className="flex flex-wrap gap-3 sm:gap-4 justify-center">
           {[
             "Eletricista",
             "Pedreiro",
@@ -362,7 +353,7 @@ export function HomePage() {
           ].map((cat) => (
             <span
               key={cat}
-              className="px-6 py-3 bg-dark-surface text-dark-text text-lg font-medium rounded-full border border-dark-surface/50
+              className="px-4 py-2 sm:px-6 sm:py-3 bg-dark-surface text-dark-text text-base sm:text-lg font-medium rounded-full border border-dark-surface/50
                            hover:border-primary hover:text-primary transition-all cursor-pointer"
             >
               {cat}

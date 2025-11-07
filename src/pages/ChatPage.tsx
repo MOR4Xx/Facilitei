@@ -59,7 +59,6 @@ export function ChatPage() {
       console.log('Conectado ao WebSocket: ' + frame);
       setIsConnected(true);
       // Se inscreve no tópico GERAL (conforme backend atual)
-      // **MELHORIA FUTURA:** Usar um tópico específico por servicoId, ex: `/topics/chat/${servicoId}`
       client.subscribe('/topics/livechat', (message: IMessage) => {
         try {
           const parsedBody = JSON.parse(message.body);
@@ -68,11 +67,9 @@ export function ChatPage() {
           }
         } catch (e) {
           console.error("Erro ao processar mensagem:", e);
-          // Se não for JSON, trata como texto simples (fallback)
           addMessage(message.body);
         }
       });
-      // Adiciona uma mensagem de sistema
        addMessage(`Você entrou no chat do serviço #${servicoId}.`);
     };
 
@@ -109,7 +106,6 @@ export function ChatPage() {
         user: user.nome, // Nome do usuário logado
         message: inputText.trim(),
       };
-      // Publica a mensagem para o backend
       stompClientRef.current.publish({
         destination: '/app/new-message',
         body: JSON.stringify(chatInput),
@@ -119,10 +115,11 @@ export function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-200px)] max-w-4xl mx-auto">
-      <Typography as="h1" className="mb-4 text-center">
+    // ATUALIZADO: Altura definida para 75vh para funcionar bem em todas as telas
+    <div className="flex flex-col h-[75vh] max-w-4xl mx-auto">
+      <Typography as="h1" className="mb-4 text-center !text-2xl sm:!text-3xl">
         Chat - Serviço #{servicoId}
-        <span className={`ml-3 text-sm font-normal ${isConnected ? 'text-accent' : 'text-red-500'}`}>
+        <span className={`block sm:inline sm:ml-3 text-sm font-normal ${isConnected ? 'text-accent' : 'text-red-500'}`}>
           ({isConnected ? 'Conectado' : 'Desconectado'})
         </span>
       </Typography>
@@ -140,7 +137,7 @@ export function ChatPage() {
               className={`flex mb-3 ${msg.isMe ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`p-3 rounded-lg max-w-[70%] ${
+                className={`p-3 rounded-lg max-w-[80%] sm:max-w-[70%] ${
                   msg.isMe
                     ? 'bg-primary text-white rounded-br-none'
                     : 'bg-dark-surface text-dark-text rounded-bl-none'
@@ -149,7 +146,7 @@ export function ChatPage() {
                 {!msg.isMe && (
                    <p className="text-xs text-accent font-semibold mb-1">{msg.sender}</p>
                 )}
-                <p className="text-base">{msg.text}</p>
+                <p className="text-base break-words">{msg.text}</p>
                  <p className="text-xs text-right mt-1 opacity-70">
                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                  </p>
@@ -162,19 +159,21 @@ export function ChatPage() {
       </Card>
 
       {/* Input de Mensagem */}
-      <form onSubmit={handleSendMessage} className="flex gap-3 items-center">
+      <form onSubmit={handleSendMessage} className="flex gap-3 items-start sm:items-center">
         <Input
           label="Digite sua mensagem..."
+          name="chat-input" // Adicionado 'name' e 'label'
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          className="flex-grow"
+          className="flex-grow" // Input já é responsivo
           disabled={!isConnected}
           required
         />
         <Button
           type="submit"
           variant="secondary"
-          size="md"
+          size="md" // Tamanho do botão é consistente
+          className="!py-3" // Garante altura consistente com input
           disabled={!isConnected || !inputText.trim()}
         >
           Enviar

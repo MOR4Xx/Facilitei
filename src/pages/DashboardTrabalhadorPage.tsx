@@ -1,4 +1,3 @@
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card } from "../components/ui/Card";
 import { motion, LayoutGroup, AnimatePresence } from "framer-motion";
@@ -21,14 +20,15 @@ import {
   ChatBubbleLeftRightIcon,
   CheckIcon,
   XMarkIcon,
+  CogIcon, // 👈 1. IMPORTAR O ÍCONE
 } from "../components/ui/Icons";
 import { AvaliacaoClienteModal } from "../components/ui/AvaliacaoClienteModal";
 
-// ... (Interface SolicitacaoServico e WorkerData permanecem iguais)
+// ... (Interfaces, Variantes e Funções de Fetch/Mutation - sem alterações) ...
 interface SolicitacaoServico {
   id: number;
   clienteId: number;
-  servicoId: number; // ID do serviço associado
+  servicoId: number;
   descricao: string;
   statusSolicitacao: "PENDENTE" | "ACEITA" | "RECUSADA";
 }
@@ -39,7 +39,6 @@ interface WorkerData {
   finishedServices: (Servico & { cliente: Cliente })[];
 }
 
-// --- VARIANTES DE ANIMAÇÃO ---
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
@@ -50,7 +49,6 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-// --- COMPONENTE DE RATING (Estrelas) ---
 const Rating = ({ score }: { score: number }) => {
   const stars = Array(5)
     .fill(0)
@@ -67,14 +65,13 @@ const Rating = ({ score }: { score: number }) => {
   return <div className="flex space-x-0.5">{stars}</div>;
 };
 
-// --- FUNÇÕES DE FETCH (API) ---
 const fetchCliente = async (id: number): Promise<Cliente> => {
   const res = await fetch(`http://localhost:3333/clientes/${id}`);
   if (!res.ok) throw new Error("Cliente não encontrado");
   return res.json();
 };
 
-const fetchAvaliacoesClienteFeitas = async (
+const fetchAvaliacaoClienteFeitas = async (
   trabalhadorId: number
 ): Promise<AvaliacaoCliente[]> => {
   const res = await fetch(
@@ -91,7 +88,6 @@ const fetchWorkerData = async (workerId: number): Promise<WorkerData> => {
   if (!servicesResponse.ok) throw new Error("Falha ao buscar serviços.");
   const allServices: Servico[] = await servicesResponse.json();
 
-  // Ordena os serviços ativos (PENDENTE_APROVACAO primeiro)
   const activeServices = allServices
     .filter(
       (s) =>
@@ -153,7 +149,6 @@ const fetchWorkerData = async (workerId: number): Promise<WorkerData> => {
   };
 };
 
-// --- FUNÇÕES DE MUTATION (API) ---
 const updateServicoStatus = async ({
   id,
   status,
@@ -188,6 +183,7 @@ const updateSolicitacaoStatus = async ({
   if (!response.ok) throw new Error("Falha ao atualizar solicitação.");
   return response.json();
 };
+
 
 // --- COMPONENTE PRINCIPAL ---
 export function DashboardTrabalhadorPage() {
@@ -233,7 +229,7 @@ export function DashboardTrabalhadorPage() {
     },
   });
 
-  // --- HANDLERS (Ações dos Botões) ---
+  // ... (Handlers - sem alterações) ...
   const handleAccept = (solicitacao: SolicitacaoServico) => {
     solicitacaoMutation.mutate({ id: solicitacao.id, status: "ACEITA" });
     servicoMutation.mutate({
@@ -250,6 +246,7 @@ export function DashboardTrabalhadorPage() {
   const handleRequestFinish = (servico: Servico) => {
     servicoMutation.mutate({ id: servico.id, status: "PENDENTE_APROVACAO" });
   };
+
 
   const isMutating = solicitacaoMutation.isPending || servicoMutation.isPending;
 
@@ -290,7 +287,7 @@ export function DashboardTrabalhadorPage() {
       animate="visible"
       className="space-y-12"
     >
-      {/* HEADER E AÇÕES */}
+      {/* HEADER E AÇÕES (ATUALIZADO) */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
         <motion.div variants={itemVariants}>
           <Typography as="h1">E aí, {primeiroNome}!</Typography>
@@ -298,11 +295,23 @@ export function DashboardTrabalhadorPage() {
             Hora de colocar a mão na massa.
           </Typography>
         </motion.div>
-        <motion.div variants={itemVariants}>
+        
+        {/* 👇 2. ADICIONAR BOTÕES DE AÇÃO */}
+        <motion.div variants={itemVariants} className="flex gap-4 mt-4 md:mt-0 w-full md:w-auto">
+          <Button
+            variant="outline"
+            size="md"
+            className="!px-4"
+            onClick={() => navigate("/dashboard/configuracoes")} // Rota unificada
+            title="Configurações"
+          >
+            <CogIcon className="w-6 h-6" />
+          </Button>
           <Button
             variant="primary"
             size="lg"
-            className="mt-4 md:mt-0 shadow-lg shadow-primary/20 hover:shadow-primary/40"
+            className="shadow-lg shadow-primary/20 hover:shadow-primary/40 w-full"
+            // onClick={() => navigate("/dashboard/agenda")} // TODO: Criar página de agenda
           >
             <CalendarDaysIcon className="w-5 h-5 mr-2" />
             Ver Agenda Completa
@@ -310,18 +319,19 @@ export function DashboardTrabalhadorPage() {
         </motion.div>
       </div>
 
-      {/* CARD DE BOAS-VINDAS */}
+      {/* ... (Restante do arquivo - Cards de Boas Vindas, Estatísticas, etc.) ... */}
+      {/* CARD DE BOAS-VINDAS (Responsivo) */}
       <motion.div variants={itemVariants}>
-        <Card className={`p-8 ${welcomeCardClass}`}>
-          <div className="flex justify-between items-center">
-            <div>
+        <Card className={`p-6 md:p-8 ${welcomeCardClass}`}>
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center">
+            <div className="mb-4 sm:mb-0">
               <Typography
                 as="h2"
-                className="!text-white !text-4xl font-extrabold"
+                className="!text-white !text-3xl sm:!text-4xl font-extrabold"
               >
                 Sua Nota: {trabalhador.notaTrabalhador.toFixed(1)}
               </Typography>
-              <p className="mt-2 text-xl text-dark-background/80">
+              <p className="mt-2 text-lg sm:text-xl text-dark-background/80">
                 Mantenha o trabalho de qualidade!
               </p>
             </div>
@@ -330,8 +340,8 @@ export function DashboardTrabalhadorPage() {
         </Card>
       </motion.div>
 
-      {/* CARDS DE ESTATÍSTICAS RÁPIDAS */}
-      <div className="grid md:grid-cols-2 gap-6">
+      {/* CARDS DE ESTATÍSTICAS RÁPIDAS (Responsivo) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <motion.div variants={itemVariants}>
           <Card className="p-6 flex justify-between items-center">
             <div>
@@ -367,7 +377,7 @@ export function DashboardTrabalhadorPage() {
         </motion.div>
       </div>
 
-      {/* LAYOUT DE 2 COLUNAS: AÇÕES E ATIVOS */}
+      {/* LAYOUT DE 2 COLUNAS (Responsivo por padrão) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
         {/* COLUNA PRINCIPAL: NOVAS SOLICITAÇÕES */}
         <section className="space-y-6 lg:col-span-2">
@@ -411,7 +421,7 @@ export function DashboardTrabalhadorPage() {
                           </p>
                         </div>
                       </div>
-                      <span className="text-xs font-bold py-1 px-3 rounded-full bg-accent text-dark-background">
+                      <span className="text-xs flex-shrink-0 font-bold py-1 px-3 rounded-full bg-accent text-dark-background">
                         NOVO
                       </span>
                     </div>
@@ -432,8 +442,8 @@ export function DashboardTrabalhadorPage() {
                       </Typography>
                     </div>
 
-                    {/* Botões de Ação */}
-                    <div className="flex gap-4">
+                    {/* Botões de Ação (Responsivos) */}
+                    <div className="flex flex-col sm:flex-row gap-4">
                       <Button
                         variant="outline"
                         className="w-full !border-status-danger !text-status-danger hover:!bg-status-danger hover:!text-white hover:!shadow-glow-danger"
@@ -499,18 +509,18 @@ export function DashboardTrabalhadorPage() {
                         alt={servico.cliente.nome}
                         className="w-10 h-10 rounded-full object-cover mr-3"
                       />
-                      <div className="flex-1">
+                      <div className="flex-1 overflow-hidden">
                         <p className="text-sm font-semibold text-dark-text truncate">
                           {servico.titulo}
                         </p>
-                        <p className="text-xs text-dark-subtle">
+                        <p className="text-xs text-dark-subtle truncate">
                           Cliente: {servico.cliente.nome}
                         </p>
                       </div>
                       <Button
                         size="sm"
                         variant="outline"
-                        className="!p-2"
+                        className="!p-2 ml-2 flex-shrink-0"
                         onClick={() =>
                           navigate(`/dashboard/chat/${servico.id}`)
                         }
@@ -556,6 +566,7 @@ export function DashboardTrabalhadorPage() {
           </LayoutGroup>
         </aside>
       </div>
+      
       {/* --- SEÇÃO HISTÓRICO DE SERVIÇOS --- */}
       {data?.finishedServices && data.finishedServices.length > 0 && (
         <section className="space-y-6 lg:col-span-3">
@@ -570,7 +581,6 @@ export function DashboardTrabalhadorPage() {
 
           <motion.div className="grid md:grid-cols-2 gap-4">
             {data.finishedServices.map((servico) => {
-              // Checa se este serviço já foi avaliado pelo trabalhador
               const isReviewed = reviewedClientServiceIds.has(servico.id);
 
               return (
@@ -583,29 +593,29 @@ export function DashboardTrabalhadorPage() {
                       : "!border-dark-surface/50"
                   }`}
                 >
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center">
+                    <div className="flex items-center gap-3 mb-3 sm:mb-0">
                       <img
                         src={servico.cliente.avatarUrl}
                         alt={servico.cliente.nome}
                         className="w-10 h-10 rounded-full object-cover"
                       />
-                      <div>
-                        <Typography as="h3" className="!text-lg">
+                      <div className="overflow-hidden">
+                        <Typography as="h3" className="!text-lg truncate">
                           {servico.titulo}
                         </Typography>
-                        <p className="text-sm text-dark-subtle mt-1">
+                        <p className="text-sm text-dark-subtle mt-1 truncate">
                           Cliente: {servico.cliente.nome} (Finalizado)
                         </p>
                       </div>
                     </div>
-                    {/* Lógica do Botão de Avaliação */}
+                    {/* Lógica do Botão de Avaliação (Responsivo) */}
                     {isReviewed ? (
                       <Button
                         size="sm"
                         variant="outline"
                         disabled
-                        className="!text-accent !border-accent/50"
+                        className="!text-accent !border-accent/50 w-full sm:w-auto flex-shrink-0"
                       >
                         <CheckIcon className="w-4 h-4 mr-1" />
                         Avaliado
@@ -613,8 +623,9 @@ export function DashboardTrabalhadorPage() {
                     ) : (
                       <Button
                         size="sm"
-                        variant="secondary" // Botão de ação
-                        onClick={() => setReviewingClientService(servico)} // 👈 Abre o modal
+                        variant="secondary"
+                        className="w-full sm:w-auto flex-shrink-0"
+                        onClick={() => setReviewingClientService(servico)}
                       >
                         <CalendarDaysIcon className="w-4 h-4 mr-1" />
                         Avaliar Cliente
@@ -628,7 +639,7 @@ export function DashboardTrabalhadorPage() {
         </section>
       )}
 
-      {/* --- O MODAL (Renderização Condicional) --- */}
+      {/* --- O MODAL --- */}
       <AnimatePresence>
         {reviewingClientService && (
           <AvaliacaoClienteModal

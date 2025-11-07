@@ -19,14 +19,12 @@ const fetchClienteById = async (id: string): Promise<Cliente> => {
 const fetchAvaliacoesCliente = async (
   clienteId: string
 ): Promise<AvaliacaoCliente[]> => {
-  // 1. Busca todas as avaliações de clientes
   const response = await fetch(
     `http://localhost:3333/avaliacoes-cliente?clienteId=${clienteId}`
   );
   if (!response.ok) return [];
   const avaliacoes: AvaliacaoCliente[] = await response.json();
 
-  // 2. Para cada avaliação, busca o nome do trabalhador
   const avaliacoesComNomes = await Promise.all(
     avaliacoes.map(async (avaliacao) => {
       const trabalhadorResponse = await fetch(
@@ -85,21 +83,22 @@ export function ClienteProfilePage() {
 
   const {
     data: cliente,
-    isLoading: isLoadingCliente, // Renomeado
+    isLoading: isLoadingCliente,
     isError,
   } = useQuery<Cliente>({
     queryKey: ["cliente", clienteId],
     queryFn: () => fetchClienteById(clienteId),
-    enabled: clienteId > 0,
+    enabled: !!clienteId, // Corrigido de clienteId > 0 para !!clienteId
   });
 
   const { data: avaliacoes, isLoading: isLoadingAvaliacoes } = useQuery({
     queryKey: ["avaliacoesCliente", cliente?.id],
     queryFn: () => fetchAvaliacoesCliente(cliente!.id),
-    enabled: !!cliente, // SÓ RODA QUANDO O 'cliente' TIVER CARREGADO
+    enabled: !!cliente,
   });
 
-  const isOwner = user?.id === clienteId && user?.role === "cliente";
+  // Corrigido: a ID do store pode ser número ou string, a do param é string
+  const isOwner = user?.id == clienteId && user?.role === "cliente";
 
   if (isError) {
     return (
@@ -120,7 +119,6 @@ export function ClienteProfilePage() {
   }
 
   if (isLoadingCliente) {
-    // Atualizado
     return (
       <div className="text-center py-20">
         <Typography as="h2">Carregando Perfil do Cliente...</Typography>
@@ -138,6 +136,7 @@ export function ClienteProfilePage() {
       initial="hidden"
       animate="visible"
       variants={pageVariants}
+      // Grid responsivo
       className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10"
     >
       {/* Coluna da Esquerda: Perfil */}
@@ -192,7 +191,6 @@ export function ClienteProfilePage() {
 
       {/* Coluna da Direita: Detalhes e Avaliações */}
       <motion.div className="lg:col-span-2 space-y-8" variants={itemVariants}>
-        {/* ... (Resto da página: Sobre Mim, Avaliações Recebidas) ... */}
         <Card className="p-6">
           <Typography
             as="h3"
@@ -212,10 +210,9 @@ export function ClienteProfilePage() {
             as="h3"
             className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
           >
-            Avaliações Recebidas ({avaliacoes?.length || 0}) {/* Atualizado */}
+            Avaliações Recebidas ({avaliacoes?.length || 0})
           </Typography>
           <div className="space-y-6">
-            {/* ATUALIZADO: Checa o novo isLoading das avaliações */}
             {isLoadingAvaliacoes ? (
               <p className="text-dark-subtle italic text-center py-4">
                 Carregando avaliações...
@@ -226,8 +223,8 @@ export function ClienteProfilePage() {
                   key={avaliacao.id}
                   className="border-b border-dark-surface/50 pb-4 last:border-b-0 last:pb-0"
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <Typography as="h3" className="!text-lg !text-dark-text">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
+                    <Typography as="h3" className="!text-lg !text-dark-text mb-2 sm:mb-0">
                       {avaliacao.trabalhadorNome}
                     </Typography>
                     <Rating score={avaliacao.nota} />

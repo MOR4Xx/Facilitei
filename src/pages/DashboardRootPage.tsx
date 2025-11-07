@@ -5,11 +5,12 @@ import { DashboardTrabalhadorPage } from './DashboardTrabalhadorPage';
 export function DashboardRootPage() {
   const { user } = useAuthStore();
 
-  // Verifica o papel do usuário e renderiza o dashboard correspondente
+  // Se o usuário logado for um trabalhador, mostra o dashboard dele
   if (user?.role === 'trabalhador') {
     return <DashboardTrabalhadorPage />;
   }
   
-  // O padrão é o dashboard do cliente
+  // Para clientes LOGADOS ou visitantes NÃO LOGADOS,
+  // mostra o DashboardClientePage (que tem o modo público/privado)
   return <DashboardClientePage />;
 }

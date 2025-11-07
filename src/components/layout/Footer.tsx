@@ -11,10 +11,10 @@ export function Footer() {
     <footer className="bg-dark-surface/70 backdrop-blur-lg text-dark-text mt-auto border-t border-primary/20">
       <div className="container mx-auto px-6 py-12">
         
-        {/* Seção Superior com Colunas */}
+        {/* Seção Superior com Colunas (Responsivo) */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           
-          {/* Coluna 1: Logo e Descrição (Ocupa mais espaço) */}
+          {/* Coluna 1: Logo e Descrição (Responsivo) */}
           <div className="md:col-span-2">
             <Link to="/" className="text-3xl font-extrabold text-accent">
               Facilitei
@@ -24,7 +24,7 @@ export function Footer() {
             </p>
           </div>
           
-          {/* Coluna 2: Navegação */}
+          {/* Coluna 2: Navegação (Responsivo) */}
           <div>
             <h3 className="text-lg font-semibold text-primary mb-4">
               Navegação
@@ -37,7 +37,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Coluna 3: Legal */}
+          {/* Coluna 3: Legal (Responsivo) */}
           <div>
             <h3 className="text-lg font-semibold text-primary mb-4">
               Legal
