@@ -1,16 +1,13 @@
-// src/components/ui/AvaliacaoClienteModal.tsx
 import { useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Servico, AvaliacaoCliente, Cliente } from "../../types/api";
+import type { Servico, AvaliacaoCliente } from "../../types/api";
 import { Modal } from "./Modal";
 import { RatingInput } from "./RatingInput";
 import { Textarea } from "./Textarea";
 import { Button } from "./Button";
 import { Typography } from "./Typography";
 import { toast } from "react-hot-toast";
-
-// --- API ---
 
 // 1. Posta a avaliação do cliente (para o perfil dele)
 const postAvaliacaoCliente = async (
@@ -30,7 +27,7 @@ const updateClienteNota = async ({
   clienteId,
   novaNotaMedia,
 }: {
-  clienteId: number;
+  clienteId: string;
   novaNotaMedia: number;
 }) => {
   const res = await fetch(`http://localhost:3333/clientes/${clienteId}`, {
@@ -141,7 +138,6 @@ export function AvaliacaoClienteModal({
     });
   };
 
-  // CORREÇÃO DO BUG: Desabilita se estiver carregando OU se já teve sucesso
   const isLoading =
     mutationPostAvaliacaoCliente.isPending || mutationUpdateCliente.isPending;
   const isSuccess = mutationUpdateCliente.isSuccess;

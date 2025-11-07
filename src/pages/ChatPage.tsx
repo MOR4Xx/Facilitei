@@ -9,14 +9,13 @@ import { Card } from '../components/ui/Card';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ChatMessage {
-  id: string; // Para usar como key no React
-  sender: string; // Quem enviou (nome do usuário)
+  id: string;
+  sender: string; 
   text: string;
-  isMe: boolean; // Para estilizar diferente
+  isMe: boolean; 
   timestamp: Date;
 }
 
-// Configuração do cliente STOMP
 const stompConfig = {
   brokerURL: `ws://${window.location.hostname}:8080/buildrun-livechat-websocket`,
   reconnectDelay: 5000,
@@ -31,11 +30,9 @@ export function ChatPage() {
   const [inputText, setInputText] = useState('');
   const [isConnected, setIsConnected] = useState(false);
   const stompClientRef = useRef<Client | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null); // Para scroll automático
+  const messagesEndRef = useRef<HTMLDivElement>(null); 
 
-  // Função para adicionar uma nova mensagem formatada à lista
   const addMessage = useCallback((rawMessage: string) => {
-    // A mensagem crua vem como "Nome: Texto" do backend
     const separatorIndex = rawMessage.indexOf(': ');
     const sender = separatorIndex > -1 ? rawMessage.substring(0, separatorIndex) : 'Sistema';
     const text = separatorIndex > -1 ? rawMessage.substring(separatorIndex + 2) : rawMessage;
@@ -47,9 +44,8 @@ export function ChatPage() {
     ]);
   }, [user]);
 
-  // Efeito para conectar/desconectar o WebSocket
   useEffect(() => {
-    if (!user) return; // Só conecta se o usuário estiver logado
+    if (!user) return; 
 
     console.log('Tentando conectar ao WebSocket...');
     const client = new Client(stompConfig);
@@ -58,7 +54,6 @@ export function ChatPage() {
     client.onConnect = (frame) => {
       console.log('Conectado ao WebSocket: ' + frame);
       setIsConnected(true);
-      // Se inscreve no tópico GERAL (conforme backend atual)
       client.subscribe('/topics/livechat', (message: IMessage) => {
         try {
           const parsedBody = JSON.parse(message.body);
@@ -83,17 +78,15 @@ export function ChatPage() {
       setIsConnected(false);
     };
 
-    client.activate(); // Ativa a conexão
+    client.activate();
 
-    // Função de cleanup para desconectar ao sair da página
     return () => {
       console.log('Desconectando do WebSocket...');
       client.deactivate();
       setIsConnected(false);
     };
-  }, [user, servicoId, addMessage]); // Dependências do efeito
+  }, [user, servicoId, addMessage]);
 
-  // Efeito para rolar para a última mensagem
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -103,7 +96,7 @@ export function ChatPage() {
     e.preventDefault();
     if (inputText.trim() && stompClientRef.current && isConnected && user) {
       const chatInput = {
-        user: user.nome, // Nome do usuário logado
+        user: user.nome, 
         message: inputText.trim(),
       };
       stompClientRef.current.publish({
@@ -115,7 +108,6 @@ export function ChatPage() {
   };
 
   return (
-    // ATUALIZADO: Altura definida para 75vh para funcionar bem em todas as telas
     <div className="flex flex-col h-[75vh] max-w-4xl mx-auto">
       <Typography as="h1" className="mb-4 text-center !text-2xl sm:!text-3xl">
         Chat - Serviço #{servicoId}
@@ -162,18 +154,18 @@ export function ChatPage() {
       <form onSubmit={handleSendMessage} className="flex gap-3 items-start sm:items-center">
         <Input
           label="Digite sua mensagem..."
-          name="chat-input" // Adicionado 'name' e 'label'
+          name="chat-input" 
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          className="flex-grow" // Input já é responsivo
+          className="flex-grow" 
           disabled={!isConnected}
           required
         />
         <Button
           type="submit"
           variant="secondary"
-          size="md" // Tamanho do botão é consistente
-          className="!py-3" // Garante altura consistente com input
+          size="md" 
+          className="!py-3" 
           disabled={!isConnected || !inputText.trim()}
         >
           Enviar

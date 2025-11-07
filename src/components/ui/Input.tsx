@@ -1,8 +1,8 @@
-import { ComponentProps, ReactNode } from 'react';
+import { type ComponentProps, type ReactNode } from 'react';
 
 type InputProps = ComponentProps<'input'> & {
   label: string;
-  icon?: ReactNode; // Ícone opcional
+  icon?: ReactNode;
   name: string;
 };
 

@@ -34,7 +34,7 @@ const fetchAvaliacoesCliente = async (
         const trabalhador: Trabalhador = await trabalhadorResponse.json();
         return { ...avaliacao, trabalhadorNome: trabalhador.nome };
       }
-      return { ...avaliacao, trabalhadorNome: "Profissional Anônimo" }; // Fallback
+      return { ...avaliacao, trabalhadorNome: "Profissional Anônimo" }; 
     })
   );
 
@@ -88,7 +88,7 @@ export function ClienteProfilePage() {
   } = useQuery<Cliente>({
     queryKey: ["cliente", clienteId],
     queryFn: () => fetchClienteById(clienteId),
-    enabled: !!clienteId, // Corrigido de clienteId > 0 para !!clienteId
+    enabled: !!clienteId,
   });
 
   const { data: avaliacoes, isLoading: isLoadingAvaliacoes } = useQuery({
@@ -97,7 +97,6 @@ export function ClienteProfilePage() {
     enabled: !!cliente,
   });
 
-  // Corrigido: a ID do store pode ser número ou string, a do param é string
   const isOwner = user?.id == clienteId && user?.role === "cliente";
 
   if (isError) {
@@ -136,7 +135,6 @@ export function ClienteProfilePage() {
       initial="hidden"
       animate="visible"
       variants={pageVariants}
-      // Grid responsivo
       className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10"
     >
       {/* Coluna da Esquerda: Perfil */}

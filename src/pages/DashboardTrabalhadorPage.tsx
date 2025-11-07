@@ -20,15 +20,15 @@ import {
   ChatBubbleLeftRightIcon,
   CheckIcon,
   XMarkIcon,
-  CogIcon, // 👈 1. IMPORTAR O ÍCONE
+  CogIcon, 
 } from "../components/ui/Icons";
 import { AvaliacaoClienteModal } from "../components/ui/AvaliacaoClienteModal";
 
-// ... (Interfaces, Variantes e Funções de Fetch/Mutation - sem alterações) ...
+// --- INTERFACES LOCAIS (CORRIGIDAS) ---
 interface SolicitacaoServico {
-  id: number;
-  clienteId: number;
-  servicoId: number;
+  id: string; 
+  clienteId: string;
+  servicoId: string;
   descricao: string;
   statusSolicitacao: "PENDENTE" | "ACEITA" | "RECUSADA";
 }
@@ -39,6 +39,7 @@ interface WorkerData {
   finishedServices: (Servico & { cliente: Cliente })[];
 }
 
+// --- VARIANTES (Sem alteração) ---
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
@@ -65,14 +66,16 @@ const Rating = ({ score }: { score: number }) => {
   return <div className="flex space-x-0.5">{stars}</div>;
 };
 
-const fetchCliente = async (id: number): Promise<Cliente> => {
+// --- FUNÇÕES DE FETCH (CORRIGIDAS) ---
+
+const fetchCliente = async (id: string): Promise<Cliente> => { 
   const res = await fetch(`http://localhost:3333/clientes/${id}`);
   if (!res.ok) throw new Error("Cliente não encontrado");
   return res.json();
 };
 
 const fetchAvaliacaoClienteFeitas = async (
-  trabalhadorId: number
+  trabalhadorId: string 
 ): Promise<AvaliacaoCliente[]> => {
   const res = await fetch(
     `http://localhost:3333/avaliacoes-cliente?trabalhadorId=${trabalhadorId}`
@@ -81,7 +84,7 @@ const fetchAvaliacaoClienteFeitas = async (
   return res.json();
 };
 
-const fetchWorkerData = async (workerId: number): Promise<WorkerData> => {
+const fetchWorkerData = async (workerId: string): Promise<WorkerData> => { 
   const servicesResponse = await fetch(
     `http://localhost:3333/servicos?trabalhadorId=${workerId}`
   );
@@ -117,19 +120,19 @@ const fetchWorkerData = async (workerId: number): Promise<WorkerData> => {
     await solicitationsResponse.json();
 
   const newRequests = allSolicitations.filter((sol) =>
-    pendingServiceIds.includes(sol.servicoId)
+    pendingServiceIds.includes(sol.servicoId) 
   );
 
   const activeServicesWithClient = await Promise.all(
     activeServices.map(async (servico) => {
-      const cliente = await fetchCliente(servico.clienteId);
+      const cliente = await fetchCliente(servico.clienteId); 
       return { ...servico, cliente };
     })
   );
 
   const newRequestsWithClient = await Promise.all(
     newRequests.map(async (solicitacao) => {
-      const cliente = await fetchCliente(solicitacao.clienteId);
+      const cliente = await fetchCliente(solicitacao.clienteId); 
       const servico = allServices.find((s) => s.id === solicitacao.servicoId)!;
       return { ...solicitacao, cliente, servico };
     })
@@ -137,7 +140,7 @@ const fetchWorkerData = async (workerId: number): Promise<WorkerData> => {
 
   const finishedServicesWithClient = await Promise.all(
     finishedServices.map(async (servico) => {
-      const cliente = await fetchCliente(servico.clienteId);
+      const cliente = await fetchCliente(servico.clienteId); 
       return { ...servico, cliente };
     })
   );
@@ -149,11 +152,13 @@ const fetchWorkerData = async (workerId: number): Promise<WorkerData> => {
   };
 };
 
+// --- FUNÇÕES DE MUTATION ---
+
 const updateServicoStatus = async ({
   id,
   status,
 }: {
-  id: number;
+  id: string; 
   status: StatusServico;
 }) => {
   const response = await fetch(`http://localhost:3333/servicos/${id}`, {
@@ -169,7 +174,7 @@ const updateSolicitacaoStatus = async ({
   id,
   status,
 }: {
-  id: number;
+  id: string; 
   status: "ACEITA" | "RECUSADA";
 }) => {
   const response = await fetch(
@@ -202,7 +207,7 @@ export function DashboardTrabalhadorPage() {
 
   const { data: avaliacoesFeitas } = useQuery({
     queryKey: ["avaliacoesClienteFeitas", trabalhador.id],
-    queryFn: () => fetchAvaliacoesClienteFeitas(trabalhador.id),
+    queryFn: () => fetchAvaliacaoClienteFeitas(trabalhador.id),
     enabled: !!trabalhador.id,
   });
 
@@ -229,17 +234,17 @@ export function DashboardTrabalhadorPage() {
     },
   });
 
-  // ... (Handlers - sem alterações) ...
+  // ... (Handlers) ...
   const handleAccept = (solicitacao: SolicitacaoServico) => {
     solicitacaoMutation.mutate({ id: solicitacao.id, status: "ACEITA" });
     servicoMutation.mutate({
-      id: solicitacao.servicoId,
+      id: solicitacao.servicoId, 
       status: "EM_ANDAMENTO",
     });
   };
 
   const handleReject = (solicitacao: SolicitacaoServico) => {
-    solicitacaoMutation.mutate({ id: solicitacao.id, status: "RECUSADA" });
+    solicitacaoMutation.mutate({ id: solicitacao.id, status: "RECUSADA" }); 
     servicoMutation.mutate({ id: solicitacao.servicoId, status: "RECUSADO" });
   };
 
@@ -287,7 +292,7 @@ export function DashboardTrabalhadorPage() {
       animate="visible"
       className="space-y-12"
     >
-      {/* HEADER E AÇÕES (ATUALIZADO) */}
+      {/* HEADER E AÇÕES */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
         <motion.div variants={itemVariants}>
           <Typography as="h1">E aí, {primeiroNome}!</Typography>
@@ -296,13 +301,13 @@ export function DashboardTrabalhadorPage() {
           </Typography>
         </motion.div>
         
-        {/* 👇 2. ADICIONAR BOTÕES DE AÇÃO */}
+        {/* 2. ADICIONAR BOTÕES DE AÇÃO */}
         <motion.div variants={itemVariants} className="flex gap-4 mt-4 md:mt-0 w-full md:w-auto">
           <Button
             variant="outline"
             size="md"
             className="!px-4"
-            onClick={() => navigate("/dashboard/configuracoes")} // Rota unificada
+            onClick={() => navigate("/dashboard/configuracoes")}
             title="Configurações"
           >
             <CogIcon className="w-6 h-6" />
@@ -311,7 +316,6 @@ export function DashboardTrabalhadorPage() {
             variant="primary"
             size="lg"
             className="shadow-lg shadow-primary/20 hover:shadow-primary/40 w-full"
-            // onClick={() => navigate("/dashboard/agenda")} // TODO: Criar página de agenda
           >
             <CalendarDaysIcon className="w-5 h-5 mr-2" />
             Ver Agenda Completa
@@ -319,7 +323,6 @@ export function DashboardTrabalhadorPage() {
         </motion.div>
       </div>
 
-      {/* ... (Restante do arquivo - Cards de Boas Vindas, Estatísticas, etc.) ... */}
       {/* CARD DE BOAS-VINDAS (Responsivo) */}
       <motion.div variants={itemVariants}>
         <Card className={`p-6 md:p-8 ${welcomeCardClass}`}>

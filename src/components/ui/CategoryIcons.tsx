@@ -1,4 +1,3 @@
-// src/components/ui/CategoryIcons.tsx
 import { type ComponentProps } from 'react';
 
 // Construção

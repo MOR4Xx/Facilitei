@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
 type ContainerProps = {
   children: ReactNode;
@@ -12,9 +12,6 @@ export function Container({ children, className = '' }: ContainerProps) {
     </div>
   );
 }
-
-// O Flex e o Grid podem ser usados diretamente com Tailwind,
-// mas aqui estão como componentes para maior clareza.
 
 type FlexProps = {
   children: ReactNode;

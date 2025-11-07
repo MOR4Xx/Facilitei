@@ -11,10 +11,8 @@ import type {
   AvaliacaoServico,
 } from "../types/api";
 import { useNavigate } from "react-router-dom";
-import {
-  TrabalhadorCard,
-  itemVariants as cardItemVariants,
-} from "../components/ui/TrabalhadorCard";
+import { TrabalhadorCard } from "../components/ui/TrabalhadorCard";
+import { cardItemVariants } from "../lib/variants";
 import { useMemo, useState } from "react";
 import {
   BriefcaseIcon,
@@ -27,7 +25,7 @@ import {
 import { AvaliacaoModal } from "../components/ui/AvaliacaoModal";
 
 // --- FUNÇÕES DE BUSCA (API) ---
-const fetchServicosCliente = async (clienteId: number): Promise<Servico[]> => {
+const fetchServicosCliente = async (clienteId: string): Promise<Servico[]> => {
   if (!clienteId) return [];
   const response = await fetch(
     `http://localhost:3333/servicos?clienteId=${clienteId}`
@@ -51,7 +49,7 @@ const fetchTrabalhadores = async (): Promise<Trabalhador[]> => {
 };
 
 const fetchServicosAvaliados = async (
-  clienteId: number
+  clienteId: string 
 ): Promise<AvaliacaoServico[]> => {
   if (!clienteId) return [];
   const response = await fetch(
@@ -66,7 +64,7 @@ const updateServicoStatus = async ({
   id,
   status,
 }: {
-  id: number;
+  id: string;
   status: StatusServico;
 }) => {
   const response = await fetch(`http://localhost:3333/servicos/${id}`, {
@@ -106,7 +104,7 @@ export function DashboardClientePage() {
   // --- QUERIES ---
   const { data: servicos, isLoading: isLoadingServicos } = useQuery<Servico[]>({
     queryKey: ["servicosCliente", clienteId],
-    queryFn: () => fetchServicosCliente(clienteId!),
+    queryFn: () => fetchServicosCliente(clienteId!), 
     enabled: !!clienteId && isAuthenticated,
   });
 
@@ -119,7 +117,7 @@ export function DashboardClientePage() {
 
   const { data: servicosAvaliados, isLoading: isLoadingAvaliados } = useQuery({
     queryKey: ["servicosAvaliados", clienteId],
-    queryFn: () => fetchServicosAvaliados(clienteId!),
+    queryFn: () => fetchServicosAvaliados(clienteId!), 
     enabled: !!clienteId && isAuthenticated,
   });
 
@@ -163,16 +161,15 @@ export function DashboardClientePage() {
     (isAuthenticated && (isLoadingServicos || isLoadingAvaliados));
 
   // --- HANDLERS ---
-  const handleApprove = (servicoId: number) => {
+  const handleApprove = (servicoId: string) => { 
     servicoMutation.mutate({ id: servicoId, status: "FINALIZADO" });
   };
 
-  const handleContest = (servicoId: number) => {
+  const handleContest = (servicoId: string) => { 
     servicoMutation.mutate({ id: servicoId, status: "EM_ANDAMENTO" });
   };
 
   const renderStatusTag = (status: StatusServico) => {
-    // (O conteúdo desta função permanece o mesmo)
     switch (status) {
       case "PENDENTE_APROVACAO":
         return (
@@ -256,7 +253,7 @@ export function DashboardClientePage() {
           </motion.div>
         </div>
 
-        {/* --- CARD DE STATUS (Responsivo) --- */}
+        {/* --- CARD DE STATUS --- */}
         <motion.div variants={itemVariants}>
           <Card
             className={`
@@ -305,7 +302,7 @@ export function DashboardClientePage() {
           </Card>
         </motion.div>
 
-        {/* --- LAYOUT DE 2 COLUNAS (Responsivo por padrão) --- */}
+        {/* --- LAYOUT DE 2 COLUNAS --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           
           {/* --- SEÇÃO SERVIÇOS ATIVOS (SÓ LOGADO) --- */}
@@ -357,7 +354,7 @@ export function DashboardClientePage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleContest(servico.id)}
+                                  onClick={() => handleContest(servico.id)} 
                                   disabled={servicoMutation.isPending}
                                   className="!border-status-danger !text-status-danger hover:!bg-status-danger hover:!text-white hover:!shadow-glow-danger w-1/2 md:w-auto"
                                 >

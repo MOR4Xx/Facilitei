@@ -1,19 +1,17 @@
-import { motion } from 'framer-motion'; // Importe para animações modernas
+import { motion } from 'framer-motion';
 import { Typography } from '../components/ui/Typography';
 import { Card } from '../components/ui/Card';
 
-// Variantes para animação de containers em cascata
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.2, // Animação em cascata dos elementos internos
+      staggerChildren: 0.2, 
     },
   },
 };
 
-// Variantes para animação de itens (fade-in e slide up)
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
@@ -21,7 +19,6 @@ const itemVariants = {
 
 export function AboutPage() {
   return (
-    // Animação de entrada da página
     <motion.div
       className="max-w-5xl mx-auto space-y-12 sm:space-y-20"
       variants={containerVariants}

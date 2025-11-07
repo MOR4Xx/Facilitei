@@ -110,7 +110,7 @@ export function HomePage() {
 
   return (
     <motion.div
-      className="space-y-24 md:space-y-32" // Espaçamento responsivo
+      className="space-y-24 md:space-y-32" 
       variants={containerVariants}
       initial="hidden"
       animate="visible"

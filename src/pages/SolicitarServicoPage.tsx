@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, type ReactElement } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { Typography } from '../components/ui/Typography';
@@ -47,7 +47,7 @@ const fetchTrabalhadores = async (): Promise<Trabalhador[]> => {
 };
 
 // --- HELPER DE ÍCONES ---
-const categoryIcons: Record<CategoriaGrupo | 'TODOS', JSX.Element> = {
+const categoryIcons: Record<CategoriaGrupo | 'TODOS', ReactElement> = {
   'TODOS': <SparklesIcon className="w-8 h-8" />,
   'Construção e Reformas': <BuildingIcon className="w-8 h-8" />,
   'Serviços Domésticos': <HomeIcon className="w-8 h-8" />,

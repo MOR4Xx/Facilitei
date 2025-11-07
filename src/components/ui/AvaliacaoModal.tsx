@@ -10,7 +10,6 @@ import { Typography } from "./Typography";
 import { toast } from "react-hot-toast";
 
 // --- API ---
-// (No futuro, mover isso para um arquivo 'api.ts')
 
 // 1. Posta a avaliação do serviço (para marcar como "avaliado")
 const postAvaliacaoServico = async (
@@ -43,7 +42,7 @@ const updateTrabalhadorNota = async ({
   trabalhadorId,
   novaNotaMedia,
 }: {
-  trabalhadorId: number;
+  trabalhadorId: string;
   novaNotaMedia: number;
 }) => {
   const res = await fetch(

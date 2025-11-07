@@ -1,6 +1,3 @@
-// src/components/ui/Icons.tsx
-// (Ícones da biblioteca https://heroicons.com/)
-
 import { type ComponentProps } from 'react';
 
 // --- ÍCONES DE NAVEGAÇÃO (NOVOS) ---

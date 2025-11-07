@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom"; // 👈 Importar useSearchParams
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
@@ -14,8 +14,8 @@ export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore();
-  const [searchParams] = useSearchParams(); // 👈 Obter search params
-  const redirectTo = searchParams.get("redirectTo"); // 👈 Ler o parâmetro 'redirectTo'
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo"); 
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,12 +26,11 @@ export function LoginPage() {
       let response = await fetch(
         `http://localhost:3333/clientes?email=${email}&senha=${senha}`
       );
-      let users: Cliente[] = await response.json();
+      const users: Cliente[] = await response.json();
 
       if (users.length > 0) {
         login({ ...users[0], role: "cliente" });
         toast.success("Login efetuado com sucesso!");
-        // 👇 LÓGICA DE REDIRECIONAMENTO CORRIGIDA
         navigate(redirectTo || "/dashboard", { replace: true });
         return;
       }
@@ -40,12 +39,11 @@ export function LoginPage() {
       response = await fetch(
         `http://localhost:3333/trabalhadores?email=${email}&senha=${senha}`
       );
-      let workers: Trabalhador[] = await response.json();
+      const workers: Trabalhador[] = await response.json();
 
       if (workers.length > 0) {
         login({ ...workers[0], role: "trabalhador" });
         toast.success("Login efetuado com sucesso!");
-        // 👇 LÓGICA DE REDIRECIONAMENTO CORRIGIDA
         navigate(redirectTo || "/dashboard", { replace: true });
         return;
       }
@@ -60,7 +58,6 @@ export function LoginPage() {
   };
 
   return (
-    // ATUALIZADO: Padding menor em telas pequenas
     <div className="flex flex-col justify-center items-center min-h-[80vh] py-6 md:py-12">
       
       <Typography

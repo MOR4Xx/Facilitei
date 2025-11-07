@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from './Card';
 import { Typography } from './Typography';
 import type { Trabalhador } from '../../types/api';
+import { cardItemVariants } from '../../lib/variants';
 
 // --- COMPONENTE DE RATING (Estrelas) ---
 const Rating = ({ score }: { score: number }) => {
@@ -19,12 +20,6 @@ const Rating = ({ score }: { score: number }) => {
   return <div className="flex space-x-0.5">{stars}</div>;
 };
 
-// --- VARIANTES DE ANIMAÇÃO (Passadas pelo componente pai) ---
-export const itemVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.95 },
-  visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 100 } },
-};
-
 interface TrabalhadorCardProps {
   trabalhador: Trabalhador;
   variants?: Variants; 
@@ -32,7 +27,7 @@ interface TrabalhadorCardProps {
 
 export function TrabalhadorCard({
   trabalhador,
-  variants = itemVariants, 
+  variants = cardItemVariants,
 }: TrabalhadorCardProps) {
   const navigate = useNavigate();
 
@@ -43,15 +38,12 @@ export function TrabalhadorCard({
       : 'Serviço Não Informado';
 
   return (
-
     <Card
       variants={variants}
       layout 
       className="p-5 flex flex-col items-center text-center cursor-pointer
                  h-full !border-primary/10"
-      
-      // --- CORREÇÃO DO BUG 404 ---
-      // O link agora aponta para a rota pública correta
+
       onClick={() => navigate(`/trabalhador/${trabalhador.id}`)}
       whileHover={{ y: -5 }}
     >

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams, useLocation } from "react-router-dom"; // 👈 Importar useLocation
+import { useNavigate, useParams, useLocation } from "react-router-dom"; 
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
@@ -17,7 +17,6 @@ import { Modal } from "../components/ui/Modal";
 import { Textarea } from "../components/ui/Textarea";
 import { toast } from "react-hot-toast";
 
-// ... (Interfaces NewServicoRequest e NewSolicitacaoRequest) ...
 interface NewServicoRequest {
   titulo: string;
   descricao: string;
@@ -130,7 +129,7 @@ export function TrabalhadorProfilePage() {
 
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
-  const location = useLocation(); // 👈 Obter a localização atual
+  const location = useLocation();
 
   // Estados do Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -146,7 +145,7 @@ export function TrabalhadorProfilePage() {
   } = useQuery<Trabalhador>({
     queryKey: ["trabalhador", trabalhadorId],
     queryFn: () => fetchTrabalhadorById(trabalhadorId),
-    enabled: trabalhadorId > 0,
+    enabled: !!id,
   });
 
   const {

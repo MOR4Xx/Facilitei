@@ -16,7 +16,6 @@ import {
 
 type UserRole = "cliente" | "trabalhador";
 
-// --- (O componente Stepper permanece o mesmo) ---
 interface StepperProps {
   currentStep: number;
   userType: UserRole | null;
@@ -33,7 +32,6 @@ function Stepper({ currentStep, userType }: StepperProps) {
 
   return (
     <nav
-      // ATUALIZADO: Adicionado flex-wrap para telas muito pequenas
       className="flex flex-wrap items-center justify-center mb-8 gap-y-2"
       aria-label="Progresso"
     >
@@ -94,8 +92,8 @@ function Stepper({ currentStep, userType }: StepperProps) {
 
 // --- FUNÇÕES DE FORMATAÇÃO ---
 const formatTelefone = (value: string) => {
-  let v = value.replace(/\D/g, ""); // Remove tudo que não é dígito
-  if (v.length > 11) v = v.slice(0, 11); // Limita a 11 dígitos
+  let v = value.replace(/\D/g, ""); 
+  if (v.length > 11) v = v.slice(0, 11); 
 
   if (v.length > 10) {
     // Celular (XX) XXXXX-XXXX
@@ -178,7 +176,7 @@ export function RegisterPage() {
       formattedValue = formatUF(value);
     }
     if (name === "numero") {
-      formattedValue = value.replace(/\D/g, ""); // Permite apenas números
+      formattedValue = value.replace(/\D/g, ""); 
     }
 
     setFormData((prev) => ({

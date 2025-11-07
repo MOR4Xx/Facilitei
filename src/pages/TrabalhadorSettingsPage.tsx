@@ -1,62 +1,74 @@
-// src/pages/TrabalhadorSettingsPage.tsx
-import { useState, useEffect } from 'react';
-import { useAuthStore } from '../store/useAuthStore';
-import { Card } from '../components/ui/Card';
-import { Typography } from '../components/ui/Typography';
-import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
-import type { Trabalhador, TipoServico } from '../types/api';
-import { allServicosList } from '../types/api';
-import { motion } from 'framer-motion';
-import { toast } from 'react-hot-toast';
-
-type AuthUser = Trabalhador & { role: 'cliente' | 'trabalhador' };
+import { useState, useEffect } from "react";
+import { useAuthStore } from "../store/useAuthStore";
+import { Card } from "../components/ui/Card";
+import { Typography } from "../components/ui/Typography";
+import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
+import type { Trabalhador, TipoServico } from "../types/api";
+import { allServicosList } from "../types/api";
+import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
 
 export function TrabalhadorSettingsPage() {
   const { user, login } = useAuthStore();
-  
-  if (!user || user.role !== 'trabalhador') {
+
+  const [formData, setFormData] = useState<Trabalhador | null>(() => {
+    if (user && user.role === "trabalhador") {
+      return user as Trabalhador;
+    }
+    return null;
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (user && user.role === "trabalhador") {
+      setFormData(user as Trabalhador);
+    } else {
+      setFormData(null);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (formData && !formData.servicos.includes(formData.servicoPrincipal)) {
+      setFormData((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          servicoPrincipal: prev.servicos[0] || allServicosList[0],
+        };
+      });
+    }
+  }, [formData?.servicos, formData?.servicoPrincipal]);
+
+  if (!formData) {
     return <div>Carregando informações do profissional...</div>;
   }
 
-  // Inicializa o estado do formulário com os dados do usuário
-  const [formData, setFormData] = useState<Trabalhador>(user as Trabalhador);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Garante que o serviço principal seja válido
-  useEffect(() => {
-    if (!formData.servicos.includes(formData.servicoPrincipal)) {
-      setFormData(prev => ({
-        ...prev,
-        servicoPrincipal: prev.servicos[0] || allServicosList[0],
-      }));
-    }
-  }, [formData.servicos, formData.servicoPrincipal]);
-
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev!, [name]: value }));
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
+    setFormData((prev) => ({
+      ...prev!,
       endereco: {
-        ...prev.endereco,
+        ...prev!.endereco,
         [name]: value,
       },
     }));
   };
-  
-  // Handler para a lista de serviços (checklist)
+
   const handleServiceChange = (service: TipoServico) => {
-    setFormData(prev => {
-      const newServices = prev.servicos.includes(service)
-        ? prev.servicos.filter((s) => s !== service)
-        : [...prev.servicos, service];
-      return { ...prev, servicos: newServices };
+    setFormData((prev) => {
+      const newServices = prev!.servicos.includes(service)
+        ? prev!.servicos.filter((s) => s !== service)
+        : [...prev!.servicos, service];
+      return { ...prev!, servicos: newServices };
     });
   };
 
@@ -71,38 +83,41 @@ export function TrabalhadorSettingsPage() {
       return;
     }
     if (!formData.servicos.includes(formData.servicoPrincipal)) {
-      toast.error("O serviço principal deve ser um dos serviços que você oferece.");
+      toast.error(
+        "O serviço principal deve ser um dos serviços que você oferece."
+      );
       setIsLoading(false);
       return;
     }
 
     try {
       // Envia os dados atualizados para a API (db.json)
-      const response = await fetch(`http://localhost:3333/trabalhadores/${user.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `http://localhost:3333/trabalhadores/${user!.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error('Falha ao atualizar o perfil.');
+        throw new Error("Falha ao atualizar o perfil.");
       }
 
       const updatedUser: Trabalhador = await response.json();
 
       // Atualiza o usuário no store global (zustand)
-      login({ ...updatedUser, role: 'trabalhador' });
+      login({ ...updatedUser, role: "trabalhador" });
       toast.success("Perfil atualizado com sucesso!");
-
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Ocorreu um erro.");
     } finally {
       setIsLoading(false);
     }
   };
-
 
   return (
     <motion.div
@@ -116,12 +131,14 @@ export function TrabalhadorSettingsPage() {
 
       <Card className="p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
-          
           {/* --- DADOS PESSOAIS --- */}
-          <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2">
+          <Typography
+            as="h3"
+            className="!text-xl border-b border-dark-surface/50 pb-2"
+          >
             Dados Pessoais
           </Typography>
-          
+
           <Input
             label="Nome Completo"
             name="nome"
@@ -154,7 +171,10 @@ export function TrabalhadorSettingsPage() {
           />
 
           {/* --- ENDEREÇO --- */}
-          <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2 pt-4">
+          <Typography
+            as="h3"
+            className="!text-xl border-b border-dark-surface/50 pb-2 pt-4"
+          >
             Meu Endereço
           </Typography>
 
@@ -181,7 +201,7 @@ export function TrabalhadorSettingsPage() {
               required
             />
           </div>
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Input
               label="Cidade"
               name="cidade"
@@ -189,7 +209,7 @@ export function TrabalhadorSettingsPage() {
               onChange={handleAddressChange}
               required
             />
-             <Input
+            <Input
               label="Estado (UF)"
               name="estado"
               value={formData.endereco.estado}
@@ -198,7 +218,7 @@ export function TrabalhadorSettingsPage() {
               maxLength={2}
             />
           </div>
-           <Input
+          <Input
             label="CEP"
             name="cep"
             value={formData.endereco.cep}
@@ -207,19 +227,23 @@ export function TrabalhadorSettingsPage() {
           />
 
           {/* --- SERVIÇOS OFERECIDOS --- */}
-          <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2 pt-4">
+          <Typography
+            as="h3"
+            className="!text-xl border-b border-dark-surface/50 pb-2 pt-4"
+          >
             Serviços Oferecidos
           </Typography>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-3 bg-dark-surface/50 rounded-lg">
             {allServicosList.map((service) => (
               <label
                 key={service}
                 className={`
                   flex items-center p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer
-                  ${formData.servicos.includes(service)
-                    ? "bg-accent border-accent text-dark-background font-bold"
-                    : "bg-dark-surface border-primary/50 text-dark-subtle hover:border-accent/50"
+                  ${
+                    formData.servicos.includes(service)
+                      ? "bg-accent border-accent text-dark-background font-bold"
+                      : "bg-dark-surface border-primary/50 text-dark-subtle hover:border-accent/50"
                   }
                 `}
               >
@@ -239,7 +263,10 @@ export function TrabalhadorSettingsPage() {
           {/* --- SERVIÇO PRINCIPAL --- */}
           {formData.servicos.length > 0 && (
             <div>
-              <label htmlFor="servicoPrincipal" className="block text-sm font-medium text-primary mb-2">
+              <label
+                htmlFor="servicoPrincipal"
+                className="block text-sm font-medium text-primary mb-2"
+              >
                 Seu Serviço Principal (Destaque)
               </label>
               <select
@@ -251,14 +278,17 @@ export function TrabalhadorSettingsPage() {
               >
                 {/* Mostra apenas os serviços que o usuário selecionou */}
                 {formData.servicos.map((service) => (
-                  <option key={service} value={service} className="bg-dark-surface capitalize">
+                  <option
+                    key={service}
+                    value={service}
+                    className="bg-dark-surface capitalize"
+                  >
                     {service.replace(/_/g, " ").toLowerCase()}
                   </option>
                 ))}
               </select>
             </div>
           )}
-
 
           {/* --- SALVAR --- */}
           <div className="pt-6">
@@ -272,7 +302,6 @@ export function TrabalhadorSettingsPage() {
               {isLoading ? "Salvando..." : "Salvar Alterações"}
             </Button>
           </div>
-
         </form>
       </Card>
     </motion.div>

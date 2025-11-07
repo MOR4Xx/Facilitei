@@ -1,18 +1,16 @@
-// src/components/layout/Header.tsx
-
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore";
 import { Button } from "../ui/Button";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion"; // Importar
-import { MenuIcon, XMarkIcon } from "../ui/Icons"; // Importar
+import { motion, AnimatePresence } from "framer-motion"; 
+import { MenuIcon, XMarkIcon } from "../ui/Icons";
 
 export function Header() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
 
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // 👈 Estado do menu mobile
+  const [isMenuOpen, setIsMenuOpen] = useState(false); 
 
   useEffect(() => {
     const handleScroll = () => {

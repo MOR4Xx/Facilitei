@@ -20,7 +20,7 @@ export function RatingFilter({ rating, onRatingChange }: RatingFilterProps) {
                 ? 'text-accent'
                 : 'text-dark-subtle/50 hover:text-accent/70'
             }`}
-            onClick={() => onRatingChange(star === rating ? 0 : star)} // Clicar de novo reseta
+            onClick={() => onRatingChange(star === rating ? 0 : star)}
             onMouseEnter={() => setHoverRating(star)}
             onMouseLeave={() => setHoverRating(0)}
           >

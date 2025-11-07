@@ -1,6 +1,4 @@
-// src/pages/ClienteSettingsPage.tsx
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 import { Card } from '../components/ui/Card';
 import { Typography } from '../components/ui/Typography';
@@ -10,31 +8,43 @@ import type { Cliente } from '../types/api';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
-// Define o tipo de usuário esperado do store
-type AuthUser = Cliente & { role: 'cliente' | 'trabalhador' };
 
 export function ClienteSettingsPage() {
   const { user, login } = useAuthStore();
   
-  // Assegura que temos os dados do usuário, caso contrário, mostra loading (ou redireciona)
-  if (!user || user.role !== 'cliente') {
+  const [formData, setFormData] = useState<Cliente | null>(() => {
+    if (user && user.role === 'cliente') {
+      return user as Cliente;
+    }
+    return null;
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (user && user.role === 'cliente') {
+      setFormData(user as Cliente);
+    } else {
+      setFormData(null);
+    }
+  }, [user]); 
+
+  if (!formData) {
     return <div>Carregando informações do usuário...</div>;
   }
 
-  const [formData, setFormData] = useState<Cliente>(user as Cliente);
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev!, [name]: value }));
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
-      ...prev,
+      ...prev!,
       endereco: {
-        ...prev.endereco,
+        ...prev!.endereco,
         [name]: value,
       },
     }));
@@ -45,8 +55,7 @@ export function ClienteSettingsPage() {
     setIsLoading(true);
 
     try {
-      // Envia os dados atualizados para a API (db.json)
-      const response = await fetch(`http://localhost:3333/clientes/${user.id}`, {
+      const response = await fetch(`http://localhost:3333/clientes/${user!.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +69,6 @@ export function ClienteSettingsPage() {
 
       const updatedUser: Cliente = await response.json();
 
-      // Atualiza o usuário no store global (zustand)
       login({ ...updatedUser, role: 'cliente' });
       toast.success("Perfil atualizado com sucesso!");
 

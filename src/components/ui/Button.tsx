@@ -1,10 +1,10 @@
-import { motion } from 'framer-motion';
-import { ComponentProps, ReactNode } from 'react';
+import { motion, type HTMLMotionProps } from 'framer-motion';
+import { type ReactNode } from 'react';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
-type ButtonProps = ComponentProps<'button'> & {
+type ButtonProps = HTMLMotionProps<'button'> & {
   children: ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
