@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom"; // 👈 Adicionar useSearchParams
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { Typography } from "../components/ui/Typography";
 import { useAuthStore } from "../store/useAuthStore";
 import type { Cliente, Trabalhador } from "../types/api";
-import { toast } from 'react-hot-toast';
+import { toast } from "react-hot-toast";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -14,6 +14,8 @@ export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore();
+  const [searchParams] = useSearchParams(); // 👈 Obter search params
+  const redirectTo = searchParams.get("redirectTo"); // 👈 Ler o parâmetro 'redirectTo'
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +31,9 @@ export function LoginPage() {
       if (users.length > 0) {
         // Se encontrado, faz login e assume a role 'cliente'
         login({ ...users[0], role: "cliente" });
-        navigate("/dashboard");
+        toast.success("Login efetuado com sucesso!");
+        // 👇 LÓGICA DE REDIRECIONAMENTO APRIMORADA
+        navigate(redirectTo || "/dashboard", { replace: true });
         return;
       }
 
@@ -42,7 +46,9 @@ export function LoginPage() {
       if (workers.length > 0) {
         // Se encontrado, faz login e assume a role 'trabalhador'
         login({ ...workers[0], role: "trabalhador" });
-        navigate("/dashboard");
+        toast.success("Login efetuado com sucesso!");
+        // 👇 LÓGICA DE REDIRECIONAMENTO APRIMORADA
+        navigate(redirectTo || "/dashboard", { replace: true });
         return;
       }
 
@@ -57,7 +63,6 @@ export function LoginPage() {
 
   return (
     <div className="flex flex-col justify-center items-center min-h-[80vh] py-12">
-      
       {/* 1. TÍTULO GRANDE "FACILITEI" */}
       <Typography
         as="h1"
@@ -68,7 +73,6 @@ export function LoginPage() {
 
       {/* 2. CARD DE LOGIN */}
       <Card className="w-full max-w-md p-8">
-        
         {/* Título "Bem-vindo!" */}
         <Typography as="p" className="text-center text-dark-subtle mb-8">
           Acesse sua conta para continuar.
@@ -83,11 +87,11 @@ export function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-          
+
           <Input
             label="Sua senha"
             name="senha"
-            type="senha"
+            type="password"
             value={senha}
             onChange={(e) => setsenha(e.target.value)}
             required

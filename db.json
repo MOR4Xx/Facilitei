@@ -43,6 +43,31 @@
         "ENCANADOR"
       ],
       "servicoPrincipal": "PEDREIRO"
+    },
+    {
+      "id": "1762480754882",
+      "nome": "Aroudo Neto",
+      "email": "aroudo@gmail.com",
+      "senha": "123456",
+      "telefone": "(64) 88888-8888",
+      "avatarUrl": "/avatars/trabalhador-2.png",
+      "endereco": {
+        "rua": "Rua Monteiro de Godoy",
+        "numero": "55",
+        "bairro": "Centro",
+        "cidade": "Pires do Rio",
+        "estado": "GO",
+        "cep": "75200000"
+      },
+      "disponibilidade": "Segunda a Sexta, 8h às 18h",
+      "notaTrabalhador": 0,
+      "servicos": [
+        "PEDREIRO",
+        "ENCANADOR",
+        "GESSEIRO",
+        "MARCENEIRO"
+      ],
+      "servicoPrincipal": "PEDREIRO"
     }
   ],
   "clientes": [
@@ -77,6 +102,23 @@
         "estado": "SP",
         "cep": "01426-000"
       }
+    },
+    {
+      "id": "1762477587005",
+      "nome": "Sergio Gay",
+      "email": "sergio@gmail.com",
+      "senha": "123456",
+      "telefone": "(64) 99999-9999",
+      "avatarUrl": "/avatars/cliente-1.png",
+      "notaCliente": 0,
+      "endereco": {
+        "rua": "Rua Francisco de Souza Lobo",
+        "numero": "51",
+        "bairro": "Centro",
+        "cidade": "Pires do Rio",
+        "estado": "GO",
+        "cep": "75200000"
+      }
     }
   ],
   "servicos": [
@@ -101,6 +143,17 @@
       "disponibilidadeId": 2,
       "tipoServico": "ELETRICISTA",
       "statusServico": "FINALIZADO"
+    },
+    {
+      "id": "1b56",
+      "titulo": "Solicitação de PEDREIRO",
+      "descricao": "Bater uma laje aqui em casa",
+      "preco": 0,
+      "trabalhadorId": "1762480754882",
+      "clienteId": "1762477587005",
+      "disponibilidadeId": 1,
+      "tipoServico": "PEDREIRO",
+      "statusServico": "FINALIZADO"
     }
   ],
   "solicitacoes-servico": [
@@ -116,6 +169,13 @@
       "clienteId": 2,
       "servicoId": 2,
       "descricao": "Verificar curto-circuito na cozinha.",
+      "statusSolicitacao": "ACEITA"
+    },
+    {
+      "id": "44ee",
+      "clienteId": "1762477587005",
+      "servicoId": "1b56",
+      "descricao": "Bater uma laje aqui em casa",
       "statusSolicitacao": "ACEITA"
     }
   ],

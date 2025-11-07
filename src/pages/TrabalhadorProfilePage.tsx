@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom"; // 👈 Adicionar useLocation
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
@@ -128,6 +128,7 @@ export function TrabalhadorProfilePage() {
 
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation(); // 👈 Obter a localização atual
 
   // Estados do Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -238,16 +239,21 @@ export function TrabalhadorProfilePage() {
     mutationCreateServico.mutate(servicoData);
   };
 
-  // --- Funções de Handler do Modal ---
+  // --- Funções de Handler do Modal (MODIFICADA) ---
   const handleOpenModal = () => {
+    // 1. Se NÃO ESTÁ LOGADO
     if (!isAuthenticated) {
-      navigate("/login?redirect=true"); // Redireciona se não logado
+      toast.error("Você precisa fazer login como cliente para solicitar.");
+      // Redireciona para o login, guardando a página atual
+      navigate(`/login?redirectTo=${location.pathname}`);
       return;
     }
+    // 2. Se ESTÁ LOGADO, MAS É UM TRABALHADOR
     if (user?.role !== "cliente") {
-      alert("Apenas clientes podem solicitar serviços."); // Alerta se for outro trabalhador
+      toast.error("Apenas clientes podem solicitar serviços.");
       return;
     }
+    // 3. Se ESTÁ LOGADO E É UM CLIENTE
     setIsModalOpen(true);
   };
 
@@ -273,7 +279,7 @@ export function TrabalhadorProfilePage() {
   if (isLoadingTrabalhador) {
     return (
       <div className="text-center py-20">
-        <Typography as="h2">Carregando Perfil ZIKA...</Typography>
+        <Typography as="h2">Carregando Perfil...</Typography>
         <p className="text-dark-subtle mt-4">
           Preparando o perfil completo do profissional.
         </p>
@@ -384,7 +390,7 @@ export function TrabalhadorProfilePage() {
               as="h3"
               className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
             >
-              Avaliações de Clientes ({avaliacoes?.length || 0}){" "}
+              Avaliações de Clientes ({avaliacoes?.length || 0})
               {/* Atualizado */}
             </Typography>
             <div className="space-y-6">

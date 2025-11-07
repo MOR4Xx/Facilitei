@@ -25,13 +25,11 @@ export function Header() {
   };
 
   // --- ESTILOS DOS LINKS ---
-
-  // 1. Estilos PADRÃO para links (Home, Sobre, FAQ)
   const navActive = "text-accent font-semibold";
   const navInactive =
     "text-dark-text/80 font-medium hover:text-accent transition-colors duration-200";
 
-  // 2. Estilos de ÊNFASE para o "Dashboard" (O que você pediu!)
+  // Estilos de ÊNFASE para o "Dashboard"
   const dashActive =
     "text-accent font-semibold bg-accent/10 px-3 py-2 rounded-lg";
   const dashInactive =
@@ -44,12 +42,13 @@ export function Header() {
     "bg-dark-surface/70 backdrop-blur-lg border-b border-primary/20 shadow-lg";
   const headerTopStyle = "bg-transparent border-b border-transparent";
 
-  // URL do perfil
-  const profileUrl = user
-    ? user.role === "cliente"
-      ? `/dashboard/cliente/${user.id}`
-      : `/dashboard/trabalhador/${user.id}`
-    : "/login";
+  // URL do perfil (SÓ se estiver logado)
+  const profileUrl =
+    user && isAuthenticated
+      ? user.role === "cliente"
+        ? `/cliente/${user.id}` // Link público para perfil de cliente
+        : `/trabalhador/${user.id}` // Link público para perfil de trabalhador
+      : "/login";
 
   return (
     <header
@@ -66,39 +65,38 @@ export function Header() {
         {/* 2. NAVEGAÇÃO E AUTH */}
         <div className="flex items-center gap-8">
           {/* Links Principais */}
-          {/* 👇 Reduzi o espaçamento para compensar o padding do botão */}
           <ul className="flex items-center space-x-6 text-base">
             <li>
               <NavLink
                 to="/"
                 end
                 className={({ isActive }) =>
-                  isActive ? navActive : navInactive // 👈 Estilo Padrão
+                  isActive ? navActive : navInactive
                 }
               >
                 Home
               </NavLink>
             </li>
 
-            {/* 👇 LINK DO DASHBOARD COM ÊNFASE */}
-            {isAuthenticated && (
-              <li>
-                <NavLink
-                  to="/dashboard"
-                  className={({ isActive }) =>
-                    isActive ? dashActive : dashInactive // 👈 Estilo de Ênfase
-                  }
-                >
-                  Dashboard
-                </NavLink>
-              </li>
-            )}
+            {/* 👇 LINK DO DASHBOARD (AGORA PÚBLICO) */}
+            <li>
+              <NavLink
+                to="/dashboard"
+                // O 'end' não é necessário aqui, pois queremos que /dashboard/solicitar etc
+                // ainda marquem "Dashboard" como ativo.
+                className={({ isActive }) =>
+                  isActive ? dashActive : dashInactive
+                }
+              >
+                Dashboard
+              </NavLink>
+            </li>
 
             <li>
               <NavLink
                 to="/about"
                 className={({ isActive }) =>
-                  isActive ? navActive : navInactive // 👈 Estilo Padrão
+                  isActive ? navActive : navInactive
                 }
               >
                 Sobre
@@ -108,7 +106,7 @@ export function Header() {
               <NavLink
                 to="/faq"
                 className={({ isActive }) =>
-                  isActive ? navActive : navInactive // 👈 Estilo Padrão
+                  isActive ? navActive : navInactive
                 }
               >
                 FAQ

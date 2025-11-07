@@ -50,7 +50,10 @@ export function TrabalhadorCard({
       layout 
       className="p-5 flex flex-col items-center text-center cursor-pointer
                  h-full !border-primary/10" // 👈 Estilo base (o hover vem do Card)
-      onClick={() => navigate(`/dashboard/trabalhador/${trabalhador.id}`)}
+      
+      // --- CORREÇÃO AQUI ---
+      // Removido "/dashboard" do link
+      onClick={() => navigate(`/trabalhador/${trabalhador.id}`)}
       whileHover={{ y: -5 }}
     >
       <img
