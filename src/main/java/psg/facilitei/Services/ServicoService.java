@@ -32,9 +32,6 @@ public class ServicoService {
     @Autowired
     private ClienteRepository clienteRepository;
 
-    @Autowired
-    private DisponibilidadeService disponibilidadeService;
-
     public List<ServicoResponseDTO> listarTodos() {
         return servicoRepository.findAll()
                 .stream()
@@ -64,8 +61,6 @@ public class ServicoService {
             .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + dto.getClienteId()));
         servico.setCliente(cliente);
 
-        Disponibilidade disponibilidade = disponibilidadeService.buscarEntidadePorId(dto.getDisponibilidadeId());
-        servico.setDisponibilidade(disponibilidade);
 
         if (servico.getStatusServico() == null) {
             servico.setStatusServico(StatusServico.PENDENTE);
@@ -92,11 +87,6 @@ public class ServicoService {
             Cliente novoCliente = clienteRepository.findById(dto.getClienteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + dto.getClienteId()));
             existente.setCliente(novoCliente);
-        }
-
-        if (dto.getDisponibilidadeId() != null && (existente.getDisponibilidade() == null || !existente.getDisponibilidade().getId().equals(dto.getDisponibilidadeId()))) {
-            Disponibilidade novaDisponibilidade = disponibilidadeService.buscarEntidadePorId(dto.getDisponibilidadeId());
-            existente.setDisponibilidade(novaDisponibilidade);
         }
 
         Servico atualizado = servicoRepository.save(existente);

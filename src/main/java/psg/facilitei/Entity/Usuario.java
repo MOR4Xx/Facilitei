@@ -10,8 +10,7 @@ import lombok.ToString;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @Data 
-@NoArgsConstructor 
-
+@NoArgsConstructor
 public abstract class Usuario {
 
     @Id
