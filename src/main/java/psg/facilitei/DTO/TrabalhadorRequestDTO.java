@@ -19,11 +19,13 @@ public class TrabalhadorRequestDTO {
     @NotBlank(message = "Email não pode ser vazio!")
     @Email
     private String email;
-  
+    private String telefone;
     private EnderecoRequestDTO endereco; 
     private List<Long> servicosIds;
     private List<Long> avaliacoesIds;
     private String disponibilidade;
     private Double notaTrabalhador;
     private String senha;
+    private String sobre;
+
 }

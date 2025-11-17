@@ -11,7 +11,7 @@ import lombok.ToString;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Data 
 @NoArgsConstructor
-public abstract class Usuario {
+public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,11 +20,17 @@ public abstract class Usuario {
     @Column(name = "nome", nullable = false)
     private String nome;
 
+    @Column(name = "telefone")
+    private String telefone;
+
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     @Column(name = "senha", nullable = false)
     private String senha;
+
+    @Column(name = "url_foto")
+    private String urlFoto;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "endereco_id", referencedColumnName = "id")

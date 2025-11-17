@@ -21,4 +21,5 @@ public class ClienteRequestDTO {
     @NotNull(message = "O Endereço é obrigatorio..") 
     @Valid
     private EnderecoRequestDTO endereco;
+    private String telefone;
 }

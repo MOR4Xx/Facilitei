@@ -17,7 +17,6 @@ import lombok.ToString;
 @PrimaryKeyJoinColumn(name = "cliente_id") 
 public class Cliente extends Usuario{
 
-
     @Column(name = "nota_cliente", nullable = false)
     private Integer notaCliente = 0;
 }

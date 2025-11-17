@@ -19,10 +19,6 @@ import lombok.ToString;
 @ToString(callSuper = true) 
 public class Trabalhador extends Usuario {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     @OneToMany(mappedBy = "trabalhador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
@@ -38,4 +34,8 @@ public class Trabalhador extends Usuario {
 
     @Column(name = "disponibilidade")
     private String disponibilidade;
+
+    @Column(name = "sobre", length = 200, nullable = false)
+    private String sobre;
+
 }

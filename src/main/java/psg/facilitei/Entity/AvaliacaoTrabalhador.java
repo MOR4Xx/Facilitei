@@ -15,7 +15,7 @@ import java.util.List;
 @Schema(description = "Nota media do trabalhador e comentários feitos em seus serviços")
 public class AvaliacaoTrabalhador extends Avaliacao {
 
-    @Id
+    @Column(name= "id_trabalhador", nullable = false)
     private Long trabalhadorId;
 
     @Column(name = "nota", nullable = false)

@@ -1,12 +1,8 @@
 package psg.facilitei.Services;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import jakarta.persistence.EntityNotFoundException;
 import psg.facilitei.DTO.EnderecoResponseDTO;
 import psg.facilitei.DTO.ServicoResponseDTO;
 import psg.facilitei.DTO.TrabalhadorRequestDTO;
@@ -20,19 +16,21 @@ import psg.facilitei.Repository.AvaliacaoTrabalhadorRepository;
 import psg.facilitei.Repository.ServicoRepository;
 import psg.facilitei.Repository.TrabalhadorRepository;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 public class TrabalhadorService {
 
     @Autowired
     private TrabalhadorRepository repository;
-
     @Autowired
     private ServicoRepository servicoRepository;
     @Autowired
     private AvaliacaoTrabalhadorRepository avaliacaoTrabalhadorRepository;
     @Autowired
     private AvaliacaoClienteRepository avaliacaoClienteRepository;
-    
+
 
     public TrabalhadorResponseDTO createTrabalhador(TrabalhadorRequestDTO trabalhadorRequestDTO) {
         Trabalhador trabalhador = repository.save(toEntity(trabalhadorRequestDTO));
@@ -51,19 +49,20 @@ public class TrabalhadorService {
         Trabalhador trabalhador = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
 
-        trabalhador.setNome(dto.getNome());
-        trabalhador.setEmail(dto.getEmail());
-        trabalhador.setSenha((dto.getSenha()));
+        if (dto.getNome() != null) trabalhador.setNome(dto.getNome());
+        if (dto.getEmail() != null) trabalhador.setEmail(dto.getEmail());
+        if (dto.getSenha() != null) trabalhador.setSenha((dto.getSenha()));
+        if (dto.getDisponibilidade() != null) trabalhador.setDisponibilidade(dto.getDisponibilidade());
+        if (dto.getSobre() != null) trabalhador.setSobre(dto.getSobre());
+        if (dto.getTelefone() != null) trabalhador.setTelefone(dto.getTelefone());
 
         Endereco endereco = trabalhador.getEndereco();
-        endereco.setRua(dto.getEndereco().getRua());
-        endereco.setNumero(dto.getEndereco().getNumero());
-        endereco.setBairro(dto.getEndereco().getBairro());
-        endereco.setCidade(dto.getEndereco().getCidade());
-        endereco.setEstado(dto.getEndereco().getEstado());
-        endereco.setCep(dto.getEndereco().getCep());
-
-        trabalhador.setNotaTrabalhador(dto.getNotaTrabalhador());
+        if (endereco.getRua() != null) endereco.setRua(dto.getEndereco().getRua());
+        if (endereco.getNumero() != null)endereco.setNumero(dto.getEndereco().getNumero());
+        if (endereco.getBairro() != null)endereco.setBairro(dto.getEndereco().getBairro());
+        if (endereco.getCidade() != null)endereco.setCidade(dto.getEndereco().getCidade());
+        if (endereco.getEstado() != null)endereco.setEstado(dto.getEndereco().getEstado());
+        if (endereco.getCep() != null)endereco.setCep(dto.getEndereco().getCep());
 
         return toResponseDTO(repository.save(trabalhador));
     }
@@ -72,7 +71,7 @@ public class TrabalhadorService {
         Trabalhador trabalhador = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Trabalhador não encontrado com ID: " + id));
 
-        
+
         avaliacaoClienteRepository.deleteByTrabalhadorId(id);
         avaliacaoTrabalhadorRepository.deleteByTrabalhadorId(id);
 

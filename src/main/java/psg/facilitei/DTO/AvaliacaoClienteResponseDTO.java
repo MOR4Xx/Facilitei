@@ -3,6 +3,8 @@ package psg.facilitei.DTO;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.Date;
+
 @Data
 public class AvaliacaoClienteResponseDTO {
 
@@ -23,4 +25,7 @@ public class AvaliacaoClienteResponseDTO {
 
     @Schema(description = "Média atual do cliente")
     private Double mediaCliente;
+
+    @Schema(description = "Data de publicação")
+    private Date data;
 }

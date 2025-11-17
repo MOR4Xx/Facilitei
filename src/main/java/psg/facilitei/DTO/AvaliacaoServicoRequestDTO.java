@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.util.Date;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -23,7 +24,8 @@ public class AvaliacaoServicoRequestDTO {
     private String comentario;
 
     private List<@Size(max = 500) String> fotos; 
-                                                
+
+    private Date data;
 
     @NotNull
     private Long clienteId;

@@ -148,6 +148,7 @@ public class ClienteService {
         if (dto.getNome() != null) clienteAntigo.setNome(dto.getNome());
         if (dto.getEmail() != null) clienteAntigo.setEmail(dto.getEmail());
         if (dto.getSenha() != null) clienteAntigo.setSenha(dto.getSenha());
+        if(dto.getTelefone() != null) clienteAntigo.setTelefone(dto.getTelefone());
 
         if (dto.getEndereco() != null) {
             if (clienteAntigo.getEndereco() == null) {

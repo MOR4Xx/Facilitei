@@ -14,11 +14,6 @@ import lombok.ToString;
 @NoArgsConstructor
 public class AvaliacaoServico extends Avaliacao {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "avaliacao_servico_id")
-    private Long id;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id")
     @EqualsAndHashCode.Exclude 
@@ -30,11 +25,5 @@ public class AvaliacaoServico extends Avaliacao {
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private Servico servico;
-
-    @Column(name = "nota")
-    private int nota;
-
-    @Column(name = "comentario")
-    private String comentario;
 
 }

@@ -13,7 +13,9 @@ public class TrabalhadorResponseDTO {
     private String nome;
     private String email;
     private EnderecoResponseDTO endereco;
+    private String telefone;
     private String disponibilidade;
     private List<ServicoResponseDTO> servicos;
     private Double notaTrabalhador;
+    private String sobre;
 }
