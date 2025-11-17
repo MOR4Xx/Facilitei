@@ -321,12 +321,12 @@ export function RegisterPage() {
       const newId = String(Date.now());
       // 1. Verificar se o e-mail já existe
       const emailCheckCliente = await fetch(
-        `http://localhost:3333/clientes?email=${formData.email}`
+        `http://localhost:8080/api/clientes?email=${formData.email}`
       );
       const existingClientes: Cliente[] = await emailCheckCliente.json();
 
       const emailCheckTrabalhador = await fetch(
-        `http://localhost:3333/trabalhadores?email=${formData.email}`
+        `http://localhost:8080/api/trabalhadores?email=${formData.email}`
       );
       const existingTrabalhadores: Trabalhador[] =
         await emailCheckTrabalhador.json();
@@ -356,7 +356,7 @@ export function RegisterPage() {
           },
         };
         endpoint = "clientes";
-        postResponse = await fetch(`http://localhost:3333/clientes`, {
+        postResponse = await fetch(`http://localhost:8080/api/clientes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newCliente),
@@ -379,7 +379,7 @@ export function RegisterPage() {
           servicoPrincipal: formData.selectedServices[0],
         };
         endpoint = "trabalhadores";
-        postResponse = await fetch(`http://localhost:3333/trabalhadores`, {
+        postResponse = await fetch(`http://localhost:8080/api/trabalhadores`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(newTrabalhador),
@@ -392,7 +392,7 @@ export function RegisterPage() {
 
       // 3. Buscar o usuário recém-criado
       const getResponse = await fetch(
-        `http://localhost:3333/${endpoint}?email=${formData.email}`
+        `http://localhost:8080/api/${endpoint}?email=${formData.email}`
       );
       const createdUserArray: Cliente[] | Trabalhador[] =
         await getResponse.json();
@@ -643,7 +643,6 @@ export function RegisterPage() {
                       required
                       disabled={isLoading || isCepLoading}
                       readOnly={isCepLoading}
-                      className="md:col-span-2" // Ocupa 2 colunas no desktop
                     />
                   </div>
                   {/* Grid Responsivo (md:grid-cols-3) */}
@@ -656,7 +655,6 @@ export function RegisterPage() {
                       required
                       disabled={isLoading || isCepLoading}
                       readOnly={isCepLoading}
-                      className="md:col-span-2" // Ocupa 2 colunas no desktop
                     />
                     <Input
                       label="Estado (UF)"

@@ -37,7 +37,7 @@ interface NewSolicitacaoRequest {
 
 // --- FUNÇÕES DE BUSCA ---
 const fetchTrabalhadorById = async (id: string): Promise<Trabalhador> => {
-  const response = await fetch(`http://localhost:3333/trabalhadores/${id}`);
+  const response = await fetch(`http://localhost:8080/api/trabalhadores/${id}`);
   if (!response.ok) {
     throw new Error("Profissional não encontrado.");
   }
@@ -48,7 +48,7 @@ const fetchAvaliacoesTrabalhador = async (
   workerId: string
 ): Promise<AvaliacaoTrabalhador[]> => {
   const response = await fetch(
-    `http://localhost:3333/avaliacoes-trabalhador?trabalhadorId=${workerId}`
+    `http://localhost:8080/api/avaliacoes-trabalhador?trabalhadorId=${workerId}`
   );
   if (!response.ok) return [];
   const avaliacoes: AvaliacaoTrabalhador[] = await response.json();
@@ -56,7 +56,7 @@ const fetchAvaliacoesTrabalhador = async (
   const avaliacoesComNomes = await Promise.all(
     avaliacoes.map(async (avaliacao) => {
       const clienteResponse = await fetch(
-        `http://localhost:3333/clientes/${avaliacao.clienteId}`
+        `http://localhost:8080/api/clientes/${avaliacao.clienteId}`
       );
       if (clienteResponse.ok) {
         const cliente: Cliente = await clienteResponse.json();
@@ -71,7 +71,7 @@ const fetchAvaliacoesTrabalhador = async (
 
 // --- FUNÇÕES DE ENVIO (MUTATION) ---
 const createServico = async (data: NewServicoRequest): Promise<Servico> => {
-  const response = await fetch(`http://localhost:3333/servicos`, {
+  const response = await fetch(`http://localhost:8080/api/servicos`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -81,7 +81,7 @@ const createServico = async (data: NewServicoRequest): Promise<Servico> => {
 };
 
 const createSolicitacao = async (data: NewSolicitacaoRequest) => {
-  const response = await fetch(`http://localhost:3333/solicitacoes-servico`, {
+  const response = await fetch(`http://localhost:8080/api/solicitacoes-servico`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),

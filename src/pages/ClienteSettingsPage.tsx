@@ -55,7 +55,7 @@ export function ClienteSettingsPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:3333/clientes/${user!.id}`, {
+      const response = await fetch(`http://localhost:8080/api/clientes/${user!.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

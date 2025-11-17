@@ -24,7 +24,7 @@ export function LoginPage() {
     try {
       // 1. Tenta encontrar como Cliente
       let response = await fetch(
-        `http://localhost:3333/clientes?email=${email}&senha=${senha}`
+        `http://localhost:8080/api/clientes?email=${email}&senha=${senha}`
       );
       const users: Cliente[] = await response.json();
 
@@ -37,7 +37,7 @@ export function LoginPage() {
 
       // 2. Tenta como Trabalhador
       response = await fetch(
-        `http://localhost:3333/trabalhadores?email=${email}&senha=${senha}`
+        `http://localhost:8080/api/trabalhadores?email=${email}&senha=${senha}`
       );
       const workers: Trabalhador[] = await response.json();
 

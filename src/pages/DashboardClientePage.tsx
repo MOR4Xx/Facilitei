@@ -28,7 +28,7 @@ import { AvaliacaoModal } from "../components/ui/AvaliacaoModal";
 const fetchServicosCliente = async (clienteId: string): Promise<Servico[]> => {
   if (!clienteId) return [];
   const response = await fetch(
-    `http://localhost:3333/servicos?clienteId=${clienteId}`
+    `http://localhost:8080/api/servicos?clienteId=${clienteId}`
   );
   if (!response.ok) throw new Error("Não foi possível buscar os serviços.");
   const servicos: Servico[] = await response.json();
@@ -42,7 +42,7 @@ const fetchServicosCliente = async (clienteId: string): Promise<Servico[]> => {
 };
 
 const fetchTrabalhadores = async (): Promise<Trabalhador[]> => {
-  const response = await fetch("http://localhost:3333/trabalhadores");
+  const response = await fetch("http://localhost:8080/api/trabalhadores");
   if (!response.ok)
     throw new Error("Não foi possível buscar os trabalhadores.");
   return response.json();
@@ -53,7 +53,7 @@ const fetchServicosAvaliados = async (
 ): Promise<AvaliacaoServico[]> => {
   if (!clienteId) return [];
   const response = await fetch(
-    `http://localhost:3333/avaliacoes-servico?clienteId=${clienteId}`
+    `http://localhost:8080/api/avaliacoes-servico?clienteId=${clienteId}`
   );
   if (!response.ok) return [];
   return response.json();
@@ -67,7 +67,7 @@ const updateServicoStatus = async ({
   id: string;
   status: StatusServico;
 }) => {
-  const response = await fetch(`http://localhost:3333/servicos/${id}`, {
+  const response = await fetch(`http://localhost:8080/api/servicos/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ statusServico: status }),

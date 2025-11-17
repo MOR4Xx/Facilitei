@@ -15,7 +15,7 @@ import { toast } from "react-hot-toast";
 const postAvaliacaoServico = async (
   data: AvaliacaoServico
 ): Promise<AvaliacaoServico> => {
-  const res = await fetch(`http://localhost:3333/avaliacoes-servico`, {
+  const res = await fetch(`http://localhost:8080/api/avaliacoes-servico`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -28,7 +28,7 @@ const postAvaliacaoServico = async (
 const postAvaliacaoTrabalhador = async (
   data: AvaliacaoTrabalhador
 ): Promise<AvaliacaoTrabalhador> => {
-  const res = await fetch(`http://localhost:3333/avaliacoes-trabalhador`, {
+  const res = await fetch(`http://localhost:8080/api/avaliacoes-trabalhador`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -46,7 +46,7 @@ const updateTrabalhadorNota = async ({
   novaNotaMedia: number;
 }) => {
   const res = await fetch(
-    `http://localhost:3333/trabalhadores/${trabalhadorId}`,
+    `http://localhost:8080/api/trabalhadores/${trabalhadorId}`,
     {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -98,7 +98,7 @@ toast.success("Avaliação enviada com sucesso! Obrigado!");      setTimeout(() 
       // Agora, recalcula a média
       try {
         const res = await fetch(
-          `http://localhost:3333/avaliacoes-trabalhador?trabalhadorId=${novaAvaliacao.trabalhadorId}`
+          `http://localhost:8080/api/avaliacoes-trabalhador?trabalhadorId=${novaAvaliacao.trabalhadorId}`
         );
         const todasAvaliacoes: AvaliacaoTrabalhador[] = await res.json();
         const totalNotas = todasAvaliacoes.reduce((acc, av) => acc + av.nota, 0);

@@ -13,7 +13,7 @@ import { toast } from "react-hot-toast";
 const postAvaliacaoCliente = async (
   data: Omit<AvaliacaoCliente, "id">
 ): Promise<AvaliacaoCliente> => {
-  const res = await fetch(`http://localhost:3333/avaliacoes-cliente`, {
+  const res = await fetch(`http://localhost:8080/api/avaliacoes-cliente`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -30,7 +30,7 @@ const updateClienteNota = async ({
   clienteId: string;
   novaNotaMedia: number;
 }) => {
-  const res = await fetch(`http://localhost:3333/clientes/${clienteId}`, {
+  const res = await fetch(`http://localhost:8080/api/clientes/${clienteId}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ notaCliente: novaNotaMedia }),
@@ -93,7 +93,7 @@ export function AvaliacaoClienteModal({
       // Agora, recalcula a média
       try {
         const res = await fetch(
-          `http://localhost:3333/avaliacoes-cliente?clienteId=${novaAvaliacao.clienteId}`
+          `http://localhost:8080/api/avaliacoes-cliente?clienteId=${novaAvaliacao.clienteId}`
         );
         const todasAvaliacoes: AvaliacaoCliente[] = await res.json();
         const totalNotas = todasAvaliacoes.reduce((acc, av) => acc + av.nota, 0);

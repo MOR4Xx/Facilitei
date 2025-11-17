@@ -9,7 +9,7 @@ import { useAuthStore } from "../store/useAuthStore";
 
 // --- FUNÇÕES DE BUSCA ---
 const fetchClienteById = async (id: string): Promise<Cliente> => {
-  const response = await fetch(`http://localhost:3333/clientes/${id}`);
+  const response = await fetch(`http://localhost:8080/api/clientes/${id}`);
   if (!response.ok) {
     throw new Error("Cliente não encontrado.");
   }
@@ -20,7 +20,7 @@ const fetchAvaliacoesCliente = async (
   clienteId: string
 ): Promise<AvaliacaoCliente[]> => {
   const response = await fetch(
-    `http://localhost:3333/avaliacoes-cliente?clienteId=${clienteId}`
+    `http://localhost:8080/api/avaliacoes-cliente?clienteId=${clienteId}`
   );
   if (!response.ok) return [];
   const avaliacoes: AvaliacaoCliente[] = await response.json();
@@ -28,7 +28,7 @@ const fetchAvaliacoesCliente = async (
   const avaliacoesComNomes = await Promise.all(
     avaliacoes.map(async (avaliacao) => {
       const trabalhadorResponse = await fetch(
-        `http://localhost:3333/trabalhadores/${avaliacao.trabalhadorId}`
+        `http://localhost:8080/api/trabalhadores/${avaliacao.trabalhadorId}`
       );
       if (trabalhadorResponse.ok) {
         const trabalhador: Trabalhador = await trabalhadorResponse.json();

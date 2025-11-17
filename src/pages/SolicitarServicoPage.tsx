@@ -41,7 +41,7 @@ const itemVariants: Variants = {
 
 // --- FUNÇÃO DE BUSCA ---
 const fetchTrabalhadores = async (): Promise<Trabalhador[]> => {
-  const response = await fetch('http://localhost:3333/trabalhadores');
+  const response = await fetch('http://localhost:8080/api/trabalhadores');
   if (!response.ok) throw new Error('Não foi possível buscar os trabalhadores.');
   return response.json();
 };

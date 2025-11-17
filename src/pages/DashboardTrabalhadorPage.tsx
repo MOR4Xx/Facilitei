@@ -69,7 +69,7 @@ const Rating = ({ score }: { score: number }) => {
 // --- FUNÇÕES DE FETCH (CORRIGIDAS) ---
 
 const fetchCliente = async (id: string): Promise<Cliente> => { 
-  const res = await fetch(`http://localhost:3333/clientes/${id}`);
+  const res = await fetch(`http://localhost:8080/api/clientes/${id}`);
   if (!res.ok) throw new Error("Cliente não encontrado");
   return res.json();
 };
@@ -78,7 +78,7 @@ const fetchAvaliacaoClienteFeitas = async (
   trabalhadorId: string 
 ): Promise<AvaliacaoCliente[]> => {
   const res = await fetch(
-    `http://localhost:3333/avaliacoes-cliente?trabalhadorId=${trabalhadorId}`
+    `http://localhost:8080/api/avaliacoes-cliente?trabalhadorId=${trabalhadorId}`
   );
   if (!res.ok) return [];
   return res.json();
@@ -86,7 +86,7 @@ const fetchAvaliacaoClienteFeitas = async (
 
 const fetchWorkerData = async (workerId: string): Promise<WorkerData> => { 
   const servicesResponse = await fetch(
-    `http://localhost:3333/servicos?trabalhadorId=${workerId}`
+    `http://localhost:8080/api/servicos?trabalhadorId=${workerId}`
   );
   if (!servicesResponse.ok) throw new Error("Falha ao buscar serviços.");
   const allServices: Servico[] = await servicesResponse.json();
@@ -112,7 +112,7 @@ const fetchWorkerData = async (workerId: string): Promise<WorkerData> => {
   );
 
   const solicitationsResponse = await fetch(
-    `http://localhost:3333/solicitacoes-servico?statusSolicitacao=PENDENTE`
+    `http://localhost:8080/api/solicitacoes-servico?statusSolicitacao=PENDENTE`
   );
   if (!solicitationsResponse.ok)
     throw new Error("Falha ao buscar solicitações.");
@@ -161,7 +161,7 @@ const updateServicoStatus = async ({
   id: string; 
   status: StatusServico;
 }) => {
-  const response = await fetch(`http://localhost:3333/servicos/${id}`, {
+  const response = await fetch(`http://localhost:8080/api/servicos/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ statusServico: status }),
@@ -178,7 +178,7 @@ const updateSolicitacaoStatus = async ({
   status: "ACEITA" | "RECUSADA";
 }) => {
   const response = await fetch(
-    `http://localhost:3333/solicitacoes-servico/${id}`,
+    `http://localhost:8080/api/solicitacoes-servico/${id}`,
     {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },

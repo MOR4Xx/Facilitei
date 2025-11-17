@@ -93,7 +93,7 @@ export function TrabalhadorSettingsPage() {
     try {
       // Envia os dados atualizados para a API (db.json)
       const response = await fetch(
-        `http://localhost:3333/trabalhadores/${user!.id}`,
+        `http://localhost:8080/api/trabalhadores/${user!.id}`,
         {
           method: "PUT",
           headers: {
