@@ -97,6 +97,9 @@ public class TrabalhadorService {
         trabalhador.setEmail(dto.getEmail());
         trabalhador.setNotaTrabalhador(dto.getNotaTrabalhador());
         trabalhador.setSenha(dto.getSenha());
+        trabalhador.setDisponibilidade(dto.getDisponibilidade());
+        trabalhador.setSobre(dto.getSobre());
+        trabalhador.setTelefone(dto.getTelefone());
 
         Endereco endereco = new Endereco();
         endereco.setRua(dto.getEndereco().getRua());

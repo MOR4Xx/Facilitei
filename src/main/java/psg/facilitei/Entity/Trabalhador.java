@@ -35,7 +35,7 @@ public class Trabalhador extends Usuario {
     @Column(name = "disponibilidade")
     private String disponibilidade;
 
-    @Column(name = "sobre", length = 200, nullable = false)
+    @Column(name = "sobre", length = 200)
     private String sobre;
 
 }

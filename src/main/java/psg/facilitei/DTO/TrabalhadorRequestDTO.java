@@ -1,5 +1,6 @@
 package psg.facilitei.DTO;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.validation.constraints.Email;
@@ -20,9 +21,9 @@ public class TrabalhadorRequestDTO {
     @Email
     private String email;
     private String telefone;
-    private EnderecoRequestDTO endereco; 
-    private List<Long> servicosIds;
-    private List<Long> avaliacoesIds;
+    private EnderecoRequestDTO endereco;
+    private List<Long> servicosIds = new ArrayList<>();
+    private List<Long> avaliacoesIds = new ArrayList<>();
     private String disponibilidade;
     private Double notaTrabalhador;
     private String senha;

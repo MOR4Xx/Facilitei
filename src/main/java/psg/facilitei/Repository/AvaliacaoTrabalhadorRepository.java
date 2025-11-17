@@ -15,9 +15,6 @@ import java.util.List;
 @Repository
 public interface AvaliacaoTrabalhadorRepository extends JpaRepository<AvaliacaoTrabalhador, Long> {
 
-    List<AvaliacaoTrabalhador> findByTrabalhadorId(Long trabalhadorId);
-
-    List<AvaliacaoTrabalhador> findByClienteId(Long clienteId);
 
     @Modifying
     @Transactional
