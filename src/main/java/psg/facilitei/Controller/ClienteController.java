@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 @RestController
-@RequestMapping("/cliente")
+@RequestMapping("/api/clientes")
 @Tag(name = "Cliente", description = "Operações relacionadas à gestão de clientes")
 public class ClienteController {
 

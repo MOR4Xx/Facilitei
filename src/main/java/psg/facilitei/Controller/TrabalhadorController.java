@@ -21,7 +21,7 @@ import psg.facilitei.Services.TrabalhadorService;
 import psg.facilitei.Exceptions.ErrorResponseDTO;
 
 @RestController
-@RequestMapping("/trabalhador")
+@RequestMapping("/api/trabalhadores")
 @Tag(name = "Trabalhador", description = "Operações relacionadas aos trabalhadores")
 public class TrabalhadorController {
 
