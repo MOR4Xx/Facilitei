@@ -22,36 +22,41 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      // 1. Tenta encontrar como Cliente
-      let response = await fetch(
-        `http://localhost:8080/api/clientes?email=${email}&senha=${senha}`
+      // 1. Chamar o novo endpoint de login do backend
+      const response = await fetch(
+        `http://localhost:8080/api/auth/login`, // 👈 NOSSO NOVO ENDPOINT
+        {
+          method: "POST", // 👈 MUDOU PARA POST
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, senha }), // 👈 ENVIANDO NO BODY
+        }
       );
-      const users: Cliente[] = await response.json();
 
-      if (users.length > 0) {
-        login({ ...users[0], role: "cliente" });
+      if (!response.ok) {
+        // Se o backend deu erro 404 (ResourceNotFound) ou outro
+        const errorData = await response.json();
+        throw new Error(errorData.message || "E-mail ou senha incorretos.");
+      }
+
+      // 2. Receber o LoginResponseDTO
+      const loginResponse: { role: 'cliente' | 'trabalhador'; user: Cliente | Trabalhador } = await response.json();
+
+      if (loginResponse && loginResponse.user && loginResponse.role) {
+        // 3. Fazer login no Zustand
+        login({ ...loginResponse.user, role: loginResponse.role }); // 👈 DADOS VINDOS DO BACKEND
         toast.success("Login efetuado com sucesso!");
         navigate(redirectTo || "/dashboard", { replace: true });
         return;
       }
 
-      // 2. Tenta como Trabalhador
-      response = await fetch(
-        `http://localhost:8080/api/trabalhadores?email=${email}&senha=${senha}`
-      );
-      const workers: Trabalhador[] = await response.json();
+      throw new Error("Resposta de login inválida do servidor.");
 
-      if (workers.length > 0) {
-        login({ ...workers[0], role: "trabalhador" });
-        toast.success("Login efetuado com sucesso!");
-        navigate(redirectTo || "/dashboard", { replace: true });
-        return;
-      }
-
-      // 3. Se não encontrou
-      toast.error("E-mail ou senha incorretos. Verifique suas credenciais.");
     } catch (err) {
-      toast.error("Ocorreu um erro ao conectar com o servidor.");
+      toast.error(
+         err instanceof Error ? err.message : "Ocorreu um erro ao conectar com o servidor."
+      );
     } finally {
       setIsLoading(false);
     }

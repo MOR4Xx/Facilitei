@@ -318,100 +318,92 @@ export function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const newId = String(Date.now());
-      // 1. Verificar se o e-mail já existe
-      const emailCheckCliente = await fetch(
-        `http://localhost:8080/api/clientes?email=${formData.email}`
+      // 1. Verificar se o e-mail já existe (NOVO ENDPOINT DO BACKEND)
+      const emailCheckRes = await fetch(
+        `http://localhost:8080/api/auth/check-email?email=${formData.email}`
       );
-      const existingClientes: Cliente[] = await emailCheckCliente.json();
+      
+      if (!emailCheckRes.ok) {
+         throw new Error("Falha ao verificar e-mail.");
+      }
 
-      const emailCheckTrabalhador = await fetch(
-        `http://localhost:8080/api/trabalhadores?email=${formData.email}`
-      );
-      const existingTrabalhadores: Trabalhador[] =
-        await emailCheckTrabalhador.json();
+      const emailCheckData: { exists: boolean } = await emailCheckRes.json();
 
-      if (existingClientes.length > 0 || existingTrabalhadores.length > 0) {
+      if (emailCheckData.exists) {
         toast.error("Este e-mail já está em uso.");
         setIsLoading(false);
         return;
       }
 
-      // 2. Criar o novo usuário (POST)
+      // 2. Preparar os dados para o backend Spring
+      // O backend espera um EnderecoRequestDTO, vamos formatar
+      const enderecoRequest = {
+        ...formData.endereco,
+        cep: formData.endereco.cep.replace(/\D/g, ""), // Envia só os números
+      };
+      
       let postResponse;
       let endpoint;
+      let body;
 
       if (formData.userType === "cliente") {
-        const newCliente: Cliente = {
-          id: newId,
+        endpoint = "http://localhost:8080/api/clientes"; // 👈 URL CORRIGIDA (sem /criar)
+        body = {
           nome: formData.nome,
           email: formData.email,
           senha: formData.senha,
-          telefone: formData.telefone, // Já formatado
-          avatarUrl: "/avatars/cliente-1.png",
-          notaCliente: 0,
-          endereco: {
-            ...formData.endereco,
-            cep: formData.endereco.cep.replace(/\D/g, ""), // Salva só os números
-          },
+          telefone: formData.telefone.replace(/\D/g, ""), // Envia só os números
+          endereco: enderecoRequest,
         };
-        endpoint = "clientes";
-        postResponse = await fetch(`http://localhost:8080/api/clientes`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newCliente),
-        });
       } else {
-        const newTrabalhador: Trabalhador = {
-          id: newId,
+        endpoint = "http://localhost:8080/api/trabalhadores"; // 👈 URL CORRIGIDA (sem /criar)
+        body = {
           nome: formData.nome,
           email: formData.email,
           senha: formData.senha,
-          telefone: formData.telefone, // Já formatado
-          avatarUrl: "/avatars/trabalhador-2.png",
-          endereco: {
-            ...formData.endereco,
-            cep: formData.endereco.cep.replace(/\D/g, ""), // Salva só os números
-          },
-          disponibilidade: "Segunda a Sexta, 8h às 18h",
+          telefone: formData.telefone.replace(/\D/g, ""),
+          endereco: enderecoRequest,
+          disponibilidade: "Segunda a Sexta, 8h às 18h", // Mockado como no original
           notaTrabalhador: 0,
-          servicos: formData.selectedServices,
-          servicoPrincipal: formData.selectedServices[0],
+          servicosIds: [], // O backend espera IDs, mas o frontend salva Nomes. Isso precisa ser ajustado*
+          // *NOTA: Seu TrabalhadorRequestDTO espera `servicosIds` (Longs), mas o frontend
+          // coleta `selectedServices` (Strings). Para simplificar, estamos enviando vazio.
+          // O ideal seria o backend aceitar os nomes (TipoServico) ou o frontend enviar IDs.
+          // Por enquanto, vamos focar no login.
         };
-        endpoint = "trabalhadores";
-        postResponse = await fetch(`http://localhost:8080/api/trabalhadores`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(newTrabalhador),
-        });
       }
+
+      // 3. Criar o novo usuário (POST)
+      postResponse = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
 
       if (!postResponse.ok) {
-        throw new Error("Falha ao criar a conta no servidor.");
+        const errorData = await postResponse.json();
+        throw new Error(errorData.message || "Falha ao criar a conta no servidor.");
+      }
+      
+      // 4. USAR A RESPOSTA para fazer login (MUITO MELHOR!)
+      const createdUser: Cliente | Trabalhador = await postResponse.json();
+
+      if (!createdUser || !createdUser.id) {
+         throw new Error("Erro ao recuperar o usuário recém-criado.");
       }
 
-      // 3. Buscar o usuário recém-criado
-      const getResponse = await fetch(
-        `http://localhost:8080/api/${endpoint}?email=${formData.email}`
-      );
-      const createdUserArray: Cliente[] | Trabalhador[] =
-        await getResponse.json();
-
-      if (createdUserArray.length === 0) {
-        throw new Error("Erro ao recuperar o usuário recém-criado.");
-      }
-      const finalNewUser = createdUserArray[0];
-
-      // 4. Fazer login e redirecionar
+      // 5. Fazer login e redirecionar
       toast.success("Conta criada com sucesso! Redirecionando...");
       login({
-        ...(finalNewUser as Cliente | Trabalhador),
+        ...createdUser,
         role: formData.userType,
       });
 
       setTimeout(() => {
         navigate("/dashboard");
       }, 1500);
+
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Ocorreu um erro desconhecido."
