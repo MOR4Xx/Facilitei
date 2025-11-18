@@ -126,7 +126,7 @@ public class TrabalhadorService {
     public TrabalhadorResponseDTO toResponseDTO(Trabalhador entity) {
         TrabalhadorResponseDTO dto = new TrabalhadorResponseDTO();
 
-        dto.setId(entity.getId());
+        dto.setId(String.valueOf(entity.getId()));
         dto.setNome(entity.getNome());
         dto.setEmail(entity.getEmail());
         dto.setNotaTrabalhador(entity.getNotaTrabalhador());

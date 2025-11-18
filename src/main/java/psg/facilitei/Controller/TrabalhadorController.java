@@ -33,7 +33,7 @@ public class TrabalhadorController {
                         @ApiResponse(responseCode = "201", description = "Trabalhador criado com sucesso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = TrabalhadorResponseDTO.class))),
                         @ApiResponse(responseCode = "400", description = "Dados inválidos ou incompletos", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponseDTO.class)))
         })
-        @PostMapping("/criar")
+        @PostMapping
         public ResponseEntity<TrabalhadorResponseDTO> CreateTrabalhador(
                         @Valid @RequestBody TrabalhadorRequestDTO trabalhadorRequestDTO) {
                 TrabalhadorResponseDTO createdTrabalhador = service.createTrabalhador(trabalhadorRequestDTO);
