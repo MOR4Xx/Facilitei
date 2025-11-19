@@ -1,5 +1,6 @@
 package psg.facilitei.DTO;
 
+import psg.facilitei.Entity.Enum.TipoServico;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,14 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SolicitacaoServicoResponseDTO {
-    @Schema(description = "ID único da solicitação de serviço", example = "5")
     private Long id;
-    @Schema(description = "ID do cliente solicitante", example = "2")
     private Long clienteId;
-    @Schema(description = "ID do serviço solicitado", example = "10")
-    private Long servicoId;
-    @Schema(description = "Descrição da solicitação", example = "Instalação de um novo chuveiro na residência.")
+    private Long trabalhadorId;
+    private Long servicoId; // Pode vir nulo se ainda não foi aceito
+    private TipoServico tipoServico;
     private String descricao;
-    @Schema(description = "Status atual da solicitação (PENDENTE, ACEITA, RECUSADA, etc.)", example = "PENDENTE")
     private String status;
 }

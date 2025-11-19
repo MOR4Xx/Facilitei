@@ -8,13 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 import psg.facilitei.DTO.SolicitacaoServicoRequestDTO;
 import psg.facilitei.DTO.SolicitacaoServicoResponseDTO;
 import psg.facilitei.Entity.Cliente;
-import psg.facilitei.Entity.Servico;
 import psg.facilitei.Entity.SolicitacaoServico;
+import psg.facilitei.Entity.Trabalhador;
 import psg.facilitei.Entity.Enum.StatusSolicitacao;
 import psg.facilitei.Exceptions.ResourceNotFoundException;
-
 import psg.facilitei.Repository.SolicitacaoServicoRepository;
-import psg.facilitei.Repository.ServicoRepository;
+import psg.facilitei.Repository.TrabalhadorRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,83 +29,90 @@ public class SolicitacaoServicoService {
     private ClienteService clienteService;
 
     @Autowired
-    private ServicoRepository servicoRepository;
+    private TrabalhadorRepository trabalhadorRepository;
 
     @Autowired
     private ModelMapper modelMapper;
 
     @Transactional
     public SolicitacaoServicoResponseDTO criar(SolicitacaoServicoRequestDTO dto) {
-        SolicitacaoServico solicitacao = modelMapper.map(dto, SolicitacaoServico.class);
+        SolicitacaoServico solicitacao = new SolicitacaoServico();
 
+        // 1. Busca e define o Cliente
         Cliente cliente = clienteService.buscarEntidadePorId(dto.getClienteId());
         solicitacao.setCliente(cliente);
 
-        Servico servico = servicoRepository.findById(dto.getServicoId())
-                .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado com ID: " + dto.getServicoId()));
-        solicitacao.setServico(servico);
+        // 2. Busca e define o Trabalhador (Obrigatório nesta etapa)
+        Trabalhador trabalhador = trabalhadorRepository.findById(dto.getTrabalhadorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Trabalhador não encontrado com ID: " + dto.getTrabalhadorId()));
+        solicitacao.setTrabalhador(trabalhador);
 
+        // 3. Define dados da solicitação
+        solicitacao.setDescricao(dto.getDescricao());
+        solicitacao.setTipoServico(dto.getTipoServico());
         solicitacao.setDataSolicitacao(LocalDateTime.now());
+        
+        // 4. O serviço começa como NULL (será criado quando o trabalhador aceitar)
+        solicitacao.setServico(null);
 
-        if (solicitacao.getStatusSolicitacao() == null) {
+        if (dto.getStatusSolicitacao() != null) {
+            solicitacao.setStatusSolicitacao(dto.getStatusSolicitacao());
+        } else {
             solicitacao.setStatusSolicitacao(StatusSolicitacao.PENDENTE);
         }
 
         SolicitacaoServico salvo = solicitacaoServicoRepository.save(solicitacao);
-        return modelMapper.map(salvo, SolicitacaoServicoResponseDTO.class);
+        
+        // Mapeamento manual para garantir retorno correto dos IDs
+        return mapToResponse(salvo);
     }
 
     @Transactional(readOnly = true)
     public List<SolicitacaoServicoResponseDTO> listarTodos() {
         return solicitacaoServicoRepository.findAll()
                 .stream()
-                .map(solicitacao -> modelMapper.map(solicitacao, SolicitacaoServicoResponseDTO.class))
+                .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public SolicitacaoServicoResponseDTO buscarPorId(Long id) {
         SolicitacaoServico solicitacao = solicitacaoServicoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Solicitação de Serviço não encontrada com ID: " + id));
-        return modelMapper.map(solicitacao, SolicitacaoServicoResponseDTO.class);
+                .orElseThrow(() -> new ResourceNotFoundException("Solicitação não encontrada ID: " + id));
+        return mapToResponse(solicitacao);
     }
 
     @Transactional
     public SolicitacaoServicoResponseDTO atualizar(Long id, SolicitacaoServicoRequestDTO dto) {
         SolicitacaoServico existente = solicitacaoServicoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Solicitação de Serviço não encontrada para atualização com ID: " + id));
-
-        modelMapper.map(dto, existente);
-
-        if (dto.getClienteId() != null && !existente.getCliente().getId().equals(dto.getClienteId())) {
-            Cliente novoCliente = clienteService.buscarEntidadePorId(dto.getClienteId());
-            existente.setCliente(novoCliente);
-        }
-
-        if (dto.getServicoId() != null && !existente.getServico().getId().equals(dto.getServicoId())) {
-            Servico novoServico = servicoRepository.findById(dto.getServicoId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Serviço não encontrado com ID: " + dto.getServicoId()));
-            existente.setServico(novoServico);
-        }
-
+             .orElseThrow(() -> new ResourceNotFoundException("Solicitação não encontrada ID: " + id));
+        
         if (dto.getStatusSolicitacao() != null) {
             existente.setStatusSolicitacao(dto.getStatusSolicitacao());
         }
+        // Adicione outras atualizações conforme necessário
 
-        SolicitacaoServico atualizado = solicitacaoServicoRepository.save(existente);
-        return modelMapper.map(atualizado, SolicitacaoServicoResponseDTO.class);
+        return mapToResponse(solicitacaoServicoRepository.save(existente));
     }
-
+    
     @Transactional
     public void deletar(Long id) {
         if (!solicitacaoServicoRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Solicitação de Serviço não encontrada para exclusão com ID: " + id);
+            throw new ResourceNotFoundException("Solicitação não encontrada para exclusão ID: " + id);
         }
         solicitacaoServicoRepository.deleteById(id);
     }
 
-    public SolicitacaoServico buscarEntidadePorId(Long id) {
-        return solicitacaoServicoRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Solicitação de Serviço não encontrada com ID: " + id));
+    // Helper para converter entidade para DTO
+    private SolicitacaoServicoResponseDTO mapToResponse(SolicitacaoServico entity) {
+        return new SolicitacaoServicoResponseDTO(
+            entity.getId(),
+            entity.getCliente().getId(),
+            entity.getTrabalhador().getId(),
+            entity.getServico() != null ? entity.getServico().getId() : null,
+            entity.getTipoServico(),
+            entity.getDescricao(),
+            entity.getStatusSolicitacao().name()
+        );
     }
 }
