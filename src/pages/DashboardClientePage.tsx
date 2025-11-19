@@ -27,10 +27,8 @@ import { api, get, put } from "../lib/api";
 
 // --- FUNÇÕES DE BUSCA (API) ---
 const fetchServicosCliente = async (clienteId: string): Promise<Servico[]> => {
-  // Idealmente o backend teria: /servicos/por-cliente/{id}
-  // Se não tiver, buscamos todos e filtramos (não performático para produção, ok para MVP)
-  const allServicos = await get<Servico[]>('/servicos');
-  return allServicos.filter((s) => String(s.clienteId) === String(clienteId));
+  // Agora busca apenas os serviços daquele cliente específico
+  return await get<Servico[]>(`/servicos/por-cliente/${clienteId}`);
 };
 
 // Mutation (Atualizar Status)

@@ -8,7 +8,14 @@ import { router } from "./routes";
 import "./index.css";
 
 // Crie uma instância do client
-const queryClient = new QueryClient(); // 👈 CRIE O CLIENT
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // Evita recarregar ao trocar de aba
+      staleTime: 1000 * 60 * 5, // Mantém os dados "frescos" por 5 minutos
+    },
+  },
+});
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
