@@ -100,6 +100,8 @@ public class TrabalhadorService {
         trabalhador.setDisponibilidade(dto.getDisponibilidade());
         trabalhador.setSobre(dto.getSobre());
         trabalhador.setTelefone(dto.getTelefone());
+        trabalhador.setHabilidades(dto.getHabilidades());
+        trabalhador.setServicoPrincipal(dto.getServicoPrincipal());
 
         Endereco endereco = new Endereco();
         endereco.setRua(dto.getEndereco().getRua());
@@ -110,11 +112,13 @@ public class TrabalhadorService {
         endereco.setNumero(dto.getEndereco().getNumero());
         trabalhador.setEndereco(endereco);
 
-        if (dto.getServicosIds() != null) {
-            List<Servico> servicos = servicoRepository.findAllById(dto.getServicosIds());
-            trabalhador.setServicos(servicos);
+        if (dto.getHabilidades() != null) {
+            trabalhador.setHabilidades(dto.getHabilidades());
         }
-
+        
+        if (dto.getServicoPrincipal() != null) {
+            trabalhador.setServicoPrincipal(dto.getServicoPrincipal());
+        }
         if (dto.getAvaliacoesIds() != null) {
             List<AvaliacaoTrabalhador> avaliacoes = avaliacaoTrabalhadorRepository.findAllById(dto.getAvaliacoesIds());
             trabalhador.setAvaliacoesTrabalhador(avaliacoes);

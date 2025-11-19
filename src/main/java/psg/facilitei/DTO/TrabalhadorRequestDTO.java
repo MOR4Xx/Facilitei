@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import psg.facilitei.Entity.Enum.TipoServico;
 
 @Data
 @NoArgsConstructor
@@ -22,7 +23,8 @@ public class TrabalhadorRequestDTO {
     private String email;
     private String telefone;
     private EnderecoRequestDTO endereco;
-    private List<Long> servicosIds = new ArrayList<>();
+    private List<TipoServico> habilidades;
+private TipoServico servicoPrincipal;
     private List<Long> avaliacoesIds = new ArrayList<>();
     private String disponibilidade;
     private Double notaTrabalhador;

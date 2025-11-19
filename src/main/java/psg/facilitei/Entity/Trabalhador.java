@@ -9,20 +9,31 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import psg.facilitei.Entity.Enum.TipoServico;
 
 @Entity
 @Table(name = "trabalhador")
 @Data
-@NoArgsConstructor 
-@AllArgsConstructor 
-@EqualsAndHashCode(callSuper = true) 
-@ToString(callSuper = true) 
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 public class Trabalhador extends Usuario {
 
     @OneToMany(mappedBy = "trabalhador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     private List<Servico> servicos = new ArrayList<>();
+
+    @ElementCollection(targetClass = TipoServico.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "trabalhador_habilidades", joinColumns = @JoinColumn(name = "trabalhador_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "habilidade")
+    private List<TipoServico> habilidades = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "servico_principal")
+    private TipoServico servicoPrincipal;
 
     @OneToMany(mappedBy = "trabalhador", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
