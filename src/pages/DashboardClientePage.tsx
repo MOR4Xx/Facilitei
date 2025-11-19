@@ -23,42 +23,40 @@ import {
   CalendarDaysIcon,
 } from "../components/ui/Icons";
 import { AvaliacaoModal } from "../components/ui/AvaliacaoModal";
-import { api } from "../lib/api";
+import { api, get, put } from "../lib/api";
 
 // --- FUNÇÕES DE BUSCA (API) ---
 const fetchServicosCliente = async (clienteId: string): Promise<Servico[]> => {
-  const { data } = await api.get("/servicos");
-  return data.filter((s: any) => s.clienteId === Number(clienteId));
+  // Idealmente o backend teria: /servicos/por-cliente/{id}
+  // Se não tiver, buscamos todos e filtramos (não performático para produção, ok para MVP)
+  const allServicos = await get<Servico[]>('/servicos');
+  return allServicos.filter((s) => String(s.clienteId) === String(clienteId));
 };
 
 // Mutation (Atualizar Status)
-const updateServicoStatus = async ({
-  id,
-  status,
-}: {
-  id: string;
-  status: StatusServico;
-}) => {
-  const { data } = await api.put(`/servicos/${id}`, { statusServico: status });
-  return data;
+const updateServicoStatus = async ({ id, status }: { id: string; status: StatusServico; }) => {
+  const currentService = await get<Servico>(`/servicos/${id}`);
+  const payload = { ...currentService, statusServico: status };
+  
+  const requestDTO = {
+     titulo: payload.titulo,
+     descricao: payload.descricao,
+     preco: payload.preco,
+     trabalhadorId: payload.trabalhadorId,
+     tipoServico: payload.tipoServico,
+     clienteId: payload.clienteId,
+     disponibilidadeId: payload.disponibilidadeId,
+     statusServico: status // A mudança real
+  };
+  return put(`/servicos/${id}`, requestDTO);
 };
 
 const fetchTrabalhadores = async (): Promise<Trabalhador[]> => {
-  const response = await fetch("http://localhost:8080/api/trabalhadores");
-  if (!response.ok)
-    throw new Error("Não foi possível buscar os trabalhadores.");
-  return response.json();
+  return get<Trabalhador[]>('/trabalhadores/listar');
 };
 
-const fetchServicosAvaliados = async (
-  clienteId: string
-): Promise<AvaliacaoServico[]> => {
-  if (!clienteId) return [];
-  const response = await fetch(
-    `http://localhost:8080/api/avaliacoes-servico?clienteId=${clienteId}`
-  );
-  if (!response.ok) return [];
-  return response.json();
+const fetchServicosAvaliados = async (clienteId: string): Promise<AvaliacaoServico[]> => {
+    return get<AvaliacaoServico[]>(`/avaliacoes/Servico/cliente/${clienteId}`); // Ajuste a rota conforme seu Controller
 };
 
 // --- VARIANTES DE ANIMAÇÃO ---

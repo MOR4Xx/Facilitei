@@ -6,9 +6,7 @@ import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
 import type {
   Trabalhador,
-  Cliente,
   TipoServico,
-  Servico,
   AvaliacaoTrabalhador,
 } from "../types/api";
 import { useEffect, useState } from "react";
@@ -16,78 +14,30 @@ import { useAuthStore } from "../store/useAuthStore";
 import { Modal } from "../components/ui/Modal";
 import { Textarea } from "../components/ui/Textarea";
 import { toast } from "react-hot-toast";
+import { api, get, post } from "../lib/api"; // Importe do nosso helper Axios
 
-interface NewServicoRequest {
-  titulo: string;
-  descricao: string;
-  preco: number;
-  trabalhadorId: string;
-  clienteId: string;
-  disponibilidadeId: number; // Mockado
-  tipoServico: TipoServico;
-  statusServico: "PENDENTE" | "SOLICITADO";
-}
-
+// Interface alinhada com o novo SolicitacaoServicoRequestDTO do Backend
 interface NewSolicitacaoRequest {
   clienteId: string;
-  servicoId: string;
+  trabalhadorId: string;
+  tipoServico: string; 
   descricao: string;
   statusSolicitacao: "PENDENTE";
 }
 
 // --- FUNÇÕES DE BUSCA ---
 const fetchTrabalhadorById = async (id: string): Promise<Trabalhador> => {
-  const response = await fetch(`http://localhost:8080/api/trabalhadores/${id}`);
-  if (!response.ok) {
-    throw new Error("Profissional não encontrado.");
+  // Usa endpoint de busca por ID do backend
+  return get<Trabalhador>(`/trabalhadores/buscarPorId/${id}`);
+};
+
+const fetchAvaliacoesTrabalhador = async (workerId: string): Promise<AvaliacaoTrabalhador[]> => {
+  try {
+      // Ajuste a rota conforme seu Controller de Avaliações
+      return await get<AvaliacaoTrabalhador[]>(`/avaliacoes-cliente/trabalhador/${workerId}`);
+  } catch {
+      return [];
   }
-  return response.json();
-};
-
-const fetchAvaliacoesTrabalhador = async (
-  workerId: string
-): Promise<AvaliacaoTrabalhador[]> => {
-  const response = await fetch(
-    `http://localhost:8080/api/avaliacoes-trabalhador?trabalhadorId=${workerId}`
-  );
-  if (!response.ok) return [];
-  const avaliacoes: AvaliacaoTrabalhador[] = await response.json();
-
-  const avaliacoesComNomes = await Promise.all(
-    avaliacoes.map(async (avaliacao) => {
-      const clienteResponse = await fetch(
-        `http://localhost:8080/api/clientes/${avaliacao.clienteId}`
-      );
-      if (clienteResponse.ok) {
-        const cliente: Cliente = await clienteResponse.json();
-        return { ...avaliacao, clienteNome: cliente.nome };
-      }
-      return { ...avaliacao, clienteNome: "Cliente Anônimo" };
-    })
-  );
-
-  return avaliacoesComNomes;
-};
-
-// --- FUNÇÕES DE ENVIO (MUTATION) ---
-const createServico = async (data: NewServicoRequest): Promise<Servico> => {
-  const response = await fetch(`http://localhost:8080/api/servicos`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) throw new Error("Falha ao criar o serviço.");
-  return response.json();
-};
-
-const createSolicitacao = async (data: NewSolicitacaoRequest) => {
-  const response = await fetch(`http://localhost:8080/api/solicitacoes-servico`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
-  if (!response.ok) throw new Error("Falha ao criar a solicitação.");
-  return response.json();
 };
 
 // --- VARIANTES DE ANIMAÇÃO ---
@@ -105,7 +55,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-// --- COMPONENTE DE RATING (Estrelas) ---
+// --- COMPONENTE DE RATING ---
 const Rating = ({ score }: { score: number }) => {
   const stars = Array(5)
     .fill(0)
@@ -122,7 +72,7 @@ const Rating = ({ score }: { score: number }) => {
   return <div className="flex space-x-1">{stars}</div>;
 };
 
-// --- COMPONENTE PRINCIPAL: TRABALHADOR PROFILE PAGE ---
+// --- COMPONENTE PRINCIPAL ---
 export function TrabalhadorProfilePage() {
   const { id } = useParams<{ id: string }>();
   const trabalhadorId = id ? id : "0";
@@ -163,42 +113,24 @@ export function TrabalhadorProfilePage() {
     }
   }, [trabalhador]);
 
-  // --- LÓGICA DE MUTATION (ENVIO DA SOLICITAÇÃO) ---
-  const mutationCreateServico = useMutation({
-    mutationFn: createServico,
-    onSuccess: (newServico) => {
-      const solicitacaoData: NewSolicitacaoRequest = {
-        clienteId: user!.id,
-        servicoId: newServico.id,
-        descricao: descricao,
-        statusSolicitacao: "PENDENTE",
-      };
-      mutationCreateSolicitacao.mutate(solicitacaoData);
-    },
-    onError: (error) => {
-      toast.error(`Erro: ${error.message}`);
-    },
-  });
-
+  // --- MUTATION: CRIAR APENAS A SOLICITAÇÃO ---
   const mutationCreateSolicitacao = useMutation({
-    mutationFn: createSolicitacao,
-    onSuccess: () => {
-      toast.success("Solicitação enviada! O profissional foi notificado.");
-      setTimeout(() => {
-        setIsModalOpen(false);
-        setDescricao("");
-      }, 2000);
-      queryClient.invalidateQueries({ queryKey: ["workerData"] });
-      queryClient.invalidateQueries({ queryKey: ["servicos"] });
+    mutationFn: async (data: NewSolicitacaoRequest) => {
+      // POST para /solicitacoes-servico usando Axios
+      return post("/solicitacoes-servico", data);
     },
-    onError: (error) => {
-      toast.error(`Erro final: ${error.message}`);
+    onSuccess: () => {
+      toast.success("Solicitação enviada com sucesso! Aguarde o profissional aceitar.");
+      setIsModalOpen(false);
+      setDescricao("");
+    },
+    onError: (error: any) => {
+      const msg = error.response?.data?.message || "Erro ao enviar solicitação.";
+      toast.error(msg);
     },
   });
 
-  const isLoadingRequest =
-    mutationCreateServico.isPending || mutationCreateSolicitacao.isPending;
-  const isSuccessRequest = mutationCreateSolicitacao.isSuccess;
+  const isLoadingRequest = mutationCreateSolicitacao.isPending;
 
   const handleSubmitRequest = () => {
     if (!isAuthenticated || user?.role !== "cliente") {
@@ -214,20 +146,19 @@ export function TrabalhadorProfilePage() {
       return;
     }
 
-    const servicoData: NewServicoRequest = {
-      titulo: `Solicitação de ${selectedServico.replace(/_/g, " ")}`,
-      descricao: descricao,
-      preco: 0,
-      trabalhadorId: trabalhadorId,
+    // Envia os dados corretos para o novo endpoint
+    const solicitacaoData: NewSolicitacaoRequest = {
       clienteId: user.id,
-      disponibilidadeId: 1,
+      trabalhadorId: trabalhadorId,
       tipoServico: selectedServico,
-      statusServico: "PENDENTE",
+      descricao: descricao,
+      statusSolicitacao: "PENDENTE",
     };
-    mutationCreateServico.mutate(servicoData);
+    
+    mutationCreateSolicitacao.mutate(solicitacaoData);
   };
 
-  // --- Funções de Handler do Modal (COM A CORREÇÃO DE REDIRECT) ---
+  // --- HANDLER DO MODAL ---
   const handleOpenModal = () => {
     if (!isAuthenticated) {
       toast.error("Você precisa fazer login como cliente para solicitar.");
@@ -245,14 +176,7 @@ export function TrabalhadorProfilePage() {
     return (
       <div className="text-center py-20 text-red-500">
         <Typography as="h2">Perfil Não Encontrado</Typography>
-        <p className="text-dark-subtle mt-4">
-          O profissional que você busca não está disponível.
-        </p>
-        <Button
-          variant="outline"
-          className="mt-6"
-          onClick={() => window.history.back()}
-        >
+        <Button variant="outline" className="mt-6" onClick={() => window.history.back()}>
           Voltar
         </Button>
       </div>
@@ -263,9 +187,6 @@ export function TrabalhadorProfilePage() {
     return (
       <div className="text-center py-20">
         <Typography as="h2">Carregando Perfil...</Typography>
-        <p className="text-dark-subtle mt-4">
-          Preparando o perfil completo do profissional.
-        </p>
       </div>
     );
   }
@@ -283,10 +204,9 @@ export function TrabalhadorProfilePage() {
         initial="hidden"
         animate="visible"
         variants={pageVariants}
-        // Grid responsivo: 1 coluna no mobile, 3 no desktop
         className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10"
       >
-        {/* Coluna da Esquerda: Perfil e Ações */}
+        {/* Esquerda: Perfil */}
         <motion.div className="lg:col-span-1 space-y-8" variants={itemVariants}>
           <Card className="p-8 flex flex-col items-center text-center shadow-glow-accent">
             <img
@@ -297,10 +217,7 @@ export function TrabalhadorProfilePage() {
             <Typography as="h2" className="!text-3xl !text-primary">
               {trabalhador.nome}
             </Typography>
-            <Typography
-              as="p"
-              className="text-xl font-semibold !text-accent mb-2"
-            >
+            <Typography as="p" className="text-xl font-semibold !text-accent mb-2">
               {readableService}
             </Typography>
             <div className="mt-2">
@@ -312,10 +229,7 @@ export function TrabalhadorProfilePage() {
           </Card>
 
           <Card className="p-6">
-            <Typography
-              as="h3"
-              className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
-            >
+            <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2 mb-4">
               Disponibilidade
             </Typography>
             <p className="text-dark-text text-center font-medium">
@@ -327,34 +241,27 @@ export function TrabalhadorProfilePage() {
             variant="secondary"
             size="lg"
             className="w-full shadow-lg shadow-accent/40"
-            onClick={handleOpenModal} // AÇÃO DO BOTÃO ATUALIZADA
+            onClick={handleOpenModal}
           >
             Solicitar Serviço 🚀
           </Button>
         </motion.div>
 
-        {/* Coluna da Direita: Detalhes e Avaliações */}
+        {/* Direita: Infos */}
         <motion.div className="lg:col-span-2 space-y-8" variants={itemVariants}>
           <Card className="p-6">
-            <Typography
-              as="h3"
-              className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
-            >
+            <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2 mb-4">
               Sobre Mim
             </Typography>
             <Typography as="p">
               Olá! Sou {primeiroNome}, um profissional dedicado e com vasta
               experiência em {readableService}. Meu compromisso é com a
-              qualidade e a satisfação do cliente, buscando sempre a melhor
-              solução para suas necessidades. Estou pronto para te ajudar!
+              qualidade e a satisfação do cliente.
             </Typography>
           </Card>
 
           <Card className="p-6">
-            <Typography
-              as="h3"
-              className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
-            >
+            <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2 mb-4">
               Serviços Prestados
             </Typography>
             <div className="flex flex-wrap gap-3">
@@ -370,17 +277,12 @@ export function TrabalhadorProfilePage() {
           </Card>
 
           <Card className="p-6">
-            <Typography
-              as="h3"
-              className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
-            >
-              Avaliações de Clientes ({avaliacoes?.length || 0}){" "}
+            <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2 mb-4">
+              Avaliações de Clientes ({avaliacoes?.length || 0})
             </Typography>
             <div className="space-y-6">
               {isLoadingAvaliacoes ? (
-                <p className="text-dark-subtle italic text-center py-4">
-                  Carregando avaliações...
-                </p>
+                <p className="text-dark-subtle italic text-center py-4">Carregando avaliações...</p>
               ) : avaliacoes && avaliacoes.length > 0 ? (
                 avaliacoes.map((avaliacao) => (
                   <div
@@ -393,9 +295,7 @@ export function TrabalhadorProfilePage() {
                       </Typography>
                       <Rating score={avaliacao.nota} />
                     </div>
-                    <Typography as="p" className="italic">
-                      "{avaliacao.comentario}"
-                    </Typography>
+                    <Typography as="p" className="italic">"{avaliacao.comentario}"</Typography>
                   </div>
                 ))
               ) : (
@@ -408,31 +308,20 @@ export function TrabalhadorProfilePage() {
         </motion.div>
       </motion.div>
 
-      {/* --- MODAL DE SOLICITAÇÃO --- */}
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={`Solicitar ${primeiroNome}`}
-      >
+      {/* MODAL */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={`Solicitar ${primeiroNome}`}>
         <div className="space-y-6">
           <div className="relative">
-            <label
-              htmlFor="servicoTipo"
-              className="block text-sm font-medium text-dark-subtle mb-2"
-            >
+            <label htmlFor="servicoTipo" className="block text-sm font-medium text-dark-subtle mb-2">
               Qual serviço você precisa?
             </label>
             <select
               id="servicoTipo"
               value={selectedServico}
-              onChange={(e) =>
-                setSelectedServico(e.target.value as TipoServico)
-              }
+              onChange={(e) => setSelectedServico(e.target.value as TipoServico)}
               className="w-full bg-transparent border-2 border-dark-surface rounded-lg p-3 text-dark-text focus:outline-none focus:border-accent"
             >
-              <option value="" disabled>
-                Selecione um serviço...
-              </option>
+              <option value="" disabled>Selecione um serviço...</option>
               {trabalhador.servicos.map((tipo) => (
                 <option key={tipo} value={tipo} className="bg-dark-surface">
                   {tipo.replace(/_/g, " ")}
@@ -450,25 +339,11 @@ export function TrabalhadorProfilePage() {
           />
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setIsModalOpen(false)}
-              disabled={isLoadingRequest || isSuccessRequest}
-            >
+            <Button variant="outline" className="w-full" onClick={() => setIsModalOpen(false)} disabled={isLoadingRequest}>
               Cancelar
             </Button>
-            <Button
-              variant="secondary"
-              className="w-full"
-              onClick={handleSubmitRequest}
-              disabled={isLoadingRequest || isSuccessRequest}
-            >
-              {isLoadingRequest
-                ? "Enviando..."
-                : isSuccessRequest
-                ? "Enviado!"
-                : "Enviar Solicitação"}
+            <Button variant="secondary" className="w-full" onClick={handleSubmitRequest} disabled={isLoadingRequest}>
+              {isLoadingRequest ? "Enviando..." : "Enviar Solicitação"}
             </Button>
           </div>
         </div>

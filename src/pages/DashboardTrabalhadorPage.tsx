@@ -23,23 +23,30 @@ import {
   CogIcon, 
 } from "../components/ui/Icons";
 import { AvaliacaoClienteModal } from "../components/ui/AvaliacaoClienteModal";
+import { api, get, post, patch } from "../lib/api"; // Helper Axios
+import { toast } from "react-hot-toast";
 
-// --- INTERFACES LOCAIS (CORRIGIDAS) ---
+// Interface para Solicitação (refletindo o DTO de resposta)
 interface SolicitacaoServico {
   id: string; 
   clienteId: string;
-  servicoId: string;
+  trabalhadorId: string;
+  tipoServico: string; // enum string
+  servicoId?: string | null; // Pode ser nulo se pendente
   descricao: string;
-  statusSolicitacao: "PENDENTE" | "ACEITA" | "RECUSADA";
+  status: "PENDENTE" | "ACEITA" | "RECUSADA";
+  
+  // Campos hidratados (não vêm da API de solicitação, nós buscamos)
+  cliente?: Cliente;
 }
 
 interface WorkerData {
-  newRequests: (SolicitacaoServico & { cliente: Cliente; servico: Servico })[];
+  newRequests: SolicitacaoServico[];
   activeServices: (Servico & { cliente: Cliente })[];
   finishedServices: (Servico & { cliente: Cliente })[];
 }
 
-// --- VARIANTES (Sem alteração) ---
+// --- VARIANTES ---
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
@@ -51,96 +58,52 @@ const itemVariants = {
 };
 
 const Rating = ({ score }: { score: number }) => {
-  const stars = Array(5)
-    .fill(0)
-    .map((_, i) => (
-      <span
-        key={i}
-        className={`text-xl ${
-          i < score ? "text-accent" : "text-dark-subtle/50"
-        }`}
-      >
-        ★
-      </span>
-    ));
+  const stars = Array(5).fill(0).map((_, i) => (
+      <span key={i} className={`text-xl ${i < score ? "text-accent" : "text-dark-subtle/50"}`}>★</span>
+  ));
   return <div className="flex space-x-0.5">{stars}</div>;
 };
 
-// --- FUNÇÕES DE FETCH (CORRIGIDAS) ---
-
-const fetchCliente = async (id: string): Promise<Cliente> => { 
-  const res = await fetch(`http://localhost:8080/api/clientes/${id}`);
-  if (!res.ok) throw new Error("Cliente não encontrado");
-  return res.json();
-};
-
-const fetchAvaliacaoClienteFeitas = async (
-  trabalhadorId: string 
-): Promise<AvaliacaoCliente[]> => {
-  const res = await fetch(
-    `http://localhost:8080/api/avaliacoes-cliente?trabalhadorId=${trabalhadorId}`
-  );
-  if (!res.ok) return [];
-  return res.json();
-};
-
+// --- FUNÇÕES DE FETCH ---
 const fetchWorkerData = async (workerId: string): Promise<WorkerData> => { 
-  const servicesResponse = await fetch(
-    `http://localhost:8080/api/servicos?trabalhadorId=${workerId}`
+  // 1. Buscar todos os serviços já criados onde sou o trabalhador
+  const allServices = await get<Servico[]>(`/servicos?trabalhadorId=${workerId}`);
+
+  // Filtra ativos e finalizados
+  const activeServices = allServices.filter(s => 
+    s.statusServico === "EM_ANDAMENTO" || s.statusServico === "PENDENTE_APROVACAO"
   );
-  if (!servicesResponse.ok) throw new Error("Falha ao buscar serviços.");
-  const allServices: Servico[] = await servicesResponse.json();
+  const finishedServices = allServices.filter(s => s.statusServico === "FINALIZADO");
 
-  const activeServices = allServices
-    .filter(
-      (s) =>
-        s.statusServico === "EM_ANDAMENTO" ||
-        s.statusServico === "PENDENTE_APROVACAO"
-    )
-    .sort((a, b) => {
-      if (a.statusServico === "PENDENTE_APROVACAO") return -1;
-      if (b.statusServico === "PENDENTE_APROVACAO") return 1;
-      return 0;
-    });
-
-  const pendingServiceIds = allServices
-    .filter((s) => s.statusServico === "PENDENTE")
-    .map((s) => s.id);
-
-  const finishedServices = allServices.filter(
-    (s) => s.statusServico === "FINALIZADO"
+  // 2. Buscar todas as solicitações (o ideal seria um endpoint filtrado no back)
+  const allSolicitations = await get<SolicitacaoServico[]>('/solicitacoes-servico');
+  
+  // Filtra: Minhas solicitações e que estão PENDENTES
+  const myNewRequests = allSolicitations.filter(sol => 
+    String(sol.trabalhadorId) === String(workerId) && sol.status === "PENDENTE"
   );
 
-  const solicitationsResponse = await fetch(
-    `http://localhost:8080/api/solicitacoes-servico?statusSolicitacao=PENDENTE`
-  );
-  if (!solicitationsResponse.ok)
-    throw new Error("Falha ao buscar solicitações.");
-  const allSolicitations: SolicitacaoServico[] =
-    await solicitationsResponse.json();
-
-  const newRequests = allSolicitations.filter((sol) =>
-    pendingServiceIds.includes(sol.servicoId) 
+  // 3. Hidratação de Clientes (para mostrar nomes e fotos)
+  // Para Solicitações
+  const newRequestsWithClient = await Promise.all(
+    myNewRequests.map(async (sol) => {
+      const cliente = await get<Cliente>(`/clientes/id/${sol.clienteId}`); 
+      return { ...sol, cliente };
+    })
   );
 
+  // Para Serviços Ativos
   const activeServicesWithClient = await Promise.all(
     activeServices.map(async (servico) => {
-      const cliente = await fetchCliente(servico.clienteId); 
+      const cliente = await get<Cliente>(`/clientes/id/${servico.clienteId}`); 
       return { ...servico, cliente };
     })
   );
 
-  const newRequestsWithClient = await Promise.all(
-    newRequests.map(async (solicitacao) => {
-      const cliente = await fetchCliente(solicitacao.clienteId); 
-      const servico = allServices.find((s) => s.id === solicitacao.servicoId)!;
-      return { ...solicitacao, cliente, servico };
-    })
-  );
-
+  // Para Serviços Finalizados
   const finishedServicesWithClient = await Promise.all(
     finishedServices.map(async (servico) => {
-      const cliente = await fetchCliente(servico.clienteId); 
+      const cliente = await get<Cliente>(`/clientes/id/${servico.clienteId}`); 
       return { ...servico, cliente };
     })
   );
@@ -152,43 +115,13 @@ const fetchWorkerData = async (workerId: string): Promise<WorkerData> => {
   };
 };
 
-// --- FUNÇÕES DE MUTATION ---
-
-const updateServicoStatus = async ({
-  id,
-  status,
-}: {
-  id: string; 
-  status: StatusServico;
-}) => {
-  const response = await fetch(`http://localhost:8080/api/servicos/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ statusServico: status }),
-  });
-  if (!response.ok) throw new Error("Falha ao atualizar serviço.");
-  return response.json();
+const fetchAvaliacaoClienteFeitas = async (trabalhadorId: string): Promise<AvaliacaoCliente[]> => {
+  try {
+      return await get<AvaliacaoCliente[]>(`/avaliacoes-cliente/trabalhador/${trabalhadorId}`);
+  } catch {
+      return [];
+  }
 };
-
-const updateSolicitacaoStatus = async ({
-  id,
-  status,
-}: {
-  id: string; 
-  status: "ACEITA" | "RECUSADA";
-}) => {
-  const response = await fetch(
-    `http://localhost:8080/api/solicitacoes-servico/${id}`,
-    {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ statusSolicitacao: status }),
-    }
-  );
-  if (!response.ok) throw new Error("Falha ao atualizar solicitação.");
-  return response.json();
-};
-
 
 // --- COMPONENTE PRINCIPAL ---
 export function DashboardTrabalhadorPage() {
@@ -196,8 +129,8 @@ export function DashboardTrabalhadorPage() {
   const { user } = useAuthStore();
   const queryClient = useQueryClient();
   const trabalhador = user as Trabalhador;
-  const [reviewingClientService, setReviewingClientService] =
-    useState<Servico | null>(null);
+  const [reviewingClientService, setReviewingClientService] = useState<Servico | null>(null);
+  const [isMutating, setIsMutating] = useState(false);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["workerData", trabalhador.id],
@@ -215,45 +148,71 @@ export function DashboardTrabalhadorPage() {
     return new Set(avaliacoesFeitas?.map((av) => av.servicoId));
   }, [avaliacoesFeitas]);
 
-  const servicoMutation = useMutation({
-    mutationFn: updateServicoStatus,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["workerData", trabalhador.id],
+  // --- HANDLERS DE AÇÃO ---
+
+  const handleAccept = async (solicitacao: SolicitacaoServico) => {
+    setIsMutating(true);
+    try {
+      // 1. Criar o Serviço (O Contrato)
+      // Usamos os dados da solicitação para criar o serviço já em andamento
+      const newService = await post<Servico>('/servicos', {
+        titulo: `Serviço: ${solicitacao.tipoServico.replace(/_/g, ' ')}`,
+        descricao: solicitacao.descricao,
+        preco: 100.00, // Valor placeholder, pode vir de um input futuro
+        trabalhadorId: Number(solicitacao.trabalhadorId),
+        clienteId: Number(solicitacao.clienteId),
+        disponibilidadeId: 1, // Mock
+        tipoServico: solicitacao.tipoServico,
+        statusServico: "EM_ANDAMENTO" // Nasce ativo
       });
-      queryClient.invalidateQueries({ queryKey: ["servicosCliente"] });
-    },
-  });
 
-  const solicitacaoMutation = useMutation({
-    mutationFn: updateSolicitacaoStatus,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["workerData", trabalhador.id],
+      // 2. Atualizar a Solicitação para ACEITA
+      // Se seu backend atualiza o servicoId automaticamente, ótimo. Se não, apenas status.
+      await patch(`/solicitacoes-servico/${solicitacao.id}`, {
+         statusSolicitacao: "ACEITA"
       });
-    },
-  });
 
-  // ... (Handlers) ...
-  const handleAccept = (solicitacao: SolicitacaoServico) => {
-    solicitacaoMutation.mutate({ id: solicitacao.id, status: "ACEITA" });
-    servicoMutation.mutate({
-      id: solicitacao.servicoId, 
-      status: "EM_ANDAMENTO",
-    });
+      toast.success("Serviço aceito! O chat foi liberado.");
+      queryClient.invalidateQueries({ queryKey: ["workerData"] });
+    } catch (error: any) {
+      console.error(error);
+      toast.error("Erro ao aceitar serviço.");
+    } finally {
+      setIsMutating(false);
+    }
   };
 
-  const handleReject = (solicitacao: SolicitacaoServico) => {
-    solicitacaoMutation.mutate({ id: solicitacao.id, status: "RECUSADA" }); 
-    servicoMutation.mutate({ id: solicitacao.servicoId, status: "RECUSADO" });
+  const handleReject = async (solicitacao: SolicitacaoServico) => {
+    setIsMutating(true);
+    try {
+       await patch(`/solicitacoes-servico/${solicitacao.id}`, { statusSolicitacao: "RECUSADA" });
+       toast.success("Solicitação recusada.");
+       queryClient.invalidateQueries({ queryKey: ["workerData"] });
+    } catch(e) {
+       toast.error("Erro ao recusar.");
+    } finally {
+       setIsMutating(false);
+    }
   };
 
-  const handleRequestFinish = (servico: Servico) => {
-    servicoMutation.mutate({ id: servico.id, status: "PENDENTE_APROVACAO" });
+  const handleRequestFinish = async (servico: Servico) => {
+    setIsMutating(true);
+    try {
+        // Atualiza o serviço completo (PUT) ou parcial (PATCH) se tiver
+        // Como seu backend ServicoController tem PUT, precisamos enviar o objeto todo
+        // Mas idealmente seria um PATCH. Vamos tentar simular o PUT:
+        await put(`/servicos/${servico.id}`, {
+            ...servico, // espalha dados atuais
+            statusServico: "PENDENTE_APROVACAO" // muda status
+        });
+        toast.success("Finalização solicitada ao cliente!");
+        queryClient.invalidateQueries({ queryKey: ["workerData"] });
+    } catch (e) {
+        toast.error("Erro ao solicitar finalização.");
+    } finally {
+        setIsMutating(false);
+    }
   };
-
-
-  const isMutating = solicitacaoMutation.isPending || servicoMutation.isPending;
 
   // --- RENDER ---
   const primeiroNome = trabalhador?.nome.split(" ")[0];
@@ -261,23 +220,11 @@ export function DashboardTrabalhadorPage() {
   const activeServicesCount = data?.activeServices.length || 0;
 
   if (isLoading) {
-    return (
-      <div className="text-center py-20">
-        <Typography as="h2">Carregando Painel do Profissional...</Typography>
-        <p className="text-dark-subtle mt-4">
-          Organizando suas solicitações e tarefas.
-        </p>
-      </div>
-    );
+    return <div className="text-center py-20"><Typography as="h2">Carregando...</Typography></div>;
   }
 
   if (isError) {
-    return (
-      <div className="text-center py-20 text-red-500">
-        <Typography as="h2">Erro ao carregar dados.</Typography>
-        <p className="text-dark-subtle mt-4">Tente recarregar a página.</p>
-      </div>
-    );
+    return <div className="text-center py-20 text-red-500"><Typography as="h2">Erro ao carregar dados.</Typography></div>;
   }
 
   const welcomeCardClass =
@@ -292,7 +239,7 @@ export function DashboardTrabalhadorPage() {
       animate="visible"
       className="space-y-12"
     >
-      {/* HEADER E AÇÕES */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
         <motion.div variants={itemVariants}>
           <Typography as="h1">E aí, {primeiroNome}!</Typography>
@@ -300,95 +247,58 @@ export function DashboardTrabalhadorPage() {
             Hora de colocar a mão na massa.
           </Typography>
         </motion.div>
-        
-        {/* 2. ADICIONAR BOTÕES DE AÇÃO */}
         <motion.div variants={itemVariants} className="flex gap-4 mt-4 md:mt-0 w-full md:w-auto">
-          <Button
-            variant="outline"
-            size="md"
-            className="!px-4"
-            onClick={() => navigate("/dashboard/configuracoes")}
-            title="Configurações"
-          >
+          <Button variant="outline" size="md" className="!px-4" onClick={() => navigate("/dashboard/configuracoes")}>
             <CogIcon className="w-6 h-6" />
           </Button>
-          <Button
-            variant="primary"
-            size="lg"
-            className="shadow-lg shadow-primary/20 hover:shadow-primary/40 w-full"
-          >
-            <CalendarDaysIcon className="w-5 h-5 mr-2" />
-            Ver Agenda Completa
+          <Button variant="primary" size="lg" className="shadow-lg w-full">
+            <CalendarDaysIcon className="w-5 h-5 mr-2" /> Ver Agenda
           </Button>
         </motion.div>
       </div>
 
-      {/* CARD DE BOAS-VINDAS (Responsivo) */}
+      {/* Welcome Card */}
       <motion.div variants={itemVariants}>
         <Card className={`p-6 md:p-8 ${welcomeCardClass}`}>
-          <div className="flex flex-col sm:flex-row justify-between sm:items-center">
-            <div className="mb-4 sm:mb-0">
-              <Typography
-                as="h2"
-                className="!text-white !text-3xl sm:!text-4xl font-extrabold"
-              >
-                Sua Nota: {trabalhador.notaTrabalhador.toFixed(1)}
+          <div className="flex justify-between items-center">
+            <div>
+              <Typography as="h2" className="!text-white !text-3xl font-extrabold">
+                Nota: {trabalhador.notaTrabalhador.toFixed(1)}
               </Typography>
-              <p className="mt-2 text-lg sm:text-xl text-dark-background/80">
-                Mantenha o trabalho de qualidade!
-              </p>
             </div>
             <Rating score={trabalhador.notaTrabalhador} />
           </div>
         </Card>
       </motion.div>
 
-      {/* CARDS DE ESTATÍSTICAS RÁPIDAS (Responsivo) */}
+      {/* Cards Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <motion.div variants={itemVariants}>
           <Card className="p-6 flex justify-between items-center">
             <div>
-              <Typography
-                as="h3"
-                className="!text-3xl text-accent font-extrabold"
-              >
-                {newRequestsCount}
-              </Typography>
-              <Typography as="p" className="text-dark-subtle mt-1">
-                Novas Solicitações
-              </Typography>
+              <Typography as="h3" className="!text-3xl text-accent font-extrabold">{newRequestsCount}</Typography>
+              <Typography as="p" className="text-dark-subtle">Novas Solicitações</Typography>
             </div>
             <BellIcon className="w-12 h-12 text-accent opacity-30" />
           </Card>
         </motion.div>
-
         <motion.div variants={itemVariants}>
           <Card className="p-6 flex justify-between items-center">
             <div>
-              <Typography
-                as="h3"
-                className="!text-3xl text-primary font-extrabold"
-              >
-                {activeServicesCount}
-              </Typography>
-              <Typography as="p" className="text-dark-subtle mt-1">
-                Serviços em Andamento
-              </Typography>
+              <Typography as="h3" className="!text-3xl text-primary font-extrabold">{activeServicesCount}</Typography>
+              <Typography as="p" className="text-dark-subtle">Serviços Ativos</Typography>
             </div>
             <BriefcaseIcon className="w-12 h-12 text-primary opacity-30" />
           </Card>
         </motion.div>
       </div>
 
-      {/* LAYOUT DE 2 COLUNAS (Responsivo por padrão) */}
+      {/* Layout Principal */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        {/* COLUNA PRINCIPAL: NOVAS SOLICITAÇÕES */}
+        {/* Coluna: Solicitações */}
         <section className="space-y-6 lg:col-span-2">
           <motion.div variants={itemVariants}>
-            <Typography
-              as="h2"
-              className="!text-2xl border-b border-dark-surface/50 pb-2"
-            >
+            <Typography as="h2" className="!text-2xl border-b border-dark-surface/50 pb-2">
               🔔 Novas Solicitações ({newRequestsCount})
             </Typography>
           </motion.div>
@@ -397,258 +307,120 @@ export function DashboardTrabalhadorPage() {
             <motion.div className="grid grid-cols-1 gap-6">
               {data?.newRequests && data.newRequests.length > 0 ? (
                 data.newRequests.map((sol) => (
-                  <Card
-                    key={sol.id}
-                    variants={itemVariants}
-                    layout
-                    className="p-6 shadow-glow-accent !border-accent/80"
-                  >
-                    {/* Info do Cliente */}
+                  <Card key={sol.id} variants={itemVariants} layout className="p-6 shadow-glow-accent !border-accent/80">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center mb-4">
-                        <img
-                          src={sol.cliente.avatarUrl}
-                          alt={sol.cliente.nome}
-                          className="w-12 h-12 rounded-full object-cover mr-4 border-2 border-accent"
-                        />
+                        <img src={sol.cliente?.avatarUrl || '/default-avatar.png'} alt={sol.cliente?.nome} className="w-12 h-12 rounded-full object-cover mr-4 border-2 border-accent" />
                         <div>
-                          <Typography
-                            as="h3"
-                            className="!text-lg !text-dark-text"
-                          >
-                            {sol.cliente.nome}
-                          </Typography>
-                          <p className="text-sm text-dark-subtle">
-                            {sol.cliente.endereco.cidade} -{" "}
-                            {sol.cliente.endereco.estado}
-                          </p>
+                          <Typography as="h3" className="!text-lg !text-dark-text">{sol.cliente?.nome}</Typography>
+                          <p className="text-sm text-dark-subtle">{sol.cliente?.endereco?.cidade}</p>
                         </div>
                       </div>
-                      <span className="text-xs flex-shrink-0 font-bold py-1 px-3 rounded-full bg-accent text-dark-background">
-                        NOVO
-                      </span>
+                      <span className="text-xs font-bold py-1 px-3 rounded-full bg-accent text-dark-background">NOVO</span>
                     </div>
-
-                    {/* Detalhes da Solicitação */}
                     <div className="mb-5">
-                      <Typography
-                        as="p"
-                        className="!text-dark-text !font-semibold mb-1"
-                      >
-                        {sol.servico.titulo}
-                      </Typography>
-                      <Typography
-                        as="p"
-                        className="italic bg-dark-background/50 p-3 rounded-md text-sm"
-                      >
-                        "{sol.descricao}"
-                      </Typography>
+                      <Typography as="p" className="!text-dark-text !font-semibold mb-1">{sol.tipoServico.replace(/_/g, ' ')}</Typography>
+                      <Typography as="p" className="italic bg-dark-background/50 p-3 rounded-md text-sm">"{sol.descricao}"</Typography>
                     </div>
-
-                    {/* Botões de Ação (Responsivos) */}
-                    <div className="flex flex-col sm:flex-row gap-4">
-                      <Button
-                        variant="outline"
-                        className="w-full !border-status-danger !text-status-danger hover:!bg-status-danger hover:!text-white hover:!shadow-glow-danger"
-                        onClick={() => handleReject(sol)}
-                        disabled={isMutating}
-                      >
-                        <XMarkIcon className="w-5 h-5 mr-1" />
-                        Recusar
+                    <div className="flex gap-4">
+                      <Button variant="outline" className="w-full !border-status-danger !text-status-danger" onClick={() => handleReject(sol)} disabled={isMutating}>
+                        <XMarkIcon className="w-5 h-5 mr-1" /> Recusar
                       </Button>
-                      <Button
-                        variant="secondary"
-                        className="w-full"
-                        onClick={() => handleAccept(sol)}
-                        disabled={isMutating}
-                      >
-                        <CheckIcon className="w-5 h-5 mr-1" />
-                        {isMutating ? "Aguarde..." : "Aceitar"}
+                      <Button variant="secondary" className="w-full" onClick={() => handleAccept(sol)} disabled={isMutating}>
+                        <CheckIcon className="w-5 h-5 mr-1" /> Aceitar
                       </Button>
                     </div>
                   </Card>
                 ))
               ) : (
-                <motion.div variants={itemVariants} className="lg:col-span-2">
-                  <Card className="text-center p-8 border-dashed border-dark-subtle/30 border-2">
-                    <Typography as="p">
-                      Nenhuma nova solicitação no momento.
-                    </Typography>
-                  </Card>
-                </motion.div>
+                <Card className="text-center p-8 border-dashed border-dark-subtle/30 border-2">
+                  <Typography as="p">Nenhuma nova solicitação.</Typography>
+                </Card>
               )}
             </motion.div>
           </LayoutGroup>
         </section>
 
-        {/* COLUNA LATERAL: SERVIÇOS ATIVOS */}
+        {/* Coluna: Serviços Ativos */}
         <aside className="space-y-6 lg:col-span-1">
           <motion.div variants={itemVariants}>
-            <Typography
-              as="h2"
-              className="!text-2xl border-b border-dark-surface/50 pb-2"
-            >
-              💼 Serviços Ativos ({activeServicesCount})
+            <Typography as="h2" className="!text-2xl border-b border-dark-surface/50 pb-2">
+              💼 Serviços Ativos
             </Typography>
           </motion.div>
-
           <LayoutGroup>
-            <motion.div className="grid grid-cols-1 gap-4">
+            <div className="grid gap-4">
               {data?.activeServices && data.activeServices.length > 0 ? (
                 data.activeServices.map((servico) => (
-                  <Card
-                    key={servico.id}
-                    variants={itemVariants}
-                    layout
-                    className={`p-4 ${
-                      servico.statusServico === "PENDENTE_APROVACAO"
-                        ? "!border-status-pending"
-                        : "!border-primary/30"
-                    }`}
-                  >
+                  <Card key={servico.id} variants={itemVariants} layout className={`p-4 ${servico.statusServico === "PENDENTE_APROVACAO" ? "!border-status-pending" : "!border-primary/30"}`}>
                     <div className="flex items-center justify-between">
-                      <img
-                        src={servico.cliente.avatarUrl}
-                        alt={servico.cliente.nome}
-                        className="w-10 h-10 rounded-full object-cover mr-3"
-                      />
+                      <img src={servico.cliente?.avatarUrl} alt={servico.cliente?.nome} className="w-10 h-10 rounded-full object-cover mr-3" />
                       <div className="flex-1 overflow-hidden">
-                        <p className="text-sm font-semibold text-dark-text truncate">
-                          {servico.titulo}
-                        </p>
-                        <p className="text-xs text-dark-subtle truncate">
-                          Cliente: {servico.cliente.nome}
-                        </p>
+                        <p className="text-sm font-semibold text-dark-text truncate">{servico.titulo}</p>
+                        <p className="text-xs text-dark-subtle truncate">{servico.cliente?.nome}</p>
                       </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="!p-2 ml-2 flex-shrink-0"
-                        onClick={() =>
-                          navigate(`/dashboard/chat/${servico.id}`)
-                        }
-                      >
+                      <Button size="sm" variant="outline" className="!p-2 ml-2" onClick={() => navigate(`/dashboard/chat/${servico.id}`)}>
                         <ChatBubbleLeftRightIcon className="w-5 h-5" />
                       </Button>
                     </div>
-
-                    {/* Botão de Ação Inferior */}
                     {servico.statusServico === "EM_ANDAMENTO" ? (
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        className="w-full mt-3"
-                        onClick={() => handleRequestFinish(servico)}
-                        disabled={isMutating}
-                      >
-                        <CheckIcon className="w-4 h-4 mr-1" />
-                        Solicitar Finalização
+                      <Button size="sm" variant="primary" className="w-full mt-3" onClick={() => handleRequestFinish(servico)} disabled={isMutating}>
+                        <CheckIcon className="w-4 h-4 mr-1" /> Finalizar
                       </Button>
                     ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="w-full mt-3 !text-status-pending !border-status-pending"
-                        disabled={true}
-                      >
-                        Aguardando Cliente
+                      <Button size="sm" variant="outline" className="w-full mt-3 !text-status-pending !border-status-pending" disabled>
+                        Aguardando Aprovação
                       </Button>
                     )}
                   </Card>
                 ))
               ) : (
-                <motion.div variants={itemVariants}>
-                  <Card className="text-center p-8 border-dashed border-dark-subtle/30 border-2">
-                    <Typography as="p" className="text-sm">
-                      Nenhum serviço em andamento.
-                    </Typography>
-                  </Card>
-                </motion.div>
+                <Card className="text-center p-8 border-dashed border-dark-subtle/30 border-2">
+                  <Typography as="p" className="text-sm">Sem serviços ativos.</Typography>
+                </Card>
               )}
-            </motion.div>
+            </div>
           </LayoutGroup>
         </aside>
       </div>
-      
-      {/* --- SEÇÃO HISTÓRICO DE SERVIÇOS --- */}
+
+      {/* Histórico */}
       {data?.finishedServices && data.finishedServices.length > 0 && (
-        <section className="space-y-6 lg:col-span-3">
-          <motion.div variants={itemVariants}>
-            <Typography
-              as="h2"
-              className="!text-2xl border-b border-dark-surface/50 pb-2"
-            >
-              ✅ Histórico de Serviços ({data.finishedServices.length})
+        <section className="space-y-6">
+           <motion.div variants={itemVariants}>
+            <Typography as="h2" className="!text-2xl border-b border-dark-surface/50 pb-2">
+              ✅ Histórico
             </Typography>
           </motion.div>
-
-          <motion.div className="grid md:grid-cols-2 gap-4">
-            {data.finishedServices.map((servico) => {
-              const isReviewed = reviewedClientServiceIds.has(servico.id);
-
-              return (
-                <Card
-                  key={servico.id}
-                  variants={itemVariants}
-                  className={`p-5 ${
-                    isReviewed
-                      ? "opacity-60 !border-dark-surface"
-                      : "!border-dark-surface/50"
-                  }`}
-                >
-                  <div className="flex flex-col sm:flex-row justify-between sm:items-center">
-                    <div className="flex items-center gap-3 mb-3 sm:mb-0">
-                      <img
-                        src={servico.cliente.avatarUrl}
-                        alt={servico.cliente.nome}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                      <div className="overflow-hidden">
-                        <Typography as="h3" className="!text-lg truncate">
-                          {servico.titulo}
-                        </Typography>
-                        <p className="text-sm text-dark-subtle mt-1 truncate">
-                          Cliente: {servico.cliente.nome} (Finalizado)
-                        </p>
+          <div className="grid md:grid-cols-2 gap-4">
+            {data.finishedServices.map(servico => {
+               const isReviewed = reviewedClientServiceIds.has(servico.id);
+               return (
+                 <Card key={servico.id} variants={itemVariants} className={`p-5 ${isReviewed ? "opacity-60" : ""}`}>
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <img src={servico.cliente?.avatarUrl} className="w-10 h-10 rounded-full" />
+                        <div>
+                           <Typography as="h3" className="!text-lg">{servico.titulo}</Typography>
+                           <p className="text-sm text-dark-subtle">Finalizado</p>
+                        </div>
                       </div>
+                      {isReviewed ? (
+                        <Button size="sm" variant="outline" disabled>Avaliado</Button>
+                      ) : (
+                        <Button size="sm" variant="secondary" onClick={() => setReviewingClientService(servico)}>Avaliar</Button>
+                      )}
                     </div>
-                    {/* Lógica do Botão de Avaliação (Responsivo) */}
-                    {isReviewed ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled
-                        className="!text-accent !border-accent/50 w-full sm:w-auto flex-shrink-0"
-                      >
-                        <CheckIcon className="w-4 h-4 mr-1" />
-                        Avaliado
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        className="w-full sm:w-auto flex-shrink-0"
-                        onClick={() => setReviewingClientService(servico)}
-                      >
-                        <CalendarDaysIcon className="w-4 h-4 mr-1" />
-                        Avaliar Cliente
-                      </Button>
-                    )}
-                  </div>
-                </Card>
-              );
+                 </Card>
+               )
             })}
-          </motion.div>
+          </div>
         </section>
       )}
 
-      {/* --- O MODAL --- */}
       <AnimatePresence>
         {reviewingClientService && (
-          <AvaliacaoClienteModal
-            servico={reviewingClientService}
-            onClose={() => setReviewingClientService(null)}
-          />
+          <AvaliacaoClienteModal servico={reviewingClientService} onClose={() => setReviewingClientService(null)} />
         )}
       </AnimatePresence>
     </motion.div>

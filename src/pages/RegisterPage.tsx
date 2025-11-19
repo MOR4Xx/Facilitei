@@ -13,6 +13,7 @@ import {
   type TipoServico,
   allServicosList,
 } from "../types/api";
+import { api } from "../lib/api";
 
 type UserRole = "cliente" | "trabalhador";
 
@@ -303,60 +304,54 @@ export function RegisterPage() {
 
   // --- Lógica de Submissão (Permanece a mesma) ---
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
+  setIsLoading(true);
 
-    try {
-      // 1. Checar e-mail
-      const { data: emailCheck } = await api.get(
-        `/auth/check-email?email=${formData.email}`
-      );
-      if (emailCheck.exists) {
-        /* ... erro ... */ return;
-      }
+  try {
+    // 1. Preparar o Payload correto para o Java (TrabalhadorRequestDTO ou ClienteRequestDTO)
+    const payload = {
+      nome: formData.nome,
+      email: formData.email,
+      senha: formData.senha,
+      telefone: formData.telefone.replace(/\D/g, ""), // Remove formatação
+      endereco: {
+        rua: formData.endereco.rua,
+        numero: formData.endereco.numero,
+        bairro: formData.endereco.bairro,
+        cidade: formData.endereco.cidade,
+        estado: formData.endereco.estado,
+        cep: formData.endereco.cep.replace(/\D/g, ""),
+      },
+      // Campos extras apenas se for trabalhador
+      ...(formData.userType === "trabalhador" && {
+        disponibilidade: "Segunda a Sexta, 8h às 18h", // Valor padrão inicial
+        habilidades: formData.selectedServices, // Java espera List<TipoServico>
+        servicoPrincipal: formData.selectedServices[0], 
+        notaTrabalhador: 0.0,
+        sobre: "Novo profissional na plataforma",
+      }),
+    };
 
-      // 2. Payload
-      const payload = {
-        nome: formData.nome,
-        email: formData.email,
-        senha: formData.senha,
-        telefone: formData.telefone.replace(/\D/g, ""),
-        endereco: {
-          // O Backend espera EnderecoRequestDTO
-          rua: formData.endereco.rua,
-          numero: formData.endereco.numero,
-          bairro: formData.endereco.bairro,
-          cidade: formData.endereco.cidade,
-          estado: formData.endereco.estado,
-          cep: formData.endereco.cep.replace(/\D/g, ""),
-        },
-        // Campos específicos se for trabalhador
-        ...(formData.userType === "trabalhador" && {
-          disponibilidade: "Segunda a Sexta, 8h às 18h", // Valor padrão ou adicione input no form
-          // IMPORTANTE: O backend espera 'habilidades' (Lista) e 'servicoPrincipal' (Enum)
-          habilidades: formData.selectedServices,
-          servicoPrincipal: formData.selectedServices[0], // Define o primeiro como principal automaticamente
-          notaTrabalhador: 0.0,
-          sobre: "Novo profissional na plataforma",
-        }),
-      };
+    // 2. Definir o endpoint correto
+    const endpoint = formData.userType === "cliente" ? "/clientes" : "/trabalhadores";
 
-      // 3. Enviar
-      const endpoint =
-        formData.userType === "cliente" ? "/clientes" : "/trabalhadores";
-      const { data: newUser } = await api.post(endpoint, payload);
+    // 3. Enviar usando Axios
+    const { data: newUser } = await api.post(endpoint, payload);
 
-      // 4. Login automático
-      login({ ...newUser, role: formData.userType });
-      // ... redirecionar
-    } catch (err: any) {
-      console.error(err);
-      toast.error(
-        "Erro no cadastro: " +
-          (err.response?.data?.message || "Tente novamente")
-      );
-    }
-  };
+    toast.success("Cadastro realizado com sucesso!");
+    
+    // 4. Login automático no Zustand e redirecionamento
+    login({ ...newUser, role: formData.userType });
+    navigate("/dashboard");
 
+  } catch (err: any) {
+    console.error(err);
+    const errorMsg = err.response?.data?.message || "Erro ao realizar cadastro.";
+    toast.error(errorMsg);
+  } finally {
+    setIsLoading(false);
+  }
+};
   const totalSteps = formData.userType === "trabalhador" ? 4 : 3;
 
   const variants = {

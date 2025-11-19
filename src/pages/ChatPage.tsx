@@ -17,6 +17,7 @@ interface ChatMessage {
 }
 
 const stompConfig = {
+  // AJUSTE CRÍTICO: Usar 'ws' e porta do backend
   brokerURL: `ws://${window.location.hostname}:8080/buildrun-livechat-websocket`,
   reconnectDelay: 5000,
   heartbeatIncoming: 4000,
@@ -47,41 +48,43 @@ export function ChatPage() {
   useEffect(() => {
     if (!user) return; 
 
-    console.log('Tentando conectar ao WebSocket...');
+    console.log('Conectando ao WebSocket...');
     const client = new Client(stompConfig);
     stompClientRef.current = client;
 
     client.onConnect = (frame) => {
-      console.log('Conectado ao WebSocket: ' + frame);
+      console.log('Conectado: ' + frame);
       setIsConnected(true);
+      // Inscreva-se em um tópico específico para este serviço se possível, ex: /topics/chat/{servicoId}
+      // Por enquanto, usando o genérico do seu back:
       client.subscribe('/topics/livechat', (message: IMessage) => {
         try {
+          // Se o back manda JSON { content: "..." }
           const parsedBody = JSON.parse(message.body);
           if (parsedBody && parsedBody.content) {
              addMessage(parsedBody.content);
           }
         } catch (e) {
-          console.error("Erro ao processar mensagem:", e);
+          // Se manda texto puro
           addMessage(message.body);
         }
       });
-       addMessage(`Você entrou no chat do serviço #${servicoId}.`);
+       addMessage(`Sistema: Conectado ao chat do serviço #${servicoId}.`);
     };
 
     client.onWebSocketError = (error) => {
-      console.error('Erro no WebSocket:', error);
+      console.error('Erro WebSocket:', error);
       setIsConnected(false);
     };
 
     client.onStompError = (frame) => {
-      console.error('Erro no STOMP:', frame.headers['message'], frame.body);
+      console.error('Erro STOMP:', frame.headers['message']);
       setIsConnected(false);
     };
 
     client.activate();
 
     return () => {
-      console.log('Desconectando do WebSocket...');
       client.deactivate();
       setIsConnected(false);
     };
@@ -103,7 +106,7 @@ export function ChatPage() {
         destination: '/app/new-message',
         body: JSON.stringify(chatInput),
       });
-      setInputText(''); // Limpa o input
+      setInputText('');
     }
   };
 
@@ -116,7 +119,6 @@ export function ChatPage() {
         </span>
       </Typography>
 
-      {/* Área das Mensagens */}
       <Card className="flex-grow overflow-y-auto p-4 mb-4 bg-dark-background/50 border border-dark-surface">
         <AnimatePresence initial={false}>
           {messages.map((msg) => (
@@ -124,8 +126,6 @@ export function ChatPage() {
               key={msg.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
               className={`flex mb-3 ${msg.isMe ? 'justify-end' : 'justify-start'}`}
             >
               <div
@@ -139,18 +139,13 @@ export function ChatPage() {
                    <p className="text-xs text-accent font-semibold mb-1">{msg.sender}</p>
                 )}
                 <p className="text-base break-words">{msg.text}</p>
-                 <p className="text-xs text-right mt-1 opacity-70">
-                   {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                 </p>
               </div>
             </motion.div>
           ))}
         </AnimatePresence>
-        {/* Elemento invisível para forçar o scroll */}
         <div ref={messagesEndRef} />
       </Card>
 
-      {/* Input de Mensagem */}
       <form onSubmit={handleSendMessage} className="flex gap-3 items-start sm:items-center">
         <Input
           label="Digite sua mensagem..."
@@ -159,7 +154,6 @@ export function ChatPage() {
           onChange={(e) => setInputText(e.target.value)}
           className="flex-grow" 
           disabled={!isConnected}
-          required
         />
         <Button
           type="submit"
