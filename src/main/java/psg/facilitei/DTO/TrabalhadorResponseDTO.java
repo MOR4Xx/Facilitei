@@ -4,6 +4,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import psg.facilitei.Entity.Enum.TipoServico; // Importe o Enum
 
 @Data
 @NoArgsConstructor
@@ -15,7 +16,13 @@ public class TrabalhadorResponseDTO {
     private EnderecoResponseDTO endereco;
     private String telefone;
     private String disponibilidade;
-    private List<ServicoResponseDTO> servicos;
+    
+    // Alterado: Agora retorna a lista de habilidades (TipoServico) em vez de objetos de serviço
+    private List<TipoServico> servicos; 
+    
+    // Novo: Campo obrigatório para o frontend funcionar
+    private TipoServico servicoPrincipal;
+    
     private Double notaTrabalhador;
     private String sobre;
 }

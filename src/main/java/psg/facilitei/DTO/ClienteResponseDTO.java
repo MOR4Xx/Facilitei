@@ -12,7 +12,11 @@ public class ClienteResponseDTO {
     private String id;
     private String nome;
     private String email;
-    private String notaCliente; 
+    
+    // Alterado de String para Double para funcionar o .toFixed() no front
+    private Double notaCliente; 
+    
     private EnderecoResponseDTO endereco;
     private String telefone;
+    private String avatarUrl; // Adicione se quiser mostrar o avatar
 }

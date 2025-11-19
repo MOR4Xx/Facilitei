@@ -127,13 +127,24 @@ public class TrabalhadorService {
         return trabalhador;
     }
 
-    public TrabalhadorResponseDTO toResponseDTO(Trabalhador entity) {
+public TrabalhadorResponseDTO toResponseDTO(Trabalhador entity) {
         TrabalhadorResponseDTO dto = new TrabalhadorResponseDTO();
 
         dto.setId(String.valueOf(entity.getId()));
         dto.setNome(entity.getNome());
         dto.setEmail(entity.getEmail());
+        dto.setTelefone(entity.getTelefone()); // Não esqueça do telefone
+        dto.setDisponibilidade(entity.getDisponibilidade());
         dto.setNotaTrabalhador(entity.getNotaTrabalhador());
+        dto.setSobre(entity.getSobre());
+
+        // CORREÇÃO 1: Mapeia o serviço principal
+        dto.setServicoPrincipal(entity.getServicoPrincipal());
+
+        // CORREÇÃO 2: Mapeia as habilidades (skills) para o campo 'servicos' que o front espera
+        if (entity.getHabilidades() != null) {
+            dto.setServicos(entity.getHabilidades());
+        }
 
         Endereco endereco = entity.getEndereco();
         if (endereco != null) {
@@ -142,20 +153,10 @@ public class TrabalhadorService {
             enderecoDTO.setCidade(endereco.getCidade());
             enderecoDTO.setEstado(endereco.getEstado());
             enderecoDTO.setCep(endereco.getCep());
+            enderecoDTO.setBairro(endereco.getBairro()); // Adicione se tiver no DTO
+            enderecoDTO.setNumero(endereco.getNumero()); // Adicione se tiver no DTO
             dto.setEndereco(enderecoDTO);
         }
-
-        if (entity.getServicos() != null) {
-            List<ServicoResponseDTO> servicosDTO = entity.getServicos().stream().map(servico -> {
-                ServicoResponseDTO s = new ServicoResponseDTO();
-                s.setId(servico.getId());
-                s.setTitulo(servico.getTitulo());
-                s.setDescricao(servico.getDescricao());
-                return s;
-            }).toList();
-            dto.setServicos(servicosDTO);
-        }
-
 
         return dto;
     }
