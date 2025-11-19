@@ -24,7 +24,7 @@ public class TrabalhadorRequestDTO {
     private String telefone;
     private EnderecoRequestDTO endereco;
     private List<TipoServico> habilidades;
-private TipoServico servicoPrincipal;
+    private TipoServico servicoPrincipal;
     private List<Long> avaliacoesIds = new ArrayList<>();
     private String disponibilidade;
     private Double notaTrabalhador;
