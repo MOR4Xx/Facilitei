@@ -365,11 +365,8 @@ export function RegisterPage() {
           endereco: enderecoRequest,
           disponibilidade: "Segunda a Sexta, 8h às 18h", // Mockado como no original
           notaTrabalhador: 0,
-          servicosIds: [], // O backend espera IDs, mas o frontend salva Nomes. Isso precisa ser ajustado*
-          // *NOTA: Seu TrabalhadorRequestDTO espera `servicosIds` (Longs), mas o frontend
-          // coleta `selectedServices` (Strings). Para simplificar, estamos enviando vazio.
-          // O ideal seria o backend aceitar os nomes (TipoServico) ou o frontend enviar IDs.
-          // Por enquanto, vamos focar no login.
+          habilidades: formData.selectedServices, 
+          servicoPrincipal: formData.selectedServices[0]
         };
       }
 
