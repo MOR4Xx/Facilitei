@@ -100,4 +100,9 @@ public class ServicoService {
         }
         servicoRepository.deleteById(id);
     }
+
+    public List<ServicoResponseDTO> listarPorCliente(Long clienteId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'listarPorCliente'");
+    }
 }
