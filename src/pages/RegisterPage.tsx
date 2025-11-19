@@ -92,8 +92,8 @@ function Stepper({ currentStep, userType }: StepperProps) {
 
 // --- FUNÇÕES DE FORMATAÇÃO ---
 const formatTelefone = (value: string) => {
-  let v = value.replace(/\D/g, ""); 
-  if (v.length > 11) v = v.slice(0, 11); 
+  let v = value.replace(/\D/g, "");
+  if (v.length > 11) v = v.slice(0, 11);
 
   if (v.length > 10) {
     // Celular (XX) XXXXX-XXXX
@@ -176,7 +176,7 @@ export function RegisterPage() {
       formattedValue = formatUF(value);
     }
     if (name === "numero") {
-      formattedValue = value.replace(/\D/g, ""); 
+      formattedValue = value.replace(/\D/g, "");
     }
 
     setFormData((prev) => ({
@@ -305,108 +305,55 @@ export function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      formData.userType === "trabalhador" &&
-      formData.selectedServices.length === 0
-    ) {
-      toast.error(
-        "Como profissional, você precisa selecionar pelo menos um serviço."
-      );
-      return;
-    }
-
-    setIsLoading(true);
-
     try {
-      // 1. Verificar se o e-mail já existe (NOVO ENDPOINT DO BACKEND)
-      const emailCheckRes = await fetch(
-        `http://localhost:8080/api/auth/check-email?email=${formData.email}`
+      // 1. Checar e-mail
+      const { data: emailCheck } = await api.get(
+        `/auth/check-email?email=${formData.email}`
       );
-      
-      if (!emailCheckRes.ok) {
-         throw new Error("Falha ao verificar e-mail.");
+      if (emailCheck.exists) {
+        /* ... erro ... */ return;
       }
 
-      const emailCheckData: { exists: boolean } = await emailCheckRes.json();
-
-      if (emailCheckData.exists) {
-        toast.error("Este e-mail já está em uso.");
-        setIsLoading(false);
-        return;
-      }
-
-      // 2. Preparar os dados para o backend Spring
-      // O backend espera um EnderecoRequestDTO, vamos formatar
-      const enderecoRequest = {
-        ...formData.endereco,
-        cep: formData.endereco.cep.replace(/\D/g, ""), // Envia só os números
+      // 2. Payload
+      const payload = {
+        nome: formData.nome,
+        email: formData.email,
+        senha: formData.senha,
+        telefone: formData.telefone.replace(/\D/g, ""),
+        endereco: {
+          // O Backend espera EnderecoRequestDTO
+          rua: formData.endereco.rua,
+          numero: formData.endereco.numero,
+          bairro: formData.endereco.bairro,
+          cidade: formData.endereco.cidade,
+          estado: formData.endereco.estado,
+          cep: formData.endereco.cep.replace(/\D/g, ""),
+        },
+        // Campos específicos se for trabalhador
+        ...(formData.userType === "trabalhador" && {
+          disponibilidade: "Segunda a Sexta, 8h às 18h", // Valor padrão ou adicione input no form
+          // IMPORTANTE: O backend espera 'habilidades' (Lista) e 'servicoPrincipal' (Enum)
+          habilidades: formData.selectedServices,
+          servicoPrincipal: formData.selectedServices[0], // Define o primeiro como principal automaticamente
+          notaTrabalhador: 0.0,
+          sobre: "Novo profissional na plataforma",
+        }),
       };
-      
-      let postResponse;
-      let endpoint;
-      let body;
 
-      if (formData.userType === "cliente") {
-        endpoint = "http://localhost:8080/api/clientes"; // 👈 URL CORRIGIDA (sem /criar)
-        body = {
-          nome: formData.nome,
-          email: formData.email,
-          senha: formData.senha,
-          telefone: formData.telefone.replace(/\D/g, ""), // Envia só os números
-          endereco: enderecoRequest,
-        };
-      } else {
-        endpoint = "http://localhost:8080/api/trabalhadores"; // 👈 URL CORRIGIDA (sem /criar)
-        body = {
-          nome: formData.nome,
-          email: formData.email,
-          senha: formData.senha,
-          telefone: formData.telefone.replace(/\D/g, ""),
-          endereco: enderecoRequest,
-          disponibilidade: "Segunda a Sexta, 8h às 18h", // Mockado como no original
-          notaTrabalhador: 0,
-          habilidades: formData.selectedServices, 
-          servicoPrincipal: formData.selectedServices[0]
-        };
-      }
+      // 3. Enviar
+      const endpoint =
+        formData.userType === "cliente" ? "/clientes" : "/trabalhadores";
+      const { data: newUser } = await api.post(endpoint, payload);
 
-      // 3. Criar o novo usuário (POST)
-      postResponse = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-
-      if (!postResponse.ok) {
-        const errorData = await postResponse.json();
-        throw new Error(errorData.message || "Falha ao criar a conta no servidor.");
-      }
-      
-      // 4. USAR A RESPOSTA para fazer login (MUITO MELHOR!)
-      const createdUser: Cliente | Trabalhador = await postResponse.json();
-
-      if (!createdUser || !createdUser.id) {
-         throw new Error("Erro ao recuperar o usuário recém-criado.");
-      }
-
-      // 5. Fazer login e redirecionar
-      toast.success("Conta criada com sucesso! Redirecionando...");
-      login({
-        ...createdUser,
-        role: formData.userType,
-      });
-
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1500);
-
-    } catch (err) {
+      // 4. Login automático
+      login({ ...newUser, role: formData.userType });
+      // ... redirecionar
+    } catch (err: any) {
+      console.error(err);
       toast.error(
-        err instanceof Error ? err.message : "Ocorreu um erro desconhecido."
+        "Erro no cadastro: " +
+          (err.response?.data?.message || "Tente novamente")
       );
-    } finally {
-      setIsLoading(false);
     }
   };
 

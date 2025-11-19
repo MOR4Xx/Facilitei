@@ -21,6 +21,7 @@ import {
   BookIcon,
   SparklesIcon,
 } from '../components/ui/CategoryIcons';
+import { api } from "../lib/api";
 
 // --- VARIANTES DE ANIMAÇÃO ---
 const containerVariants: Variants = {
@@ -41,9 +42,9 @@ const itemVariants: Variants = {
 
 // --- FUNÇÃO DE BUSCA ---
 const fetchTrabalhadores = async (): Promise<Trabalhador[]> => {
-  const response = await fetch('http://localhost:8080/api/trabalhadores');
-  if (!response.ok) throw new Error('Não foi possível buscar os trabalhadores.');
-  return response.json();
+  // O endpoint no Controller é /api/trabalhadores/listar
+  const { data } = await api.get('/trabalhadores/listar');
+  return data;
 };
 
 // --- HELPER DE ÍCONES ---

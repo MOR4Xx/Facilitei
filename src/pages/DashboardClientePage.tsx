@@ -23,22 +23,24 @@ import {
   CalendarDaysIcon,
 } from "../components/ui/Icons";
 import { AvaliacaoModal } from "../components/ui/AvaliacaoModal";
+import { api } from "../lib/api";
 
 // --- FUNÇÕES DE BUSCA (API) ---
 const fetchServicosCliente = async (clienteId: string): Promise<Servico[]> => {
-  if (!clienteId) return [];
-  const response = await fetch(
-    `http://localhost:8080/api/servicos?clienteId=${clienteId}`
-  );
-  if (!response.ok) throw new Error("Não foi possível buscar os serviços.");
-  const servicos: Servico[] = await response.json();
-  return servicos.sort((a, b) => {
-    if (a.statusServico === "PENDENTE_APROVACAO") return -1;
-    if (b.statusServico === "PENDENTE_APROVACAO") return 1;
-    if (a.statusServico === "EM_ANDAMENTO") return -1;
-    if (b.statusServico === "EM_ANDAMENTO") return 1;
-    return 0;
-  });
+  const { data } = await api.get("/servicos");
+  return data.filter((s: any) => s.clienteId === Number(clienteId));
+};
+
+// Mutation (Atualizar Status)
+const updateServicoStatus = async ({
+  id,
+  status,
+}: {
+  id: string;
+  status: StatusServico;
+}) => {
+  const { data } = await api.put(`/servicos/${id}`, { statusServico: status });
+  return data;
 };
 
 const fetchTrabalhadores = async (): Promise<Trabalhador[]> => {
@@ -49,30 +51,13 @@ const fetchTrabalhadores = async (): Promise<Trabalhador[]> => {
 };
 
 const fetchServicosAvaliados = async (
-  clienteId: string 
+  clienteId: string
 ): Promise<AvaliacaoServico[]> => {
   if (!clienteId) return [];
   const response = await fetch(
     `http://localhost:8080/api/avaliacoes-servico?clienteId=${clienteId}`
   );
   if (!response.ok) return [];
-  return response.json();
-};
-
-// --- FUNÇÃO DE MUTATION (API) ---
-const updateServicoStatus = async ({
-  id,
-  status,
-}: {
-  id: string;
-  status: StatusServico;
-}) => {
-  const response = await fetch(`http://localhost:8080/api/servicos/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ statusServico: status }),
-  });
-  if (!response.ok) throw new Error("Falha ao atualizar serviço.");
   return response.json();
 };
 
@@ -98,13 +83,15 @@ export function DashboardClientePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [reviewingService, setReviewingService] = useState<Servico | null>(null);
+  const [reviewingService, setReviewingService] = useState<Servico | null>(
+    null
+  );
   const clienteId = user?.role === "cliente" ? user.id : undefined;
 
   // --- QUERIES ---
   const { data: servicos, isLoading: isLoadingServicos } = useQuery<Servico[]>({
     queryKey: ["servicosCliente", clienteId],
-    queryFn: () => fetchServicosCliente(clienteId!), 
+    queryFn: () => fetchServicosCliente(clienteId!),
     enabled: !!clienteId && isAuthenticated,
   });
 
@@ -117,7 +104,7 @@ export function DashboardClientePage() {
 
   const { data: servicosAvaliados, isLoading: isLoadingAvaliados } = useQuery({
     queryKey: ["servicosAvaliados", clienteId],
-    queryFn: () => fetchServicosAvaliados(clienteId!), 
+    queryFn: () => fetchServicosAvaliados(clienteId!),
     enabled: !!clienteId && isAuthenticated,
   });
 
@@ -161,11 +148,11 @@ export function DashboardClientePage() {
     (isAuthenticated && (isLoadingServicos || isLoadingAvaliados));
 
   // --- HANDLERS ---
-  const handleApprove = (servicoId: string) => { 
+  const handleApprove = (servicoId: string) => {
     servicoMutation.mutate({ id: servicoId, status: "FINALIZADO" });
   };
 
-  const handleContest = (servicoId: string) => { 
+  const handleContest = (servicoId: string) => {
     servicoMutation.mutate({ id: servicoId, status: "EM_ANDAMENTO" });
   };
 
@@ -230,7 +217,10 @@ export function DashboardClientePage() {
                 : "Encontre os melhores profissionais abaixo."}
             </Typography>
           </motion.div>
-          <motion.div variants={itemVariants} className="flex gap-4 mt-4 md:mt-0 w-full md:w-auto">
+          <motion.div
+            variants={itemVariants}
+            className="flex gap-4 mt-4 md:mt-0 w-full md:w-auto"
+          >
             {isAuthenticated && (
               <Button
                 variant="outline"
@@ -304,7 +294,6 @@ export function DashboardClientePage() {
 
         {/* --- LAYOUT DE 2 COLUNAS --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          
           {/* --- SEÇÃO SERVIÇOS ATIVOS (SÓ LOGADO) --- */}
           {isAuthenticated && (
             <section className="space-y-6 lg:col-span-2">
@@ -348,18 +337,19 @@ export function DashboardClientePage() {
                           </div>
 
                           <div className="flex gap-2 w-full md:w-auto">
-                            {servico.statusServico ===
-                            "PENDENTE_APROVACAO" ? (
+                            {servico.statusServico === "PENDENTE_APROVACAO" ? (
                               <>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleContest(servico.id)} 
+                                  onClick={() => handleContest(servico.id)}
                                   disabled={servicoMutation.isPending}
                                   className="!border-status-danger !text-status-danger hover:!bg-status-danger hover:!text-white hover:!shadow-glow-danger w-1/2 md:w-auto"
                                 >
                                   <XMarkIcon className="w-5 h-5 md:mr-1" />
-                                  <span className="hidden md:inline">Contestar</span>
+                                  <span className="hidden md:inline">
+                                    Contestar
+                                  </span>
                                 </Button>
                                 <Button
                                   size="sm"
@@ -369,7 +359,9 @@ export function DashboardClientePage() {
                                   className="w-1/2 md:w-auto"
                                 >
                                   <CheckIcon className="w-5 h-5 md:mr-1" />
-                                  <span className="hidden md:inline">Aprovar</span>
+                                  <span className="hidden md:inline">
+                                    Aprovar
+                                  </span>
                                 </Button>
                               </>
                             ) : servico.statusServico === "EM_ANDAMENTO" ? (
@@ -384,7 +376,12 @@ export function DashboardClientePage() {
                                 Abrir Chat
                               </Button>
                             ) : (
-                              <Button size="sm" variant="outline" disabled className="w-full md:w-auto">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled
+                                className="w-full md:w-auto"
+                              >
                                 Aguardando...
                               </Button>
                             )}
@@ -433,15 +430,15 @@ export function DashboardClientePage() {
                 isAuthenticated ? "" : "sm:grid-cols-2 lg:grid-cols-3"
               }`}
             >
-              {trabalhadores?.slice(0, isAuthenticated ? 2 : 6).map(
-                (trabalhador) => (
+              {trabalhadores
+                ?.slice(0, isAuthenticated ? 2 : 6)
+                .map((trabalhador) => (
                   <TrabalhadorCard
                     key={trabalhador.id}
                     trabalhador={trabalhador}
                     variants={cardItemVariants}
                   />
-                )
-              )}
+                ))}
             </div>
           </aside>
         </div>
