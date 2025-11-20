@@ -58,9 +58,9 @@ public class ServicoService {
         servico.setTrabalhador(trabalhador);
 
         Cliente cliente = clienteRepository.findById(dto.getClienteId())
-            .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + dto.getClienteId()));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Cliente não encontrado com ID: " + dto.getClienteId()));
         servico.setCliente(cliente);
-
 
         if (servico.getStatusServico() == null) {
             servico.setStatusServico(StatusServico.PENDENTE);
@@ -85,7 +85,8 @@ public class ServicoService {
 
         if (dto.getClienteId() != null && !existente.getCliente().getId().equals(dto.getClienteId())) {
             Cliente novoCliente = clienteRepository.findById(dto.getClienteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com ID: " + dto.getClienteId()));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                            "Cliente não encontrado com ID: " + dto.getClienteId()));
             existente.setCliente(novoCliente);
         }
 
@@ -101,8 +102,23 @@ public class ServicoService {
         servicoRepository.deleteById(id);
     }
 
+    // Em ServicoService.java
+
     public List<ServicoResponseDTO> listarPorCliente(Long clienteId) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'listarPorCliente'");
+        // Você já tem o método findByClienteId no Repository, basta usar
+        List<Servico> servicos = servicoRepository.findByClienteId(clienteId);
+
+        return servicos.stream()
+                .map(servico -> modelMapper.map(servico, ServicoResponseDTO.class))
+                .collect(Collectors.toList());
+    }
+    // Adicione este método dentro da classe ServicoService
+
+    public List<ServicoResponseDTO> listarPorTrabalhador(Long trabalhadorId) {
+        List<Servico> servicos = servicoRepository.findByTrabalhadorId(trabalhadorId);
+
+        return servicos.stream()
+                .map(servico -> modelMapper.map(servico, ServicoResponseDTO.class))
+                .collect(Collectors.toList());
     }
 }

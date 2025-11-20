@@ -2,6 +2,7 @@
 package psg.facilitei.Controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import jakarta.validation.Valid;
+import psg.facilitei.Repository.TrabalhadorRepository;
 import psg.facilitei.DTO.TrabalhadorRequestDTO;
 import psg.facilitei.DTO.TrabalhadorResponseDTO;
+import psg.facilitei.Entity.Trabalhador;
 import psg.facilitei.Services.TrabalhadorService;
 import psg.facilitei.Exceptions.ErrorResponseDTO;
 
@@ -27,6 +30,9 @@ public class TrabalhadorController {
 
         @Autowired
         private TrabalhadorService service;
+
+        @Autowired
+        private TrabalhadorRepository repository;
 
         @Operation(summary = "Cria um novo trabalhador", description = "Registra um trabalhador no sistema com os dados fornecidos.")
         @ApiResponses(value = {
@@ -83,5 +89,18 @@ public class TrabalhadorController {
         public ResponseEntity<TrabalhadorResponseDTO> buscarPorId(@PathVariable Long id) {
                 TrabalhadorResponseDTO dto = service.findById(id);
                 return ResponseEntity.ok(dto);
+        }
+
+        @PatchMapping("/{id}")
+        public ResponseEntity<Void> atualizarNota(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+                // Lógica rápida para atualizar apenas a nota
+                if (updates.containsKey("notaTrabalhador")) {
+                        Trabalhador t = service.buscarEntidadePorId(id);
+                        Double novaNota = Double.valueOf(updates.get("notaTrabalhador").toString());
+                        t.setNotaTrabalhador(novaNota);
+                        repository.save(t);
+                        return ResponseEntity.ok().build();
+                }
+                return ResponseEntity.badRequest().build();
         }
 }

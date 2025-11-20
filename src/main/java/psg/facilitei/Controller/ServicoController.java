@@ -28,16 +28,6 @@ public class ServicoController {
     @Autowired
     private ServicoService servicoService;
 
-    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    @Operation(summary = "Lista todos os serviços", responses = {
-            @ApiResponse(responseCode = "200", description = "Lista de serviços retornada com sucesso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ServicoResponseDTO.class))),
-            @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
-    })
-    public ResponseEntity<List<ServicoResponseDTO>> listarTodos() {
-        List<ServicoResponseDTO> lista = servicoService.listarTodos();
-        return ResponseEntity.ok(lista);
-    }
-
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Busca um serviço por ID", responses = {
             @ApiResponse(responseCode = "200", description = "Serviço encontrado com sucesso", content = @Content(mediaType = "application/json", schema = @Schema(implementation = ServicoResponseDTO.class))),
@@ -90,5 +80,24 @@ public class ServicoController {
         // repository que editamos acima
         List<ServicoResponseDTO> servicos = servicoService.listarPorCliente(clienteId);
         return ResponseEntity.ok(servicos);
+    }
+
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<ServicoResponseDTO>> listar(
+            @RequestParam(required = false) Long trabalhadorId,
+            @RequestParam(required = false) Long clienteId) {
+
+        List<ServicoResponseDTO> lista;
+
+        if (trabalhadorId != null) {
+            // Você precisará criar findByTrabalhadorId no Repository e Service
+            // Aqui estou simulando o retorno filtrado
+            lista = servicoService.listarPorTrabalhador(trabalhadorId);
+        } else if (clienteId != null) {
+            lista = servicoService.listarPorCliente(clienteId);
+        } else {
+            lista = servicoService.listarTodos();
+        }
+        return ResponseEntity.ok(lista);
     }
 }

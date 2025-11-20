@@ -15,4 +15,6 @@ public interface ServicoRepository extends JpaRepository <Servico, Long>{
     boolean existsByTipoServicoAndTrabalhadorId(TipoServico tipoServico, Long trabalhadorId);
 
     List<Servico> findByClienteId(Long clienteId);
+
+    List<Servico> findByTrabalhadorId(Long trabalhadorId);
 }

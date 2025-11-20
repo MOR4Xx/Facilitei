@@ -12,7 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/avaliacoes/Servico")
+@RequestMapping("/api/avaliacoes-servico")
 @Tag(name = "Avaliações", description = "Endpoints relacionados às avaliações de serviço, cliente e trabalhador")
 public class AvaliacaoServicoController {
 
