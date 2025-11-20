@@ -23,7 +23,7 @@ import {
   CogIcon, 
 } from "../components/ui/Icons";
 import { AvaliacaoClienteModal } from "../components/ui/AvaliacaoClienteModal";
-import { api, get, post, patch } from "../lib/api"; // Helper Axios
+import { api, get, post, patch, put } from "../lib/api"; // Helper Axios
 import { toast } from "react-hot-toast";
 
 // Interface para Solicitação (refletindo o DTO de resposta)
@@ -150,33 +150,41 @@ export function DashboardTrabalhadorPage() {
 
   // --- HANDLERS DE AÇÃO ---
 
-  const handleAccept = async (solicitacao: SolicitacaoServico) => {
+ const handleAccept = async (solicitacao: SolicitacaoServico) => {
     setIsMutating(true);
     try {
       // 1. Criar o Serviço (O Contrato)
-      // Usamos os dados da solicitação para criar o serviço já em andamento
+      // NOTA: O backend define automaticamente como 'PENDENTE'.
+      // Removemos o envio de statusServico pois o DTO do Java não aceita esse campo.
       const newService = await post<Servico>('/servicos', {
         titulo: `Serviço: ${solicitacao.tipoServico.replace(/_/g, ' ')}`,
         descricao: solicitacao.descricao,
-        preco: 100.00, // Valor placeholder, pode vir de um input futuro
+        preco: 100.00, // Valor placeholder (futuramente pode vir de um input)
         trabalhadorId: Number(solicitacao.trabalhadorId),
         clienteId: Number(solicitacao.clienteId),
         disponibilidadeId: 1, // Mock
-        tipoServico: solicitacao.tipoServico,
-        statusServico: "EM_ANDAMENTO" // Nasce ativo
+        tipoServico: solicitacao.tipoServico
       });
 
       // 2. Atualizar a Solicitação para ACEITA
-      // Se seu backend atualiza o servicoId automaticamente, ótimo. Se não, apenas status.
+      // Enviamos os dados completos para garantir que o DTO do backend seja validado corretamente
       await patch(`/solicitacoes-servico/${solicitacao.id}`, {
+         clienteId: solicitacao.clienteId,
+         trabalhadorId: solicitacao.trabalhadorId,
+         tipoServico: solicitacao.tipoServico,
+         descricao: solicitacao.descricao,
          statusSolicitacao: "ACEITA"
       });
 
       toast.success("Serviço aceito! O chat foi liberado.");
+      
+      // Invalida as queries para recarregar a lista de solicitações e serviços
       queryClient.invalidateQueries({ queryKey: ["workerData"] });
+      
     } catch (error: any) {
       console.error(error);
-      toast.error("Erro ao aceitar serviço.");
+      const msg = error.response?.data?.message || "Erro ao aceitar serviço.";
+      toast.error(msg);
     } finally {
       setIsMutating(false);
     }
@@ -185,10 +193,19 @@ export function DashboardTrabalhadorPage() {
   const handleReject = async (solicitacao: SolicitacaoServico) => {
     setIsMutating(true);
     try {
-       await patch(`/solicitacoes-servico/${solicitacao.id}`, { statusSolicitacao: "RECUSADA" });
+       // Enviamos os dados completos para segurança de validação
+       await patch(`/solicitacoes-servico/${solicitacao.id}`, { 
+          clienteId: solicitacao.clienteId,
+          trabalhadorId: solicitacao.trabalhadorId,
+          tipoServico: solicitacao.tipoServico,
+          descricao: solicitacao.descricao,
+          statusSolicitacao: "RECUSADA" 
+       });
+       
        toast.success("Solicitação recusada.");
        queryClient.invalidateQueries({ queryKey: ["workerData"] });
-    } catch(e) {
+    } catch(error: any) {
+       console.error(error);
        toast.error("Erro ao recusar.");
     } finally {
        setIsMutating(false);
