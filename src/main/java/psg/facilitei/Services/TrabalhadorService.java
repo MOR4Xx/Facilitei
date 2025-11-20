@@ -137,9 +137,8 @@ public TrabalhadorResponseDTO toResponseDTO(Trabalhador entity) {
         dto.setDisponibilidade(entity.getDisponibilidade());
         dto.setNotaTrabalhador(entity.getNotaTrabalhador());
         dto.setSobre(entity.getSobre());
-
-        // CORREÇÃO 1: Mapeia o serviço principal
         dto.setServicoPrincipal(entity.getServicoPrincipal());
+        dto.setAvatarUrl(entity.getUrlFoto());
 
         // CORREÇÃO 2: Mapeia as habilidades (skills) para o campo 'servicos' que o front espera
         if (entity.getHabilidades() != null) {
