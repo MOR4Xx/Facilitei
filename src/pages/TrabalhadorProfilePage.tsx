@@ -33,8 +33,9 @@ const fetchTrabalhadorById = async (id: string): Promise<Trabalhador> => {
 
 const fetchAvaliacoesTrabalhador = async (workerId: string): Promise<AvaliacaoTrabalhador[]> => {
   try {
-      // Ajuste a rota conforme seu Controller de Avaliações
-      return await get<AvaliacaoTrabalhador[]>(`/avaliacoes-cliente/trabalhador/${workerId}`);
+      // Correção: Usar o endpoint correto do AvaliacaoTrabalhadorController
+      // O controller espera um RequestParam: ?trabalhadorId=...
+      return await get<AvaliacaoTrabalhador[]>(`/avaliacoes-trabalhador?trabalhadorId=${workerId}`);
   } catch {
       return [];
   }

@@ -6,39 +6,36 @@ import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
 import type { Trabalhador, Cliente, AvaliacaoCliente } from "../types/api";
 import { useAuthStore } from "../store/useAuthStore";
+import { api } from "../lib/api";
 
 // --- FUNÇÕES DE BUSCA ---
 const fetchClienteById = async (id: string): Promise<Cliente> => {
-  const response = await fetch(`http://localhost:8080/api/clientes/${id}`);
-  if (!response.ok) {
-    throw new Error("Cliente não encontrado.");
-  }
-  return response.json();
+  // Correção: Usar api.get e a rota correta /clientes/id/{id}
+  const { data } = await api.get<Cliente>(`/clientes/id/${id}`);
+  return data;
 };
 
-const fetchAvaliacoesCliente = async (
-  clienteId: string
-): Promise<AvaliacaoCliente[]> => {
-  const response = await fetch(
-    `http://localhost:8080/api/avaliacoes-cliente?clienteId=${clienteId}`
-  );
-  if (!response.ok) return [];
-  const avaliacoes: AvaliacaoCliente[] = await response.json();
-
-  const avaliacoesComNomes = await Promise.all(
-    avaliacoes.map(async (avaliacao) => {
-      const trabalhadorResponse = await fetch(
-        `http://localhost:8080/api/trabalhadores/${avaliacao.trabalhadorId}`
-      );
-      if (trabalhadorResponse.ok) {
-        const trabalhador: Trabalhador = await trabalhadorResponse.json();
-        return { ...avaliacao, trabalhadorNome: trabalhador.nome };
-      }
-      return { ...avaliacao, trabalhadorNome: "Profissional Anônimo" }; 
-    })
-  );
-
-  return avaliacoesComNomes;
+const fetchAvaliacoesCliente = async (clienteId: string): Promise<AvaliacaoCliente[]> => {
+  try {
+    // Correção: Rota correta sem query param (?clienteId=), usando barra /
+    const { data: avaliacoes } = await api.get<AvaliacaoCliente[]>(`/avaliacoes-cliente/cliente/${clienteId}`);
+    
+    // Hidratação dos nomes dos trabalhadores (mantive sua lógica, ajustando o fetch)
+    const avaliacoesComNomes = await Promise.all(
+      avaliacoes.map(async (avaliacao) => {
+        try {
+          const { data: trabalhador } = await api.get<Trabalhador>(`/trabalhadores/buscarPorId/${avaliacao.trabalhadorId}`);
+          return { ...avaliacao, trabalhadorNome: trabalhador.nome };
+        } catch {
+          return { ...avaliacao, trabalhadorNome: "Profissional Anônimo" };
+        }
+      })
+    );
+    return avaliacoesComNomes;
+  } catch (error) {
+    console.error("Erro ao buscar avaliações:", error);
+    return [];
+  }
 };
 
 // --- VARIANTES DE ANIMAÇÃO ---

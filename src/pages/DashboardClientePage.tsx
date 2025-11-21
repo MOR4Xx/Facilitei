@@ -54,9 +54,10 @@ const fetchTrabalhadores = async (): Promise<Trabalhador[]> => {
 };
 
 const fetchServicosAvaliados = async (clienteId: string): Promise<AvaliacaoServico[]> => {
-    return get<AvaliacaoServico[]>(`/avaliacoes/Servico/cliente/${clienteId}`); // Ajuste a rota conforme seu Controller
+    // Correção: O ClienteController tem o método getAvaliacoesServico mapeado em:
+    // /api/clientes/avaliacaoservico/{id}
+    return get<AvaliacaoServico[]>(`/clientes/avaliacaoservico/${clienteId}`);
 };
-
 // --- VARIANTES DE ANIMAÇÃO ---
 const containerVariants = {
   hidden: { opacity: 0 },

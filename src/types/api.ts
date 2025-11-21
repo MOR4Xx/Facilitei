@@ -13,7 +13,7 @@ export interface Trabalhador {
   id: string;
   nome: string;
   email: string;
-  senha: string;
+  senha?: string;
   avatarUrl: string;
   telefone: string;
   endereco: Endereco;
@@ -27,7 +27,7 @@ export interface Cliente {
   id: string;
   nome: string;
   email: string;
-  senha: string;
+  senha?: string;
   telefone: string;
   avatarUrl: string;
   notaCliente: number;
