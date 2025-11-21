@@ -162,7 +162,6 @@ export function DashboardTrabalhadorPage() {
         preco: 100.00, // Valor placeholder (futuramente pode vir de um input)
         trabalhadorId: Number(solicitacao.trabalhadorId),
         clienteId: Number(solicitacao.clienteId),
-        disponibilidadeId: 1, // Mock
         tipoServico: solicitacao.tipoServico
       });
 
