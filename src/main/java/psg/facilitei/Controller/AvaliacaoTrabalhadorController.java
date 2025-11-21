@@ -9,6 +9,7 @@ import psg.facilitei.Repository.TrabalhadorRepository;
 import psg.facilitei.Repository.ClienteRepository;
 import psg.facilitei.Entity.Trabalhador;
 import psg.facilitei.Entity.Cliente;
+import psg.facilitei.DTO.AvaliacaoTrabalhadorRequestDTO;
 import psg.facilitei.DTO.TrabalhadorResponseDTO; // Se precisar retornar DTO
 
 import java.util.List;
@@ -26,18 +27,22 @@ public class AvaliacaoTrabalhadorController {
 
     // Criar Avaliação
     @PostMapping
-    public ResponseEntity<AvaliacaoTrabalhador> criar(@RequestBody AvaliacaoTrabalhador obj) {
-        // Nota: O Front envia IDs, você precisará buscar as entidades se o JSON vier apenas com IDs,
-        // ou configurar o Jackson para aceitar IDs no lugar de objetos.
-        // Simplificando assumindo que o front manda o objeto estruturado ou você trata aqui:
+    public ResponseEntity<AvaliacaoTrabalhador> criar(@RequestBody AvaliacaoTrabalhadorRequestDTO dto) {
+        AvaliacaoTrabalhador avaliacao = new AvaliacaoTrabalhador();
         
-        // Ajuste rápido para evitar erro de entidade desconectada se vier apenas ID no JSON:
-        if(obj.getTrabalhador() != null && obj.getTrabalhador().getId() != null) {
-             Trabalhador t = trabalhadorRepository.findById(obj.getTrabalhador().getId()).orElse(null);
-             obj.setTrabalhador(t);
-        }
+        // Buscando as entidades pelos IDs do DTO
+        Trabalhador t = trabalhadorRepository.findById(dto.getTrabalhadorId())
+            .orElseThrow(() -> new RuntimeException("Trabalhador não encontrado"));
+        Cliente c = clienteRepository.findById(dto.getClienteId())
+            .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+            
+        avaliacao.setTrabalhador(t);
+        // avaliacao.setCliente(c); // Se tiver campo cliente na entidade AvaliacaoTrabalhador
+        avaliacao.setNota(dto.getNota());
+        avaliacao.setComentario(dto.getComentario());
+        // avaliacao.setServicoId(dto.getServicoId()); // Se tiver esse campo para rastreio
         
-        return ResponseEntity.ok(repository.save(obj));
+        return ResponseEntity.ok(repository.save(avaliacao));
     }
 
     // Listar por Trabalhador (Usado no Perfil do Trabalhador)

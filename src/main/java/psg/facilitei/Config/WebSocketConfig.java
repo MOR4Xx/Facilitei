@@ -20,6 +20,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // Configuração para WebSocket Nativo (ws://)
         // Permite conexão direta do React sem fallback de SockJS
         registry.addEndpoint("/buildrun-livechat-websocket")
-                .setAllowedOrigins("http://localhost:5173"); 
+                .setAllowedOrigins("*"); 
     }
 }

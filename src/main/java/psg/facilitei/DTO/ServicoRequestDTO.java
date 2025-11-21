@@ -43,8 +43,4 @@ public class ServicoRequestDTO {
     @NotNull(message = "O ID do cliente é obrigatório.")
     @Schema(description = "ID do cliente solicitante do serviço", example = "2")
     private Long clienteId;
-
-    @NotNull(message = "O ID da disponibilidade é obrigatório.") 
-    @Schema(description = "ID da disponibilidade associada ao serviço", example = "1")
-    private Long disponibilidadeId;
 }
