@@ -5,17 +5,9 @@ import { Typography } from './Typography';
 import type { Trabalhador } from '../../types/api';
 import { cardItemVariants } from '../../lib/variants';
 
-// --- COMPONENTE DE RATING (Estrelas) ---
 const Rating = ({ score }: { score: number }) => {
   const stars = Array(5).fill(0).map((_, i) => (
-    <span
-      key={i}
-      className={`text-xl ${
-        i < score ? 'text-accent' : 'text-dark-subtle/50'
-      }`}
-    >
-      ★
-    </span>
+    <span key={i} className={`text-xl ${i < score ? 'text-accent' : 'text-dark-subtle/50'}`}>★</span>
   ));
   return <div className="flex space-x-0.5">{stars}</div>;
 };
@@ -37,18 +29,20 @@ export function TrabalhadorCard({
         trabalhador.servicoPrincipal.slice(1).toLowerCase().replace(/_/g, ' ')
       : 'Serviço Não Informado';
 
+  // Proteção para endereço caso venha nulo
+  const cidade = trabalhador.endereco?.cidade || "Cidade N/A";
+  const estado = trabalhador.endereco?.estado || "UF";
+
   return (
     <Card
       variants={variants}
       layout 
-      className="p-5 flex flex-col items-center text-center cursor-pointer
-                 h-full !border-primary/10"
-
+      className="p-5 flex flex-col items-center text-center cursor-pointer h-full !border-primary/10"
       onClick={() => navigate(`/trabalhador/${trabalhador.id}`)}
       whileHover={{ y: -5 }}
     >
       <img
-        src={trabalhador.avatarUrl}
+        src={trabalhador.avatarUrl || '/default-avatar.png'}
         alt={trabalhador.nome}
         className="w-16 h-16 rounded-full object-cover mb-3 border-4 border-accent"
       />
@@ -58,9 +52,9 @@ export function TrabalhadorCard({
       <p className="text-sm text-accent font-semibold mb-3">
         {readableService}
       </p>
-      <Rating score={trabalhador.notaTrabalhador} />
+      <Rating score={trabalhador.notaTrabalhador || 0} />
       <p className="text-xs text-dark-subtle mt-2">
-        {trabalhador.endereco.cidade} - {trabalhador.endereco.estado}
+        {cidade} - {estado}
       </p>
     </Card>
   );
