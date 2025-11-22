@@ -31,6 +31,12 @@ public class AvaliacaoTrabalhador { // <-- SEM "extends Avaliacao"
     @ToString.Exclude
     private Trabalhador trabalhador;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cliente_id", nullable = false)
+    @EqualsAndHashCode.Exclude
+    @ToString.Exclude
+    private Cliente cliente;
+
     // --- 3. ADICIONAR OS CAMPOS QUE ERAM HERDADOS ---
     // Você agora precisa desses campos aqui
     @Min(1)
@@ -51,13 +57,4 @@ public class AvaliacaoTrabalhador { // <-- SEM "extends Avaliacao"
     )
     @Column(name = "url_foto", length = 500)
     private List<String> fotos;
-
-    // --- 4. SEUS CAMPOS ORIGINAIS (QUE JÁ ESTAVAM CORRETOS) ---
-    @Column(name = "total_avaliacoes", nullable = false)
-    private int totalAvaliacoes;
-
-    @Column(name = "soma_total_notas" ,nullable = false)
-    private Double somaTotalNotas;
-
-    private List<String> comentarios_servicos;
 }

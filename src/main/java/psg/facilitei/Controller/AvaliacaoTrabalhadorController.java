@@ -30,32 +30,32 @@ public class AvaliacaoTrabalhadorController {
     public ResponseEntity<AvaliacaoTrabalhador> criar(@RequestBody AvaliacaoTrabalhadorRequestDTO dto) {
         AvaliacaoTrabalhador avaliacao = new AvaliacaoTrabalhador();
         
-        // Buscando as entidades pelos IDs do DTO
         Trabalhador t = trabalhadorRepository.findById(dto.getTrabalhadorId())
             .orElseThrow(() -> new RuntimeException("Trabalhador não encontrado"));
+            
         Cliente c = clienteRepository.findById(dto.getClienteId())
             .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
             
         avaliacao.setTrabalhador(t);
-        // avaliacao.setCliente(c); // Se tiver campo cliente na entidade AvaliacaoTrabalhador
+        avaliacao.setCliente(c); // AGORA O CLIENTE É SALVO CORRETAMENTE
         avaliacao.setNota(dto.getNota());
         avaliacao.setComentario(dto.getComentario());
-        // avaliacao.setServicoId(dto.getServicoId()); // Se tiver esse campo para rastreio
+        
+        // Define a data atual se não vier do DTO
+        avaliacao.setData(new java.util.Date()); 
         
         return ResponseEntity.ok(repository.save(avaliacao));
     }
 
-    // Listar por Trabalhador (Usado no Perfil do Trabalhador)
-    // O frontend chama: /api/avaliacoes-cliente/trabalhador/{id} ??
-    // ATENÇÃO: No seu front (TrabalhadorProfilePage), você chama: 
-    // get<AvaliacaoTrabalhador[]>(`/avaliacoes-cliente/trabalhador/${workerId}`);
-    // Isso parece um ERRO NO FRONTEND (chamando avaliacao-cliente para buscar avaliacao-trabalhador).
-    // Se você corrigir o front para /api/avaliacoes-trabalhador, use este método:
-    
     @GetMapping
     public ResponseEntity<List<AvaliacaoTrabalhador>> listar(@RequestParam Long trabalhadorId) {
-        // Você precisará criar findByTrabalhadorId no Repository de AvaliacaoTrabalhador
+        // Nota: Você precisa criar o método findByTrabalhadorId no Repository se ainda não existir,
+        // ou usar findAll() e filtrar (não recomendado para produção, mas funciona para teste)
         // return ResponseEntity.ok(repository.findByTrabalhadorId(trabalhadorId));
-        return ResponseEntity.ok(repository.findAll()); // Placeholder temporário
+        
+        // Temporário: Retorna tudo para não quebrar se o método customizado não existir no repo
+        return ResponseEntity.ok(repository.findAll().stream()
+            .filter(a -> a.getTrabalhador().getId().equals(trabalhadorId))
+            .toList());
     }
 }
