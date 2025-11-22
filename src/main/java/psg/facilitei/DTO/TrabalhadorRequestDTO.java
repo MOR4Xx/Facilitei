@@ -30,5 +30,6 @@ public class TrabalhadorRequestDTO {
     private Double notaTrabalhador;
     private String senha;
     private String sobre;
+    private String avatarUrl;
 
 }

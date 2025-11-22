@@ -16,10 +16,10 @@ public class ClienteRequestDTO {
     private String nome;
     @NotBlank(message = "O email é obrigatório.")
     private String email;
-    @NotBlank(message = "A senha é obrigatória.")
     private String senha;
-    @NotNull(message = "O Endereço é obrigatorio..") 
+    @NotNull(message = "O Endereço é obrigatorio..")
     @Valid
     private EnderecoRequestDTO endereco;
     private String telefone;
+    private String avatarUrl;
 }

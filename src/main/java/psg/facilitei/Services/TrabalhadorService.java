@@ -55,6 +55,7 @@ public class TrabalhadorService {
         if (dto.getDisponibilidade() != null) trabalhador.setDisponibilidade(dto.getDisponibilidade());
         if (dto.getSobre() != null) trabalhador.setSobre(dto.getSobre());
         if (dto.getTelefone() != null) trabalhador.setTelefone(dto.getTelefone());
+        if (dto.getAvatarUrl() != null) trabalhador.setUrlFoto(dto.getAvatarUrl());
 
         Endereco endereco = trabalhador.getEndereco();
         if (endereco.getRua() != null) endereco.setRua(dto.getEndereco().getRua());
