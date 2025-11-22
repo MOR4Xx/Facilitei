@@ -162,7 +162,8 @@ export function DashboardTrabalhadorPage() {
         preco: 100.00, // Valor placeholder (futuramente pode vir de um input)
         trabalhadorId: Number(solicitacao.trabalhadorId),
         clienteId: Number(solicitacao.clienteId),
-        tipoServico: solicitacao.tipoServico
+        tipoServico: solicitacao.tipoServico,
+        statusServico: "EM_ANDAMENTO" 
       });
 
       // 2. Atualizar a Solicitação para ACEITA
