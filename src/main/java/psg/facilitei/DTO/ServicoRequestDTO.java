@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import psg.facilitei.Entity.Enum.StatusServico;
 import psg.facilitei.Entity.Enum.TipoServico;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -43,4 +44,7 @@ public class ServicoRequestDTO {
     @NotNull(message = "O ID do cliente é obrigatório.")
     @Schema(description = "ID do cliente solicitante do serviço", example = "2")
     private Long clienteId;
+
+    @Schema(description = "Status do serviço", example = "EM_ANDAMENTO")
+    private StatusServico statusServico;
 }
