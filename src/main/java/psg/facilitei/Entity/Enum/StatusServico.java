@@ -10,5 +10,7 @@ public enum StatusServico {
     FINALIZADO,         // Serviço concluído
     CANCELADO,          // Serviço cancelado pelo cliente ou prestador
     NAO_COMPARECEU,     // Prestador ou cliente não compareceu
-    PENDENTE
+    PENDENTE,
+    PENDENTE_APROVACAO, // Trabalhador finalizou, aguardando cliente aprovar
+    RECUSADO
 }
