@@ -96,7 +96,10 @@ export function AvaliacaoClienteModal({
           `http://localhost:8080/api/avaliacoes-cliente?clienteId=${novaAvaliacao.clienteId}`
         );
         const todasAvaliacoes: AvaliacaoCliente[] = await res.json();
-        const totalNotas = todasAvaliacoes.reduce((acc, av) => acc + av.nota, 0);
+        const totalNotas = todasAvaliacoes.reduce(
+          (acc, av) => acc + av.nota,
+          0
+        );
         const novaMedia = parseFloat(
           (totalNotas / todasAvaliacoes.length).toFixed(1)
         );
@@ -167,7 +170,7 @@ export function AvaliacaoClienteModal({
             variant="outline"
             className="w-full"
             onClick={onClose}
-            disabled={isLoading || isSuccess} 
+            disabled={isLoading || isSuccess}
           >
             Cancelar
           </Button>
@@ -175,7 +178,7 @@ export function AvaliacaoClienteModal({
             type="submit"
             variant="secondary"
             className="w-full"
-            disabled={isLoading || isSuccess} 
+            disabled={isLoading || isSuccess}
           >
             {isLoading
               ? "Enviando..."

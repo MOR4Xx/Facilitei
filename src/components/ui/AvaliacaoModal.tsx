@@ -15,7 +15,7 @@ import { toast } from "react-hot-toast";
 const postAvaliacaoServico = async (
   data: AvaliacaoServico
 ): Promise<AvaliacaoServico> => {
-  const res = await fetch(`http://localhost:8080/api/avaliacoes-servico`, {
+  const res = await fetch(`http://localhost:8080/api/avaliacoes-servico/Criar`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
