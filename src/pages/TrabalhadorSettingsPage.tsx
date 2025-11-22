@@ -4,47 +4,83 @@ import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
+import { ImageUpload } from "../components/ui/ImageUpload";
 import type { Trabalhador, TipoServico } from "../types/api";
 import { allServicosList } from "../types/api";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
+import { api } from "../lib/api"; // <--- Importando a api para buscar dados frescos
 
 export function TrabalhadorSettingsPage() {
   const { user, login } = useAuthStore();
 
+  // Inicializa com o que tem no store, mas vamos atualizar logo em seguida
   const [formData, setFormData] = useState<Trabalhador | null>(() => {
     if (user && user.role === "trabalhador") {
-      return user as Trabalhador;
+      return {
+        ...user,
+        servicos: (user as Trabalhador).servicos || [], // Garante array
+      } as Trabalhador;
     }
     return null;
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true); // Loading inicial do fetch
 
+  // 1. BUSCAR DADOS FRESCOS DO BACKEND AO CARREGAR
   useEffect(() => {
-    if (user && user.role === "trabalhador") {
-      setFormData(user as Trabalhador);
-    } else {
-      setFormData(null);
-    }
-  }, [user]);
+    const fetchLatestData = async () => {
+      if (user?.id) {
+        try {
+          const { data } = await api.get<Trabalhador>(
+            `/trabalhadores/buscarPorId/${user.id}`
+          );
+          // Garante que servicos não seja null vindo do back
+          setFormData({
+            ...data,
+            servicos: data.servicos || [],
+          });
+        } catch (error) {
+          console.error("Erro ao buscar dados atualizados:", error);
+          toast.error("Não foi possível carregar seus dados mais recentes.");
+        } finally {
+          setIsFetching(false);
+        }
+      }
+    };
 
+    fetchLatestData();
+  }, [user?.id]);
+
+  // Garante que o serviço principal esteja dentro da lista de serviços
   useEffect(() => {
-    if (formData && !formData.servicos.includes(formData.servicoPrincipal)) {
-      setFormData((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          servicoPrincipal: prev.servicos[0] || allServicosList[0],
-        };
-      });
+    if (formData && formData.servicos.length > 0) {
+      if (!formData.servicos.includes(formData.servicoPrincipal)) {
+        setFormData((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            servicoPrincipal: prev.servicos[0],
+          };
+        });
+      }
     }
-  }, [formData?.servicos, formData?.servicoPrincipal]);
+  }, [formData?.servicos]); // Removi servicoPrincipal da dependência para evitar loop
 
-  if (!formData) {
-    return <div>Carregando informações do profissional...</div>;
+  if (isFetching) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Typography as="h2">Carregando seu perfil...</Typography>
+      </div>
+    );
   }
 
+  if (!formData) {
+    return <div>Erro ao carregar perfil. Tente fazer login novamente.</div>;
+  }
+
+  // Handlers
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -65,10 +101,21 @@ export function TrabalhadorSettingsPage() {
 
   const handleServiceChange = (service: TipoServico) => {
     setFormData((prev) => {
-      const newServices = prev!.servicos.includes(service)
-        ? prev!.servicos.filter((s) => s !== service)
-        : [...prev!.servicos, service];
-      return { ...prev!, servicos: newServices };
+      if (!prev) return null;
+      const currentServices = prev.servicos || [];
+      const exists = currentServices.includes(service);
+
+      let newServices: TipoServico[];
+
+      if (exists) {
+        // Remove
+        newServices = currentServices.filter((s) => s !== service);
+      } else {
+        // Adiciona
+        newServices = [...currentServices, service];
+      }
+
+      return { ...prev, servicos: newServices };
     });
   };
 
@@ -76,13 +123,14 @@ export function TrabalhadorSettingsPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Validação
-    if (formData.servicos.length === 0) {
+    // Validações
+    if (!formData.servicos || formData.servicos.length === 0) {
       toast.error("Você deve oferecer pelo menos um serviço.");
       setIsLoading(false);
       return;
     }
     if (!formData.servicos.includes(formData.servicoPrincipal)) {
+      // Tenta corrigir auto, mas avisa se der ruim
       toast.error(
         "O serviço principal deve ser um dos serviços que você oferece."
       );
@@ -91,29 +139,26 @@ export function TrabalhadorSettingsPage() {
     }
 
     try {
-      // Envia os dados atualizados para a API (db.json)
-      const response = await fetch(
-        `http://localhost:8080/api/trabalhadores/${user!.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
+      // 2. PREPARAR O PAYLOAD CORRETO (servicos -> habilidades)
+      // O backend Java (RequestDTO) espera "habilidades", não "servicos" no PUT
+      const payload = {
+        ...formData,
+        habilidades: formData.servicos, // <--- O PULO DO GATO AQUI
+      };
+
+      const { data: updatedUser } = await api.put<Trabalhador>(
+        `/trabalhadores/atualizar/${user!.id}`,
+        payload
       );
 
-      if (!response.ok) {
-        throw new Error("Falha ao atualizar o perfil.");
-      }
-
-      const updatedUser: Trabalhador = await response.json();
-
-      // Atualiza o usuário no store global (zustand)
+      // Atualiza o AuthStore com os dados novos
       login({ ...updatedUser, role: "trabalhador" });
+
       toast.success("Perfil atualizado com sucesso!");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Ocorreu um erro.");
+    } catch (err: any) {
+      console.error(err);
+      const msg = err.response?.data?.message || "Erro ao atualizar perfil.";
+      toast.error(msg);
     } finally {
       setIsLoading(false);
     }
@@ -131,13 +176,20 @@ export function TrabalhadorSettingsPage() {
 
       <Card className="p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* --- DADOS PESSOAIS --- */}
           <Typography
             as="h3"
             className="!text-xl border-b border-dark-surface/50 pb-2"
           >
             Dados Pessoais
           </Typography>
+
+          <ImageUpload
+            label="Foto de Perfil"
+            value={formData.avatarUrl}
+            onChange={(url) =>
+              setFormData((prev) => ({ ...prev!, avatarUrl: url }))
+            }
+          />
 
           <Input
             label="Nome Completo"
@@ -154,13 +206,7 @@ export function TrabalhadorSettingsPage() {
             onChange={handleChange}
             required
           />
-          <Input
-            label="URL do Avatar"
-            name="avatarUrl"
-            value={formData.avatarUrl}
-            onChange={handleChange}
-            placeholder="Ex: /avatars/trabalhador-1.png ou https://..."
-          />
+
           <Input
             label="Disponibilidade"
             name="disponibilidade"
@@ -181,7 +227,7 @@ export function TrabalhadorSettingsPage() {
           <Input
             label="Rua"
             name="rua"
-            value={formData.endereco.rua}
+            value={formData.endereco?.rua || ""}
             onChange={handleAddressChange}
             required
           />
@@ -189,14 +235,14 @@ export function TrabalhadorSettingsPage() {
             <Input
               label="Número"
               name="numero"
-              value={formData.endereco.numero}
+              value={formData.endereco?.numero || ""}
               onChange={handleAddressChange}
               required
             />
             <Input
               label="Bairro"
               name="bairro"
-              value={formData.endereco.bairro}
+              value={formData.endereco?.bairro || ""}
               onChange={handleAddressChange}
               required
             />
@@ -205,14 +251,14 @@ export function TrabalhadorSettingsPage() {
             <Input
               label="Cidade"
               name="cidade"
-              value={formData.endereco.cidade}
+              value={formData.endereco?.cidade || ""}
               onChange={handleAddressChange}
               required
             />
             <Input
               label="Estado (UF)"
               name="estado"
-              value={formData.endereco.estado}
+              value={formData.endereco?.estado || ""}
               onChange={handleAddressChange}
               required
               maxLength={2}
@@ -221,7 +267,7 @@ export function TrabalhadorSettingsPage() {
           <Input
             label="CEP"
             name="cep"
-            value={formData.endereco.cep}
+            value={formData.endereco?.cep || ""}
             onChange={handleAddressChange}
             required
           />
@@ -235,33 +281,39 @@ export function TrabalhadorSettingsPage() {
           </Typography>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-3 bg-dark-surface/50 rounded-lg">
-            {allServicosList.map((service) => (
-              <label
-                key={service}
-                className={`
-                  flex items-center p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer
-                  ${
-                    formData.servicos.includes(service)
-                      ? "bg-accent border-accent text-dark-background font-bold"
-                      : "bg-dark-surface border-primary/50 text-dark-subtle hover:border-accent/50"
-                  }
-                `}
-              >
-                <input
-                  type="checkbox"
-                  className="hidden" // Escondemos o checkbox padrão
-                  checked={formData.servicos.includes(service)}
-                  onChange={() => handleServiceChange(service)}
-                />
-                <span className="capitalize">
-                  {service.replace(/_/g, " ").toLowerCase()}
-                </span>
-              </label>
-            ))}
+            {allServicosList.map((service) => {
+              if (!service) return null; // Proteção contra nulos na lista
+
+              const isSelected = formData.servicos.includes(service);
+
+              return (
+                <label
+                  key={service}
+                  className={`
+                    flex items-center p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer
+                    ${
+                      isSelected
+                        ? "bg-accent border-accent text-dark-background font-bold"
+                        : "bg-dark-surface border-primary/50 text-dark-subtle hover:border-accent/50"
+                    }
+                  `}
+                >
+                  <input
+                    type="checkbox"
+                    className="hidden"
+                    checked={isSelected}
+                    onChange={() => handleServiceChange(service)}
+                  />
+                  <span className="capitalize">
+                    {service.replace(/_/g, " ").toLowerCase()}
+                  </span>
+                </label>
+              );
+            })}
           </div>
 
           {/* --- SERVIÇO PRINCIPAL --- */}
-          {formData.servicos.length > 0 && (
+          {formData.servicos && formData.servicos.length > 0 && (
             <div>
               <label
                 htmlFor="servicoPrincipal"
@@ -276,21 +328,22 @@ export function TrabalhadorSettingsPage() {
                 onChange={handleChange}
                 className="w-full bg-dark-surface border-2 border-primary/50 rounded-lg p-3 text-dark-text focus:outline-none focus:border-accent"
               >
-                {/* Mostra apenas os serviços que o usuário selecionou */}
-                {formData.servicos.map((service) => (
-                  <option
-                    key={service}
-                    value={service}
-                    className="bg-dark-surface capitalize"
-                  >
-                    {service.replace(/_/g, " ").toLowerCase()}
-                  </option>
-                ))}
+                {formData.servicos.map((service) => {
+                  if (!service) return null;
+                  return (
+                    <option
+                      key={service}
+                      value={service}
+                      className="bg-dark-surface capitalize"
+                    >
+                      {service.replace(/_/g, " ").toLowerCase()}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           )}
 
-          {/* --- SALVAR --- */}
           <div className="pt-6">
             <Button
               type="submit"

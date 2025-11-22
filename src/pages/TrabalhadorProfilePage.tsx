@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams, useLocation } from "react-router-dom"; 
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
@@ -14,34 +14,32 @@ import { useAuthStore } from "../store/useAuthStore";
 import { Modal } from "../components/ui/Modal";
 import { Textarea } from "../components/ui/Textarea";
 import { toast } from "react-hot-toast";
-import { api, get, post } from "../lib/api"; // Importe do nosso helper Axios
+import { api, get, post } from "../lib/api";
 
-// Interface alinhada com o novo SolicitacaoServicoRequestDTO do Backend
 interface NewSolicitacaoRequest {
   clienteId: string;
   trabalhadorId: string;
-  tipoServico: string; 
+  tipoServico: string;
   descricao: string;
   statusSolicitacao: "PENDENTE";
 }
 
-// --- FUNÇÕES DE BUSCA ---
 const fetchTrabalhadorById = async (id: string): Promise<Trabalhador> => {
-  // Usa endpoint de busca por ID do backend
   return get<Trabalhador>(`/trabalhadores/buscarPorId/${id}`);
 };
 
-const fetchAvaliacoesTrabalhador = async (workerId: string): Promise<AvaliacaoTrabalhador[]> => {
+const fetchAvaliacoesTrabalhador = async (
+  workerId: string
+): Promise<AvaliacaoTrabalhador[]> => {
   try {
-      // Correção: Usar o endpoint correto do AvaliacaoTrabalhadorController
-      // O controller espera um RequestParam: ?trabalhadorId=...
-      return await get<AvaliacaoTrabalhador[]>(`/avaliacoes-trabalhador?trabalhadorId=${workerId}`);
+    return await get<AvaliacaoTrabalhador[]>(
+      `/avaliacoes-trabalhador?trabalhadorId=${workerId}`
+    );
   } catch {
-      return [];
+    return [];
   }
 };
 
-// --- VARIANTES DE ANIMAÇÃO ---
 const pageVariants = {
   hidden: { opacity: 0, scale: 0.98 },
   visible: {
@@ -56,7 +54,6 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-// --- COMPONENTE DE RATING ---
 const Rating = ({ score }: { score: number }) => {
   const stars = Array(5)
     .fill(0)
@@ -73,7 +70,6 @@ const Rating = ({ score }: { score: number }) => {
   return <div className="flex space-x-1">{stars}</div>;
 };
 
-// --- COMPONENTE PRINCIPAL ---
 export function TrabalhadorProfilePage() {
   const { id } = useParams<{ id: string }>();
   const trabalhadorId = id ? id : "0";
@@ -82,12 +78,9 @@ export function TrabalhadorProfilePage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Estados do Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [descricao, setDescricao] = useState("");
   const [selectedServico, setSelectedServico] = useState<TipoServico | "">("");
-
-  const queryClient = useQueryClient();
 
   const {
     data: trabalhador,
@@ -99,10 +92,7 @@ export function TrabalhadorProfilePage() {
     enabled: !!id,
   });
 
-  const {
-    data: avaliacoes,
-    isLoading: isLoadingAvaliacoes,
-  } = useQuery({
+  const { data: avaliacoes, isLoading: isLoadingAvaliacoes } = useQuery({
     queryKey: ["avaliacoesTrabalhador", trabalhador?.id],
     queryFn: () => fetchAvaliacoesTrabalhador(trabalhador!.id),
     enabled: !!trabalhador,
@@ -114,19 +104,20 @@ export function TrabalhadorProfilePage() {
     }
   }, [trabalhador]);
 
-  // --- MUTATION: CRIAR APENAS A SOLICITAÇÃO ---
   const mutationCreateSolicitacao = useMutation({
     mutationFn: async (data: NewSolicitacaoRequest) => {
-      // POST para /solicitacoes-servico usando Axios
       return post("/solicitacoes-servico", data);
     },
     onSuccess: () => {
-      toast.success("Solicitação enviada com sucesso! Aguarde o profissional aceitar.");
+      toast.success(
+        "Solicitação enviada com sucesso! Aguarde o profissional aceitar."
+      );
       setIsModalOpen(false);
       setDescricao("");
     },
     onError: (error: any) => {
-      const msg = error.response?.data?.message || "Erro ao enviar solicitação.";
+      const msg =
+        error.response?.data?.message || "Erro ao enviar solicitação.";
       toast.error(msg);
     },
   });
@@ -147,7 +138,6 @@ export function TrabalhadorProfilePage() {
       return;
     }
 
-    // Envia os dados corretos para o novo endpoint
     const solicitacaoData: NewSolicitacaoRequest = {
       clienteId: user.id,
       trabalhadorId: trabalhadorId,
@@ -155,11 +145,10 @@ export function TrabalhadorProfilePage() {
       descricao: descricao,
       statusSolicitacao: "PENDENTE",
     };
-    
+
     mutationCreateSolicitacao.mutate(solicitacaoData);
   };
 
-  // --- HANDLER DO MODAL ---
   const handleOpenModal = () => {
     if (!isAuthenticated) {
       toast.error("Você precisa fazer login como cliente para solicitar.");
@@ -177,7 +166,11 @@ export function TrabalhadorProfilePage() {
     return (
       <div className="text-center py-20 text-red-500">
         <Typography as="h2">Perfil Não Encontrado</Typography>
-        <Button variant="outline" className="mt-6" onClick={() => window.history.back()}>
+        <Button
+          variant="outline"
+          className="mt-6"
+          onClick={() => window.history.back()}
+        >
           Voltar
         </Button>
       </div>
@@ -207,18 +200,21 @@ export function TrabalhadorProfilePage() {
         variants={pageVariants}
         className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10"
       >
-        {/* Esquerda: Perfil */}
         <motion.div className="lg:col-span-1 space-y-8" variants={itemVariants}>
           <Card className="p-8 flex flex-col items-center text-center shadow-glow-accent">
+            {/* AQUI: Adicionado o fallback || '/default-avatar.png' */}
             <img
-              src={trabalhador.avatarUrl}
+              src={trabalhador.avatarUrl || "/default-avatar.png"}
               alt={trabalhador.nome}
               className="w-28 h-28 rounded-full object-cover mb-4 border-4 border-accent shadow-lg"
             />
             <Typography as="h2" className="!text-3xl !text-primary">
               {trabalhador.nome}
             </Typography>
-            <Typography as="p" className="text-xl font-semibold !text-accent mb-2">
+            <Typography
+              as="p"
+              className="text-xl font-semibold !text-accent mb-2"
+            >
               {readableService}
             </Typography>
             <div className="mt-2">
@@ -230,7 +226,10 @@ export function TrabalhadorProfilePage() {
           </Card>
 
           <Card className="p-6">
-            <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2 mb-4">
+            <Typography
+              as="h3"
+              className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
+            >
               Disponibilidade
             </Typography>
             <p className="text-dark-text text-center font-medium">
@@ -248,10 +247,12 @@ export function TrabalhadorProfilePage() {
           </Button>
         </motion.div>
 
-        {/* Direita: Infos */}
         <motion.div className="lg:col-span-2 space-y-8" variants={itemVariants}>
           <Card className="p-6">
-            <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2 mb-4">
+            <Typography
+              as="h3"
+              className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
+            >
               Sobre Mim
             </Typography>
             <Typography as="p">
@@ -262,7 +263,10 @@ export function TrabalhadorProfilePage() {
           </Card>
 
           <Card className="p-6">
-            <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2 mb-4">
+            <Typography
+              as="h3"
+              className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
+            >
               Serviços Prestados
             </Typography>
             <div className="flex flex-wrap gap-3">
@@ -278,12 +282,17 @@ export function TrabalhadorProfilePage() {
           </Card>
 
           <Card className="p-6">
-            <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2 mb-4">
+            <Typography
+              as="h3"
+              className="!text-xl border-b border-dark-surface/50 pb-2 mb-4"
+            >
               Avaliações de Clientes ({avaliacoes?.length || 0})
             </Typography>
             <div className="space-y-6">
               {isLoadingAvaliacoes ? (
-                <p className="text-dark-subtle italic text-center py-4">Carregando avaliações...</p>
+                <p className="text-dark-subtle italic text-center py-4">
+                  Carregando avaliações...
+                </p>
               ) : avaliacoes && avaliacoes.length > 0 ? (
                 avaliacoes.map((avaliacao) => (
                   <div
@@ -291,12 +300,17 @@ export function TrabalhadorProfilePage() {
                     className="border-b border-dark-surface/50 pb-4 last:border-b-0 last:pb-0"
                   >
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
-                      <Typography as="h3" className="!text-lg !text-dark-text mb-2 sm:mb-0">
+                      <Typography
+                        as="h3"
+                        className="!text-lg !text-dark-text mb-2 sm:mb-0"
+                      >
                         {avaliacao.clienteNome}
                       </Typography>
                       <Rating score={avaliacao.nota} />
                     </div>
-                    <Typography as="p" className="italic">"{avaliacao.comentario}"</Typography>
+                    <Typography as="p" className="italic">
+                      "{avaliacao.comentario}"
+                    </Typography>
                   </div>
                 ))
               ) : (
@@ -309,20 +323,30 @@ export function TrabalhadorProfilePage() {
         </motion.div>
       </motion.div>
 
-      {/* MODAL */}
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={`Solicitar ${primeiroNome}`}>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={`Solicitar ${primeiroNome}`}
+      >
         <div className="space-y-6">
           <div className="relative">
-            <label htmlFor="servicoTipo" className="block text-sm font-medium text-dark-subtle mb-2">
+            <label
+              htmlFor="servicoTipo"
+              className="block text-sm font-medium text-dark-subtle mb-2"
+            >
               Qual serviço você precisa?
             </label>
             <select
               id="servicoTipo"
               value={selectedServico}
-              onChange={(e) => setSelectedServico(e.target.value as TipoServico)}
+              onChange={(e) =>
+                setSelectedServico(e.target.value as TipoServico)
+              }
               className="w-full bg-transparent border-2 border-dark-surface rounded-lg p-3 text-dark-text focus:outline-none focus:border-accent"
             >
-              <option value="" disabled>Selecione um serviço...</option>
+              <option value="" disabled>
+                Selecione um serviço...
+              </option>
               {trabalhador.servicos.map((tipo) => (
                 <option key={tipo} value={tipo} className="bg-dark-surface">
                   {tipo.replace(/_/g, " ")}
@@ -340,10 +364,20 @@ export function TrabalhadorProfilePage() {
           />
 
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <Button variant="outline" className="w-full" onClick={() => setIsModalOpen(false)} disabled={isLoadingRequest}>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setIsModalOpen(false)}
+              disabled={isLoadingRequest}
+            >
               Cancelar
             </Button>
-            <Button variant="secondary" className="w-full" onClick={handleSubmitRequest} disabled={isLoadingRequest}>
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={handleSubmitRequest}
+              disabled={isLoadingRequest}
+            >
               {isLoadingRequest ? "Enviando..." : "Enviar Solicitação"}
             </Button>
           </div>

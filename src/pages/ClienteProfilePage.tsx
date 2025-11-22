@@ -8,23 +8,25 @@ import type { Trabalhador, Cliente, AvaliacaoCliente } from "../types/api";
 import { useAuthStore } from "../store/useAuthStore";
 import { api } from "../lib/api";
 
-// --- FUNÇÕES DE BUSCA ---
 const fetchClienteById = async (id: string): Promise<Cliente> => {
-  // Correção: Usar api.get e a rota correta /clientes/id/{id}
   const { data } = await api.get<Cliente>(`/clientes/id/${id}`);
   return data;
 };
 
-const fetchAvaliacoesCliente = async (clienteId: string): Promise<AvaliacaoCliente[]> => {
+const fetchAvaliacoesCliente = async (
+  clienteId: string
+): Promise<AvaliacaoCliente[]> => {
   try {
-    // Correção: Rota correta sem query param (?clienteId=), usando barra /
-    const { data: avaliacoes } = await api.get<AvaliacaoCliente[]>(`/avaliacoes-cliente/cliente/${clienteId}`);
-    
-    // Hidratação dos nomes dos trabalhadores (mantive sua lógica, ajustando o fetch)
+    const { data: avaliacoes } = await api.get<AvaliacaoCliente[]>(
+      `/avaliacoes-cliente/cliente/${clienteId}`
+    );
+
     const avaliacoesComNomes = await Promise.all(
       avaliacoes.map(async (avaliacao) => {
         try {
-          const { data: trabalhador } = await api.get<Trabalhador>(`/trabalhadores/buscarPorId/${avaliacao.trabalhadorId}`);
+          const { data: trabalhador } = await api.get<Trabalhador>(
+            `/trabalhadores/buscarPorId/${avaliacao.trabalhadorId}`
+          );
           return { ...avaliacao, trabalhadorNome: trabalhador.nome };
         } catch {
           return { ...avaliacao, trabalhadorNome: "Profissional Anônimo" };
@@ -38,7 +40,6 @@ const fetchAvaliacoesCliente = async (clienteId: string): Promise<AvaliacaoClien
   }
 };
 
-// --- VARIANTES DE ANIMAÇÃO ---
 const pageVariants = {
   hidden: { opacity: 0, scale: 0.98 },
   visible: {
@@ -53,7 +54,6 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-// --- COMPONENTE DE RATING (Estrelas) ---
 const Rating = ({ score }: { score: number }) => {
   const stars = Array(5)
     .fill(0)
@@ -70,7 +70,6 @@ const Rating = ({ score }: { score: number }) => {
   return <div className="flex space-x-1">{stars}</div>;
 };
 
-// --- COMPONENTE PRINCIPAL: CLIENTE PROFILE PAGE ---
 export function ClienteProfilePage() {
   const { id } = useParams<{ id: string }>();
   const clienteId = id ? id : "0";
@@ -134,11 +133,11 @@ export function ClienteProfilePage() {
       variants={pageVariants}
       className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10"
     >
-      {/* Coluna da Esquerda: Perfil */}
       <motion.div className="lg:col-span-1 space-y-8" variants={itemVariants}>
         <Card className="p-8 flex flex-col items-center text-center shadow-glow-accent">
+          {/* AQUI: Adicionado o fallback || '/default-avatar.png' */}
           <img
-            src={cliente.avatarUrl}
+            src={cliente.avatarUrl || "/default-avatar.png"}
             alt={cliente.nome}
             className="w-28 h-28 rounded-full object-cover mb-4 border-4 border-accent shadow-lg"
           />
@@ -159,7 +158,6 @@ export function ClienteProfilePage() {
           </p>
         </Card>
 
-        {/* BOTÃO DE EDITAR PERFIL */}
         {isOwner && (
           <Button
             variant="secondary"
@@ -184,7 +182,6 @@ export function ClienteProfilePage() {
         </Card>
       </motion.div>
 
-      {/* Coluna da Direita: Detalhes e Avaliações */}
       <motion.div className="lg:col-span-2 space-y-8" variants={itemVariants}>
         <Card className="p-6">
           <Typography
@@ -219,7 +216,10 @@ export function ClienteProfilePage() {
                   className="border-b border-dark-surface/50 pb-4 last:border-b-0 last:pb-0"
                 >
                   <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-2">
-                    <Typography as="h3" className="!text-lg !text-dark-text mb-2 sm:mb-0">
+                    <Typography
+                      as="h3"
+                      className="!text-lg !text-dark-text mb-2 sm:mb-0"
+                    >
                       {avaliacao.trabalhadorNome}
                     </Typography>
                     <Rating score={avaliacao.nota} />

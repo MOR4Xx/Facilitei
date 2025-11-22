@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react';
-import { useAuthStore } from '../store/useAuthStore';
-import { Card } from '../components/ui/Card';
-import { Typography } from '../components/ui/Typography';
-import { Input } from '../components/ui/Input';
-import { Button } from '../components/ui/Button';
-import type { Cliente } from '../types/api';
-import { motion } from 'framer-motion';
-import { toast } from 'react-hot-toast';
-
+import { useState, useEffect } from "react";
+import { useAuthStore } from "../store/useAuthStore";
+import { Card } from "../components/ui/Card";
+import { Typography } from "../components/ui/Typography";
+import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
+import { ImageUpload } from "../components/ui/ImageUpload"; // <--- Importado
+import type { Cliente } from "../types/api";
+import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
 
 export function ClienteSettingsPage() {
   const { user, login } = useAuthStore();
-  
+
   const [formData, setFormData] = useState<Cliente | null>(() => {
-    if (user && user.role === 'cliente') {
+    if (user && user.role === "cliente") {
       return user as Cliente;
     }
     return null;
@@ -22,26 +22,25 @@ export function ClienteSettingsPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (user && user.role === 'cliente') {
+    if (user && user.role === "cliente") {
       setFormData(user as Cliente);
     } else {
       setFormData(null);
     }
-  }, [user]); 
+  }, [user]);
 
   if (!formData) {
     return <div>Carregando informações do usuário...</div>;
   }
 
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev!, [name]: value }));
+    setFormData((prev) => ({ ...prev!, [name]: value }));
   };
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev!,
       endereco: {
         ...prev!.endereco,
@@ -55,7 +54,7 @@ export function ClienteSettingsPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:8080/api/clientes/${user!.id}`, {
+      const response = await fetch(`http://localhost:8080/api/clientes/editar/${user!.id}`, { 
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -63,22 +62,17 @@ export function ClienteSettingsPage() {
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        throw new Error('Falha ao atualizar o perfil.');
-      }
+      if (!response.ok) throw new Error("Falha ao atualizar o perfil.");
 
       const updatedUser: Cliente = await response.json();
-
-      login({ ...updatedUser, role: 'cliente' });
+      login({ ...updatedUser, role: "cliente" });
       toast.success("Perfil atualizado com sucesso!");
-
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Ocorreu um erro.");
     } finally {
       setIsLoading(false);
     }
   };
-
 
   return (
     <motion.div
@@ -92,10 +86,22 @@ export function ClienteSettingsPage() {
 
       <Card className="p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2">
+          <Typography
+            as="h3"
+            className="!text-xl border-b border-dark-surface/50 pb-2"
+          >
             Dados Pessoais
           </Typography>
-          
+
+          {/* AQUI: Trocamos o Input de texto pelo componente ImageUpload */}
+          <ImageUpload
+            label="Foto de Perfil"
+            value={formData.avatarUrl}
+            onChange={(url) =>
+              setFormData((prev) => ({ ...prev!, avatarUrl: url }))
+            }
+          />
+
           <Input
             label="Nome Completo"
             name="nome"
@@ -111,15 +117,11 @@ export function ClienteSettingsPage() {
             onChange={handleChange}
             required
           />
-          <Input
-            label="URL do Avatar"
-            name="avatarUrl"
-            value={formData.avatarUrl}
-            onChange={handleChange}
-            placeholder="Ex: /avatars/cliente-1.png ou https://..."
-          />
 
-          <Typography as="h3" className="!text-xl border-b border-dark-surface/50 pb-2 pt-4">
+          <Typography
+            as="h3"
+            className="!text-xl border-b border-dark-surface/50 pb-2 pt-4"
+          >
             Meu Endereço
           </Typography>
 
@@ -130,7 +132,6 @@ export function ClienteSettingsPage() {
             onChange={handleAddressChange}
             required
           />
-          {/* Grid Responsivo */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Input
               label="Número"
@@ -147,8 +148,7 @@ export function ClienteSettingsPage() {
               required
             />
           </div>
-           {/* Grid Responsivo */}
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Input
               label="Cidade"
               name="cidade"
@@ -156,7 +156,7 @@ export function ClienteSettingsPage() {
               onChange={handleAddressChange}
               required
             />
-             <Input
+            <Input
               label="Estado (UF)"
               name="estado"
               value={formData.endereco.estado}
@@ -165,7 +165,7 @@ export function ClienteSettingsPage() {
               maxLength={2}
             />
           </div>
-           <Input
+          <Input
             label="CEP"
             name="cep"
             value={formData.endereco.cep}
@@ -184,7 +184,6 @@ export function ClienteSettingsPage() {
               {isLoading ? "Salvando..." : "Salvar Alterações"}
             </Button>
           </div>
-
         </form>
       </Card>
     </motion.div>

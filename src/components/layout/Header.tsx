@@ -2,7 +2,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore";
 import { Button } from "../ui/Button";
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion"; 
+import { motion, AnimatePresence } from "framer-motion";
 import { MenuIcon, XMarkIcon } from "../ui/Icons";
 
 export function Header() {
@@ -10,7 +10,7 @@ export function Header() {
   const navigate = useNavigate();
 
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); 
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,56 +20,51 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Fecha o menu mobile se a tela for redimensionada para desktop
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) { // 768px = 'md'
+      if (window.innerWidth >= 768) {
         setIsMenuOpen(false);
       }
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const handleLogout = () => {
     logout();
-    setIsMenuOpen(false); // Fecha o menu ao sair
+    setIsMenuOpen(false);
     navigate("/");
   };
-  
-  const handleLoginNav = () => {
-    setIsMenuOpen(false); // Fecha o menu ao navegar
-    navigate("/login");
-  }
-  
-  const handleProfileNav = (url: string) => {
-    setIsMenuOpen(false); // Fecha o menu ao navegar
-    navigate(url);
-  }
 
-  // --- ESTILOS DOS LINKS ---
+  const handleLoginNav = () => {
+    setIsMenuOpen(false);
+    navigate("/login");
+  };
+
+  const handleProfileNav = (url: string) => {
+    setIsMenuOpen(false);
+    navigate(url);
+  };
+
   const navActive = "text-accent font-semibold";
   const navInactive =
     "text-dark-text/80 font-medium hover:text-accent transition-colors duration-200";
-
   const dashActive =
     "text-accent font-semibold bg-accent/10 px-3 py-2 rounded-lg";
   const dashInactive =
     "text-dark-text/80 font-medium hover:text-accent hover:bg-accent/10 px-3 py-2 rounded-lg transition-all duration-200";
-    
-  // Estilos para links no menu mobile
-  const mobileLink = "text-dark-text text-2xl font-semibold text-center py-3"
-  const mobileLinkActive = "text-accent text-2xl font-semibold text-center py-3"
-  const mobileDashActive = "text-accent bg-accent/10 rounded-lg text-2xl font-semibold text-center py-3"
+  const mobileLink = "text-dark-text text-2xl font-semibold text-center py-3";
+  const mobileLinkActive =
+    "text-accent text-2xl font-semibold text-center py-3";
+  const mobileDashActive =
+    "text-accent bg-accent/10 rounded-lg text-2xl font-semibold text-center py-3";
 
-  // --- ESTILOS DO HEADER (com transição) ---
   const headerBaseStyle =
     "sticky top-0 z-50 transition-all duration-300 ease-in-out";
   const headerScrolledStyle =
     "bg-dark-surface/70 backdrop-blur-lg border-b border-primary/20 shadow-lg";
   const headerTopStyle = "bg-transparent border-b border-transparent";
 
-  // URL do perfil (SÓ se estiver logado)
   const profileUrl =
     user && isAuthenticated
       ? user.role === "cliente"
@@ -85,14 +80,12 @@ export function Header() {
         }`}
       >
         <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-          {/* 1. LOGO */}
           <Link to="/" className="text-3xl font-extrabold text-accent z-50">
             Facilitei
           </Link>
 
-          {/* 2. NAVEGAÇÃO DESKTOP (md:flex) */}
+          {/* Desktop */}
           <div className="hidden md:flex items-center gap-8">
-            {/* Links Principais */}
             <ul className="flex items-center space-x-6 text-base">
               <li>
                 <NavLink
@@ -137,15 +130,15 @@ export function Header() {
               </li>
             </ul>
 
-            {/* 3. ÁREA DE LOGIN/USUÁRIO DESKTOP */}
             {isAuthenticated && user ? (
               <div className="flex items-center gap-4">
                 <Button onClick={handleLogout} variant="outline" size="sm">
                   Sair
                 </Button>
                 <Link to={profileUrl} title="Meu Perfil">
+                  {/* AQUI: Adicionado o fallback || '/default-avatar.png' */}
                   <img
-                    src={user.avatarUrl}
+                    src={user.avatarUrl || "/default-avatar.png"}
                     alt={user.nome}
                     className="w-10 h-10 rounded-full object-cover border-2 border-accent
                                hover:border-accent-hover transition-all hover:scale-110"
@@ -163,7 +156,7 @@ export function Header() {
             )}
           </div>
 
-          {/* 4. BOTÃO MENU HAMBÚRGUER (md:hidden) */}
+          {/* Mobile Button */}
           <div className="md:hidden z-50">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -179,7 +172,7 @@ export function Header() {
         </nav>
       </header>
 
-      {/* 5. MENU MOBILE (Tela Cheia) */}
+      {/* Menu Mobile */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
@@ -189,9 +182,8 @@ export function Header() {
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
             className="fixed inset-0 bg-dark-background z-40 flex flex-col items-center justify-center space-y-8 pt-20"
           >
-            {/* Links do Menu Mobile */}
             <ul className="flex flex-col space-y-6">
-               <li>
+              <li>
                 <NavLink
                   to="/"
                   end
@@ -238,7 +230,6 @@ export function Header() {
               </li>
             </ul>
 
-            {/* Auth no Menu Mobile */}
             <div className="flex flex-col gap-6 w-full px-10 pt-6 border-t border-dark-surface">
               {isAuthenticated && user ? (
                 <>
