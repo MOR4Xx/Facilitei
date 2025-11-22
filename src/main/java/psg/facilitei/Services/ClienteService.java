@@ -48,6 +48,12 @@ public class ClienteService {
     public ClienteResponseDTO create(ClienteRequestDTO dto) {
         logger.info("Criando cliente");
         Cliente cliente = modelMapper.map(dto, Cliente.class);
+        
+        // CORREÇÃO AQUI: Mapeando manualmente o avatarUrl do DTO para urlFoto da Entidade
+        if (dto.getAvatarUrl() != null) {
+            cliente.setUrlFoto(dto.getAvatarUrl());
+        }
+
         if (dto.getEndereco() != null) {
             cliente.setEndereco(modelMapper.map(dto.getEndereco(), Endereco.class));
         }
@@ -172,9 +178,7 @@ public class ClienteService {
     }
     public void atualizarNota(Long id, Double novaNota) {
         Cliente cliente = buscarEntidadePorId(id);
-        // Se na entidade Cliente 'notaCliente' for Integer:
-        cliente.setNotaCliente(novaNota.intValue()); 
-        // Se for Double: cliente.setNotaCliente(novaNota);
+        cliente.setNotaCliente(novaNota); // Ajustado para aceitar Double
         repository.save(cliente);
     }
 }

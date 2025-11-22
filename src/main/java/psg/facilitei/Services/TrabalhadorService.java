@@ -101,6 +101,9 @@ public class TrabalhadorService {
         trabalhador.setDisponibilidade(dto.getDisponibilidade());
         trabalhador.setSobre(dto.getSobre());
         trabalhador.setTelefone(dto.getTelefone());
+        // CORREÇÃO AQUI: Mapeando a URL da foto vinda do frontend
+        trabalhador.setUrlFoto(dto.getAvatarUrl()); 
+        
         trabalhador.setHabilidades(dto.getHabilidades());
         trabalhador.setServicoPrincipal(dto.getServicoPrincipal());
 
@@ -134,14 +137,13 @@ public TrabalhadorResponseDTO toResponseDTO(Trabalhador entity) {
         dto.setId(String.valueOf(entity.getId()));
         dto.setNome(entity.getNome());
         dto.setEmail(entity.getEmail());
-        dto.setTelefone(entity.getTelefone()); // Não esqueça do telefone
+        dto.setTelefone(entity.getTelefone());
         dto.setDisponibilidade(entity.getDisponibilidade());
         dto.setNotaTrabalhador(entity.getNotaTrabalhador());
         dto.setSobre(entity.getSobre());
         dto.setServicoPrincipal(entity.getServicoPrincipal());
         dto.setAvatarUrl(entity.getUrlFoto());
 
-        // CORREÇÃO 2: Mapeia as habilidades (skills) para o campo 'servicos' que o front espera
         if (entity.getHabilidades() != null) {
             dto.setServicos(entity.getHabilidades());
         }
@@ -153,8 +155,8 @@ public TrabalhadorResponseDTO toResponseDTO(Trabalhador entity) {
             enderecoDTO.setCidade(endereco.getCidade());
             enderecoDTO.setEstado(endereco.getEstado());
             enderecoDTO.setCep(endereco.getCep());
-            enderecoDTO.setBairro(endereco.getBairro()); // Adicione se tiver no DTO
-            enderecoDTO.setNumero(endereco.getNumero()); // Adicione se tiver no DTO
+            enderecoDTO.setBairro(endereco.getBairro());
+            enderecoDTO.setNumero(endereco.getNumero());
             dto.setEndereco(enderecoDTO);
         }
 
