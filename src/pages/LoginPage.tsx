@@ -14,6 +14,8 @@ export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuthStore();
+
+  // AQUI ESTÁ O SEGREDO DO REDIRECT
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
 
@@ -22,20 +24,21 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      // O endpoint no AuthController é /api/auth/login
       const { data } = await api.post("/auth/login", { email, senha });
 
-      // O backend retorna LoginResponseDTO { role, user }
       if (data.user && data.role) {
-        login({ ...data.user, role: data.role }); // Atualiza Zustand
+        login({ ...data.user, role: data.role });
         toast.success("Login efetuado com sucesso!");
+
+        // Redireciona para onde o usuário queria ir, ou dashboard se for login normal
         navigate(redirectTo || "/dashboard", { replace: true });
       }
     } catch (err: any) {
-      // Axios coloca a resposta do erro em err.response.data
       const mensagem =
         err.response?.data?.message || "Erro ao conectar com o servidor.";
       toast.error(mensagem);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -62,7 +65,6 @@ export function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
-
           <Input
             label="Sua senha"
             name="senha"

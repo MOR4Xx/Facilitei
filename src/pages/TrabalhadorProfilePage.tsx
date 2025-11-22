@@ -1,20 +1,16 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Button } from "../components/ui/Button";
-import type {
-  Trabalhador,
-  TipoServico,
-  AvaliacaoTrabalhador,
-} from "../types/api";
+import type { Trabalhador, TipoServico } from "../types/api";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Modal } from "../components/ui/Modal";
 import { Textarea } from "../components/ui/Textarea";
 import { toast } from "react-hot-toast";
-import { api, get, post } from "../lib/api";
+import { get, post } from "../lib/api";
 
 interface NewSolicitacaoRequest {
   clienteId: string;
@@ -28,14 +24,9 @@ const fetchTrabalhadorById = async (id: string): Promise<Trabalhador> => {
   return get<Trabalhador>(`/trabalhadores/buscarPorId/${id}`);
 };
 
-const fetchAvaliacoesTrabalhador = async (
-  workerId: string
-): Promise<any[]> => { // Pode tipar corretamente se quiser
+const fetchAvaliacoesTrabalhador = async (workerId: string): Promise<any[]> => {
   try {
-    // ALTERADO: Agora busca do endpoint de serviço, que contém os comentários reais dos trabalhos
-    return await get<any[]>(
-      `/avaliacoes-servico/trabalhador/${workerId}`
-    );
+    return await get<any[]>(`/avaliacoes-servico/trabalhador/${workerId}`);
   } catch {
     return [];
   }
@@ -77,7 +68,7 @@ export function TrabalhadorProfilePage() {
 
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
-  const location = useLocation();
+  const location = useLocation(); // Hook essencial para pegar a URL atual
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [descricao, setDescricao] = useState("");
@@ -106,9 +97,8 @@ export function TrabalhadorProfilePage() {
   }, [trabalhador]);
 
   const mutationCreateSolicitacao = useMutation({
-    mutationFn: async (data: NewSolicitacaoRequest) => {
-      return post("/solicitacoes-servico", data);
-    },
+    mutationFn: async (data: NewSolicitacaoRequest) =>
+      post("/solicitacoes-servico", data),
     onSuccess: () => {
       toast.success(
         "Solicitação enviada com sucesso! Aguarde o profissional aceitar."
@@ -125,70 +115,48 @@ export function TrabalhadorProfilePage() {
 
   const isLoadingRequest = mutationCreateSolicitacao.isPending;
 
-  const handleSubmitRequest = () => {
-    if (!isAuthenticated || user?.role !== "cliente") {
-      toast.error("Você precisa estar logado como cliente.");
-      return;
-    }
-    if (!selectedServico) {
-      toast.error("Selecione um tipo de serviço.");
-      return;
-    }
-    if (descricao.length < 10) {
-      toast.error("Descreva um pouco mais o que precisa (mín. 10 caracteres).");
+  const handleOpenModal = () => {
+    // A LÓGICA MÁGICA AQUI:
+    if (!isAuthenticated) {
+      toast("Faça login para solicitar o serviço.", { icon: "🔒" });
+      // Redireciona para login, mas salva a página atual (location.pathname) no redirectTo
+      navigate(`/login?redirectTo=${location.pathname}`);
       return;
     }
 
-    const solicitacaoData: NewSolicitacaoRequest = {
-      clienteId: user.id,
+    if (user?.role !== "cliente") {
+      toast.error(
+        "Apenas clientes podem solicitar serviços. Crie uma conta de cliente."
+      );
+      return;
+    }
+
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitRequest = () => {
+    if (!selectedServico) return toast.error("Selecione um tipo de serviço.");
+    if (descricao.length < 10)
+      return toast.error("Descreva um pouco mais (mín. 10 caracteres).");
+
+    mutationCreateSolicitacao.mutate({
+      clienteId: user!.id,
       trabalhadorId: trabalhadorId,
       tipoServico: selectedServico,
       descricao: descricao,
       statusSolicitacao: "PENDENTE",
-    };
-
-    mutationCreateSolicitacao.mutate(solicitacaoData);
+    });
   };
 
-  const handleOpenModal = () => {
-    if (!isAuthenticated) {
-      toast.error("Você precisa fazer login como cliente para solicitar.");
-      navigate(`/login?redirectTo=${location.pathname}`);
-      return;
-    }
-    if (user?.role !== "cliente") {
-      toast.error("Apenas clientes podem solicitar serviços.");
-      return;
-    }
-    setIsModalOpen(true);
-  };
-
-  if (isError) {
+  if (isError)
     return (
       <div className="text-center py-20 text-red-500">
-        <Typography as="h2">Perfil Não Encontrado</Typography>
-        <Button
-          variant="outline"
-          className="mt-6"
-          onClick={() => window.history.back()}
-        >
-          Voltar
-        </Button>
+        Perfil Não Encontrado
       </div>
     );
-  }
+  if (isLoadingTrabalhador || !trabalhador)
+    return <div className="text-center py-20">Carregando Perfil...</div>;
 
-  if (isLoadingTrabalhador) {
-    return (
-      <div className="text-center py-20">
-        <Typography as="h2">Carregando Perfil...</Typography>
-      </div>
-    );
-  }
-
-  if (!trabalhador) return null;
-
-  const [primeiroNome] = trabalhador.nome.split(" ");
   const readableService =
     trabalhador.servicoPrincipal.charAt(0).toUpperCase() +
     trabalhador.servicoPrincipal.slice(1).toLowerCase().replace(/_/g, " ");
@@ -203,7 +171,6 @@ export function TrabalhadorProfilePage() {
       >
         <motion.div className="lg:col-span-1 space-y-8" variants={itemVariants}>
           <Card className="p-8 flex flex-col items-center text-center shadow-glow-accent">
-            {/* AQUI: Adicionado o fallback || '/default-avatar.png' */}
             <img
               src={trabalhador.avatarUrl || "/default-avatar.png"}
               alt={trabalhador.nome}
@@ -257,9 +224,8 @@ export function TrabalhadorProfilePage() {
               Sobre Mim
             </Typography>
             <Typography as="p">
-              Olá! Sou {primeiroNome}, um profissional dedicado e com vasta
-              experiência em {readableService}. Meu compromisso é com a
-              qualidade e a satisfação do cliente.
+              {trabalhador.sobre ||
+                `Olá! Sou ${trabalhador.nome}, profissional de ${readableService}.`}
             </Typography>
           </Card>
 
@@ -292,7 +258,7 @@ export function TrabalhadorProfilePage() {
             <div className="space-y-6">
               {isLoadingAvaliacoes ? (
                 <p className="text-dark-subtle italic text-center py-4">
-                  Carregando avaliações...
+                  Carregando...
                 </p>
               ) : avaliacoes && avaliacoes.length > 0 ? (
                 avaliacoes.map((avaliacao) => (
@@ -305,7 +271,7 @@ export function TrabalhadorProfilePage() {
                         as="h3"
                         className="!text-lg !text-dark-text mb-2 sm:mb-0"
                       >
-                        {avaliacao.clienteNome}
+                        {avaliacao.clienteNome || "Cliente"}
                       </Typography>
                       <Rating score={avaliacao.nota} />
                     </div>
@@ -316,7 +282,7 @@ export function TrabalhadorProfilePage() {
                 ))
               ) : (
                 <p className="text-dark-subtle italic text-center py-4">
-                  Este profissional ainda não possui avaliações.
+                  Sem avaliações ainda.
                 </p>
               )}
             </div>
@@ -327,27 +293,20 @@ export function TrabalhadorProfilePage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={`Solicitar ${primeiroNome}`}
+        title={`Solicitar ${trabalhador.nome}`}
       >
         <div className="space-y-6">
           <div className="relative">
-            <label
-              htmlFor="servicoTipo"
-              className="block text-sm font-medium text-dark-subtle mb-2"
-            >
+            <label className="block text-sm font-medium text-dark-subtle mb-2">
               Qual serviço você precisa?
             </label>
             <select
-              id="servicoTipo"
               value={selectedServico}
               onChange={(e) =>
                 setSelectedServico(e.target.value as TipoServico)
               }
               className="w-full bg-transparent border-2 border-dark-surface rounded-lg p-3 text-dark-text focus:outline-none focus:border-accent"
             >
-              <option value="" disabled>
-                Selecione um serviço...
-              </option>
               {trabalhador.servicos.map((tipo) => (
                 <option key={tipo} value={tipo} className="bg-dark-surface">
                   {tipo.replace(/_/g, " ")}
@@ -355,21 +314,18 @@ export function TrabalhadorProfilePage() {
               ))}
             </select>
           </div>
-
           <Textarea
-            name="textarea"
-            label="Breve descrição do serviço"
+            name="descricao"
+            label="Descrição do serviço"
             value={descricao}
             onChange={(e) => setDescricao(e.target.value)}
-            placeholder="Ex: Preciso instalar um ar condicionado de 9000 BTUs na sala."
+            placeholder="Ex: Preciso instalar um ar condicionado split 12000 BTUs..."
           />
-
-          <div className="flex flex-col sm:flex-row gap-4 pt-4">
+          <div className="flex gap-4 pt-4">
             <Button
               variant="outline"
               className="w-full"
               onClick={() => setIsModalOpen(false)}
-              disabled={isLoadingRequest}
             >
               Cancelar
             </Button>

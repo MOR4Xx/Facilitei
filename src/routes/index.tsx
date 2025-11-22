@@ -1,5 +1,3 @@
-// src/routes/index.tsx
-
 import { createBrowserRouter } from "react-router-dom";
 import { MainLayout } from "../components/layout/MainLayout";
 import { HomePage } from "../pages/HomePage";
@@ -12,7 +10,6 @@ import { DashboardRootPage } from "../pages/DashboardRootPage";
 import { SolicitarServicoPage } from "../pages/SolicitarServicoPage";
 import { TrabalhadorProfilePage } from "../pages/TrabalhadorProfilePage";
 import { ClienteProfilePage } from "../pages/ClienteProfilePage";
-// 1. Importar a nova página Raiz
 import { SettingsRootPage } from "../pages/SettingsRootPage"; 
 import { ChatPage } from "../pages/ChatPage";
 
@@ -27,6 +24,7 @@ export const router = createBrowserRouter([
       { path: "login", element: <LoginPage /> },
       { path: "cadastro", element: <RegisterPage /> },
 
+      // PERFIL PÚBLICO (Acesso Livre)
       {
         path: "trabalhador/:id",
         element: <TrabalhadorProfilePage />,
@@ -41,19 +39,19 @@ export const router = createBrowserRouter([
         children: [
           {
             index: true, 
-            element: <DashboardRootPage />, 
+            element: <DashboardRootPage />, // PÚBLICO (Decide dentro se é visita ou cliente)
           },
           {
             path: "solicitar",
-            element: <SolicitarServicoPage />,
+            element: <SolicitarServicoPage />, // PÚBLICO (Busca de profissionais)
           },
 
+          // ROTAS PROTEGIDAS (Exigem Login)
           {
             element: <ProtectedRoute />, 
             children: [
               {
                 path: "configuracoes", 
-                // 2. Usar a SettingsRootPage aqui
                 element: <SettingsRootPage />, 
               },
               {
