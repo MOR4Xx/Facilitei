@@ -32,3 +32,17 @@ export const patch = <T>(url: string, body: any) =>
 
 export const del = <T>(url: string) => 
   api.delete<T>(url).then(res => res.data);
+
+export const uploadFile = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  // 'file' deve ser igual ao @RequestParam("file") do seu Java Controller
+  formData.append('file', file); 
+
+  const response = await api.post<{ url: string }>('/arquivos/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return response.data.url;
+};
