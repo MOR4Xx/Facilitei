@@ -28,11 +28,6 @@ public class ServicoRequestDTO {
     @Schema(description = "Descrição detalhada do serviço", example = "Instalação profissional de ar condicionado split e janela.")
     private String descricao;
 
-    @NotNull(message = "O preço do serviço é obrigatório.")
-    @Positive(message = "O preço deve ser um valor positivo.")
-    @Schema(description = "Preço sugerido para o serviço", example = "250.00")
-    private Double preco;
-
     @NotNull(message = "O ID do trabalhador é obrigatório.")
     @Schema(description = "ID do trabalhador que oferece o serviço", example = "1")
     private Long trabalhadorId;

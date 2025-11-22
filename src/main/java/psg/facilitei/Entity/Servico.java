@@ -32,11 +32,6 @@ public class Servico {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
 
-    @NotNull(message = "O preço do serviço é obrigatório.")
-    @Positive(message = "O preço deve ser um valor positivo.")
-    @Column(name = "preco", nullable = false) 
-    private Double preco;
-
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "avaliacao_id")
     @EqualsAndHashCode.Exclude
