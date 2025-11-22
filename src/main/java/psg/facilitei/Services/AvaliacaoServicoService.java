@@ -1,5 +1,7 @@
 package psg.facilitei.Services;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,81 +31,75 @@ public class AvaliacaoServicoService {
     private ServicoRepository servicoRepository;
 
     @Transactional
-public AvaliacaoServicoResponseDTO create(AvaliacaoServicoRequestDTO requestDTO) {
+    public AvaliacaoServicoResponseDTO create(AvaliacaoServicoRequestDTO requestDTO) {
+        // 1. Cria e Salva a Avaliação
+        AvaliacaoServico avaliacao = toEntity(requestDTO);
+        AvaliacaoServico savedAvaliacao = repository.save(avaliacao);
 
-    // Converte DTO para Entity
-    AvaliacaoServico avaliacao = toEntity(requestDTO);
-
-    // Salva a avaliação
-    AvaliacaoServico savedAvaliacao = repository.save(avaliacao);
-
-    // Recupera o trabalhador pelo serviço avaliado
-    Trabalhador trabalhador = savedAvaliacao.getServico().getTrabalhador();
-
-    // Calcula a nova média de avaliações do trabalhador
-    Double media = repository.calcularMediaPorTrabalhador(trabalhador.getId());
-
-    // Atualiza a nota do trabalhador
-    trabalhador.setNotaTrabalhador(media);
-    trabalhadorRepository.save(trabalhador);
-
-    // Retorna DTO de resposta
-    return toResponseDTO(savedAvaliacao);
-}
-
-public List<AvaliacaoServicoResponseDTO> buscarAvaliacoesPorServico(Long servicoId) {
-        List<AvaliacaoServico> avaliacoes = repository.findByServicoId(servicoId);
-
-        return avaliacoes.stream()
-                .map(this::toResponseDTO) // usando seu conversor interno
-                .toList();
-    }
-
-    
-    public AvaliacaoServico toEntity(AvaliacaoServicoRequestDTO dto) {
-    AvaliacaoServico avaliacao = new AvaliacaoServico();
-    avaliacao.setNota(dto.getNota());
-    avaliacao.setComentario(dto.getComentario());
-
-    // Busca Cliente pelo ID
-    Cliente cliente = clienteRepository.findById(dto.getClienteId())
-            .orElseThrow(() -> new RuntimeException("Cliente não encontrado com id " + dto.getClienteId()));
-    avaliacao.setCliente(cliente);
-
-    // Busca Servico pelo ID
-    Servico servico = servicoRepository.findById(dto.getServicoId())
-            .orElseThrow(() -> new RuntimeException("Serviço não encontrado com id " + dto.getServicoId()));
-    avaliacao.setServico(servico);
-
-    return avaliacao;
-}
-
-@Transactional
-    public void deletarAvaliacao(Long avaliacaoId) {
-        AvaliacaoServico avaliacao = repository.findById(avaliacaoId)
-                .orElseThrow(() -> new RuntimeException("Avaliação não encontrada com id " + avaliacaoId));
-
-        // Pega o trabalhador do serviço da avaliação
-        Trabalhador trabalhador = avaliacao.getServico().getTrabalhador();
-
-        // Remove a avaliação
-        repository.delete(avaliacao);
-
-        // Recalcula a média do trabalhador (caso ainda tenha outras avaliações)
+        // 2. Recalcula a média do Trabalhador automaticamente
+        Trabalhador trabalhador = savedAvaliacao.getServico().getTrabalhador();
         Double media = repository.calcularMediaPorTrabalhador(trabalhador.getId());
-        trabalhador.setNotaTrabalhador(media != null ? media : 0.0);
-        trabalhadorRepository.save(trabalhador);
+        
+        // 3. Atualiza a nota no perfil do trabalhador
+        if (media != null) {
+            trabalhador.setNotaTrabalhador(media);
+            trabalhadorRepository.save(trabalhador);
+        }
+
+        return toResponseDTO(savedAvaliacao);
     }
 
-public AvaliacaoServicoResponseDTO toResponseDTO(AvaliacaoServico avaliacao) {
-    AvaliacaoServicoResponseDTO dto = new AvaliacaoServicoResponseDTO();
-    dto.setId(avaliacao.getId());
-    dto.setNota(avaliacao.getNota());
-    dto.setComentario(avaliacao.getComentario());
-    dto.setClienteId(avaliacao.getCliente().getId());   // pega ID do Cliente
-    dto.setServicoId(avaliacao.getServico().getId());   // pega ID do Servico
-    return dto;
-}
+    public List<AvaliacaoServicoResponseDTO> buscarAvaliacoesPorServico(Long servicoId) {
+        return repository.findByServicoId(servicoId).stream()
+                .map(this::toResponseDTO).collect(Collectors.toList());
+    }
 
+    // Método NOVO para listar avaliações no perfil do trabalhador
+    public List<AvaliacaoServicoResponseDTO> buscarAvaliacoesPorTrabalhador(Long trabalhadorId) {
+        return repository.findByTrabalhadorId(trabalhadorId).stream()
+                .map(this::toResponseDTO).collect(Collectors.toList());
+    }
 
+    private AvaliacaoServico toEntity(AvaliacaoServicoRequestDTO dto) {
+        AvaliacaoServico avaliacao = new AvaliacaoServico();
+        avaliacao.setNota(dto.getNota());
+        avaliacao.setComentario(dto.getComentario());
+        avaliacao.setData(new java.util.Date()); // Garante data atual
+
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+        avaliacao.setCliente(cliente);
+
+        Servico servico = servicoRepository.findById(dto.getServicoId())
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado"));
+        avaliacao.setServico(servico);
+
+        return avaliacao;
+    }
+
+    private AvaliacaoServicoResponseDTO toResponseDTO(AvaliacaoServico avaliacao) {
+        AvaliacaoServicoResponseDTO dto = new AvaliacaoServicoResponseDTO();
+        dto.setId(avaliacao.getId());
+        dto.setNota(avaliacao.getNota());
+        dto.setComentario(avaliacao.getComentario());
+        dto.setClienteId(avaliacao.getCliente().getId());
+        dto.setServicoId(avaliacao.getServico().getId());
+        dto.setData(avaliacao.getData());
+        return dto;
+    }
+    
+    @Transactional
+    public void deletarAvaliacao(Long id) {
+        if(repository.existsById(id)) {
+             AvaliacaoServico av = repository.findById(id).get();
+             Long trabId = av.getServico().getTrabalhador().getId();
+             repository.deleteById(id);
+             
+             // Recalcula após deletar
+             Double media = repository.calcularMediaPorTrabalhador(trabId);
+             Trabalhador t = trabalhadorRepository.findById(trabId).get();
+             t.setNotaTrabalhador(media != null ? media : 0.0);
+             trabalhadorRepository.save(t);
+        }
+    }
 }

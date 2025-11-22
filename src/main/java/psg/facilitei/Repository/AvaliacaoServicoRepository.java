@@ -15,6 +15,9 @@ public interface AvaliacaoServicoRepository extends JpaRepository<AvaliacaoServi
 
     List<AvaliacaoServico> findByClienteId(Long clienteId);
 
+    @Query("SELECT a FROM AvaliacaoServico a WHERE a.servico.trabalhador.id = :trabalhadorId")
+    List<AvaliacaoServico> findByTrabalhadorId(@Param("trabalhadorId") Long trabalhadorId);
+
     @Query("SELECT AVG(a.nota) FROM AvaliacaoServico a WHERE a.servico.trabalhador.id = :trabalhadorId")
     Double calcularMediaPorTrabalhador(@Param("trabalhadorId") Long trabalhadorId);
 }
