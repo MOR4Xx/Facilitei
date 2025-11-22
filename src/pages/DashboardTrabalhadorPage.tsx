@@ -133,7 +133,6 @@ export function DashboardTrabalhadorPage() {
       await post<Servico>("/servicos", {
         titulo: `Serviço: ${solicitacao.tipoServico.replace(/_/g, " ")}`,
         descricao: solicitacao.descricao,
-        preco: 100.0,
         trabalhadorId: Number(solicitacao.trabalhadorId),
         clienteId: Number(solicitacao.clienteId),
         tipoServico: solicitacao.tipoServico,

@@ -230,9 +230,6 @@ export function DashboardClientePage() {
                             </h3>
                             <div className="flex items-center gap-3 mt-2">
                               {renderStatusTag(servico.statusServico)}
-                              <span className="text-sm text-dark-subtle">
-                                R$ {servico.preco?.toFixed(2)}
-                              </span>
                             </div>
                           </div>
 

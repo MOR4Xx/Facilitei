@@ -168,7 +168,6 @@ export interface Servico {
   id: string;
   titulo: string;
   descricao: string;
-  preco: number;
   trabalhadorId: string;
   clienteId: string;
   disponibilidadeId: number;
