@@ -97,31 +97,6 @@ export function HomePage() {
             className="hidden lg:flex relative justify-center"
           >
             <div className="relative w-full max-w-md aspect-square">
-              {/* Card Flutuante 1 */}
-              <motion.div
-                animate={{ y: [0, -15, 0] }}
-                transition={{
-                  duration: 6,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="absolute top-0 right-0 w-48 bg-dark-surface/80 backdrop-blur-xl border border-white/10 p-4 rounded-2xl shadow-2xl z-20"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <img
-                    src="/avatars/trabalhador-1.png"
-                    className="w-10 h-10 rounded-full border-2 border-accent"
-                  />
-                  <div>
-                    <p className="text-sm font-bold text-white">Carlos E.</p>
-                    <p className="text-xs text-accent">Eletricista</p>
-                  </div>
-                </div>
-                <div className="h-2 bg-white/10 rounded-full w-full overflow-hidden">
-                  <div className="h-full bg-accent w-[90%]" />
-                </div>
-              </motion.div>
-
               {/* Imagem Principal Recortada */}
               <div className="absolute inset-4 bg-gradient-to-br from-primary to-accent rounded-[3rem] rotate-3 opacity-20 blur-lg"></div>
               <img
@@ -155,7 +130,7 @@ export function HomePage() {
       </section>
 
       {/* CATEGORIAS POPULARES (Design de Pílulas Modernas) */}
-      <motion.section variants={itemVariants} className="text-center">
+      <motion.section variants={itemVariants} className="text-center pt-16">
         <Typography
           as="h2"
           className="!text-2xl text-dark-subtle mb-8 uppercase tracking-[0.2em]"
