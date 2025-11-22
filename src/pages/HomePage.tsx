@@ -34,7 +34,7 @@ export function HomePage() {
 
   return (
     <motion.div
-      className="relative space-y-32"
+      className="relative space-y-8"
       variants={containerVariants}
       initial="hidden"
       animate="visible"

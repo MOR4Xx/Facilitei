@@ -3,6 +3,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import { Card } from "../components/ui/Card";
 import { Typography } from "../components/ui/Typography";
 import { Input } from "../components/ui/Input";
+import { Textarea } from "../components/ui/Textarea"; // <--- Importado
 import { Button } from "../components/ui/Button";
 import { ImageUpload } from "../components/ui/ImageUpload";
 import type { Trabalhador, TipoServico } from "../types/api";
@@ -50,7 +51,7 @@ export function TrabalhadorSettingsPage() {
     if (!formData) return;
     setIsLoading(true);
     try {
-      const payload = { ...formData, habilidades: formData.servicos }; // Ajuste p/ DTO Java
+      const payload = { ...formData, habilidades: formData.servicos };
       const { data } = await api.put<Trabalhador>(
         `/trabalhadores/atualizar/${user!.id}`,
         payload
@@ -83,7 +84,7 @@ export function TrabalhadorSettingsPage() {
         onSubmit={handleSubmit}
         className="grid grid-cols-1 lg:grid-cols-3 gap-8"
       >
-        {/* Coluna Esquerda */}
+        {/* Coluna Esquerda: Foto e Resumo */}
         <div className="space-y-6">
           <Card className="p-6 flex flex-col items-center text-center sticky top-24">
             <ImageUpload
@@ -95,13 +96,19 @@ export function TrabalhadorSettingsPage() {
             <Typography as="h3" className="mt-4 font-bold">
               {formData.nome}
             </Typography>
-            <p className="text-accent font-medium">
+            <p className="text-accent font-medium mb-4">
               {formData.servicoPrincipal.replace(/_/g, " ")}
             </p>
+            <div className="w-full border-t border-white/10 pt-4 text-left">
+              <p className="text-xs text-dark-subtle mb-1">Nota Atual</p>
+              <p className="text-xl font-bold text-white">
+                ⭐ {formData.notaTrabalhador?.toFixed(1)}
+              </p>
+            </div>
           </Card>
         </div>
 
-        {/* Coluna Direita */}
+        {/* Coluna Direita: Dados Completos */}
         <div className="lg:col-span-2 space-y-6">
           <Card className="p-8 space-y-6">
             <div>
@@ -138,6 +145,16 @@ export function TrabalhadorSettingsPage() {
                         ...formData,
                         disponibilidade: e.target.value,
                       })
+                    }
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <Textarea
+                    label="Sobre Mim (Bio)"
+                    name="sobre"
+                    value={formData.sobre || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, sobre: e.target.value })
                     }
                   />
                 </div>
@@ -180,6 +197,34 @@ export function TrabalhadorSettingsPage() {
                 ))}
               </div>
             </div>
+
+            {/* Seleção do Serviço Principal também nas configs */}
+            {formData.servicos.length > 0 && (
+              <div className="border-t border-white/10 pt-6">
+                <Typography
+                  as="h3"
+                  className="!text-xl font-semibold mb-4 text-primary"
+                >
+                  Destaque Principal
+                </Typography>
+                <select
+                  value={formData.servicoPrincipal}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      servicoPrincipal: e.target.value as TipoServico,
+                    })
+                  }
+                  className="w-full bg-dark-surface border border-white/20 rounded-xl p-3 text-white focus:border-accent outline-none"
+                >
+                  {formData.servicos.map((s) => (
+                    <option key={s} value={s}>
+                      {s.replace(/_/g, " ")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="pt-4">
               <Button

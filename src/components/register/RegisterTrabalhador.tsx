@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Typography } from "../ui/Typography";
+import { Textarea } from "../ui/Textarea"; // <--- Importado
 import { AddressForm } from "./AddressForm";
 import { ImageUpload } from "../ui/ImageUpload";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -39,6 +40,9 @@ export function RegisterTrabalhador() {
     },
     habilidades: [] as TipoServico[],
     servicoPrincipal: "" as TipoServico | "",
+    // Novos campos no estado:
+    disponibilidade: "",
+    sobre: "",
   });
 
   const updateData = (field: string, value: any) =>
@@ -78,6 +82,12 @@ export function RegisterTrabalhador() {
     if (step === 3 && data.habilidades.length === 0)
       return toast.error("Selecione ao menos um serviço.");
     if (step === 4) {
+      if (!data.servicoPrincipal)
+        return toast.error("Selecione seu serviço principal.");
+      if (!data.disponibilidade)
+        return toast.error("Informe sua disponibilidade.");
+      if (!data.sobre || data.sobre.length < 10)
+        return toast.error("Escreva um pouco sobre você (mín. 10 letras).");
       handleSubmit();
       return;
     }
@@ -85,8 +95,6 @@ export function RegisterTrabalhador() {
   };
 
   const handleSubmit = async () => {
-    if (!data.servicoPrincipal)
-      return toast.error("Selecione seu serviço principal.");
     setIsLoading(true);
     try {
       const payload = {
@@ -96,11 +104,10 @@ export function RegisterTrabalhador() {
           ...data.endereco,
           cep: data.endereco.cep.replace(/\D/g, ""),
         },
-        disponibilidade: "Segunda a Sexta, 8h às 18h",
-        notaTrabalhador: 5.0,
-        sobre: `Olá, sou ${data.nome} e trabalho com ${data.servicoPrincipal
-          .replace(/_/g, " ")
-          .toLowerCase()}.`,
+        // AQUI: Usando os dados reais do formulário
+        disponibilidade: data.disponibilidade,
+        sobre: data.sobre,
+        notaTrabalhador: 0.0, // <--- Começando do zero, como deve ser
         avatarUrl: data.avatarUrl || "https://via.placeholder.com/150",
       };
       const { data: newUser } = await api.post("/trabalhadores", payload);
@@ -114,7 +121,7 @@ export function RegisterTrabalhador() {
     }
   };
 
-  const steps = ["Perfil", "Endereço", "Habilidades", "Destaque"];
+  const steps = ["Perfil", "Endereço", "Habilidades", "Vitrine"];
 
   return (
     <div className="w-full">
@@ -146,8 +153,9 @@ export function RegisterTrabalhador() {
         ))}
       </div>
 
-      <div className="min-h-[400px]">
+      <div className="min-h-[420px]">
         <AnimatePresence mode="wait">
+          {/* PASSO 1: PERFIL */}
           {step === 1 && (
             <motion.div
               key="1"
@@ -162,13 +170,13 @@ export function RegisterTrabalhador() {
                 onChange={(url) => updateData("avatarUrl", url)}
               />
               <Input
-                label="Nome"
+                label="Nome Completo"
                 name="nome"
                 value={data.nome}
                 onChange={(e) => updateData("nome", e.target.value)}
               />
               <Input
-                label="Email"
+                label="E-mail"
                 name="email"
                 type="email"
                 value={data.email}
@@ -176,7 +184,7 @@ export function RegisterTrabalhador() {
               />
               <div className="grid grid-cols-2 gap-4">
                 <Input
-                  label="WhatsApp"
+                  label="Telefone"
                   name="tel"
                   value={data.telefone}
                   onChange={(e) =>
@@ -194,6 +202,7 @@ export function RegisterTrabalhador() {
             </motion.div>
           )}
 
+          {/* PASSO 2: ENDEREÇO */}
           {step === 2 && (
             <motion.div
               key="2"
@@ -209,6 +218,7 @@ export function RegisterTrabalhador() {
             </motion.div>
           )}
 
+          {/* PASSO 3: HABILIDADES */}
           {step === 3 && (
             <motion.div
               key="3"
@@ -241,43 +251,56 @@ export function RegisterTrabalhador() {
             </motion.div>
           )}
 
+          {/* PASSO 4: VITRINE (PRINCIPAL + SOBRE + DISPONIBILIDADE) */}
           {step === 4 && (
             <motion.div
               key="4"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
+              className="space-y-5"
             >
-              <Typography
-                as="h3"
-                className="!text-lg font-bold mb-4 text-center"
-              >
-                Qual seu principal serviço?
-              </Typography>
-              <div className="space-y-2">
-                {data.habilidades.map((s) => (
-                  <label
-                    key={s}
-                    className={`flex items-center p-4 rounded-xl border cursor-pointer transition-all ${
-                      data.servicoPrincipal === s
-                        ? "border-accent bg-accent/10 shadow-glow-accent"
-                        : "border-white/10 hover:bg-white/5"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="principal"
-                      value={s}
-                      checked={data.servicoPrincipal === s}
-                      onChange={() => updateData("servicoPrincipal", s)}
-                      className="accent-accent w-5 h-5"
-                    />
-                    <span className="ml-3 font-bold uppercase text-sm">
+              <div>
+                <Typography
+                  as="h3"
+                  className="!text-sm font-bold text-primary mb-2"
+                >
+                  Seu Serviço Principal
+                </Typography>
+                <select
+                  value={data.servicoPrincipal}
+                  onChange={(e) =>
+                    updateData("servicoPrincipal", e.target.value)
+                  }
+                  className="w-full bg-dark-background border border-white/10 rounded-xl p-3 text-white focus:border-accent outline-none"
+                >
+                  <option value="" disabled>
+                    Selecione o destaque...
+                  </option>
+                  {data.habilidades.map((s) => (
+                    <option key={s} value={s}>
                       {s.replace(/_/g, " ")}
-                    </span>
-                  </label>
-                ))}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+              <Input
+                label="Disponibilidade"
+                name="disp"
+                placeholder="Ex: Seg-Sex, 08h às 18h"
+                value={data.disponibilidade}
+                onChange={(e) => updateData("disponibilidade", e.target.value)}
+              />
+
+              <Textarea
+                label="Sobre Você (Bio)"
+                name="sobre"
+                placeholder="Conte sua experiência, tempo de mercado e diferenciais..."
+                value={data.sobre}
+                onChange={(e) => updateData("sobre", e.target.value)}
+                className="min-h-[100px]"
+              />
             </motion.div>
           )}
         </AnimatePresence>
@@ -300,7 +323,11 @@ export function RegisterTrabalhador() {
           onClick={handleNext}
           disabled={isLoading}
         >
-          {isLoading ? "Salvando..." : step === 4 ? "Finalizar 🚀" : "Próximo"}
+          {isLoading
+            ? "Salvando..."
+            : step === 4
+            ? "Finalizar Cadastro 🚀"
+            : "Próximo"}
         </Button>
       </div>
     </div>
