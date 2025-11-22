@@ -150,7 +150,7 @@ public class ClienteService {
         if (dto.getSenha() != null) clienteAntigo.setSenha(dto.getSenha());
         if(dto.getTelefone() != null) clienteAntigo.setTelefone(dto.getTelefone());
         if (dto.getAvatarUrl() != null) clienteAntigo.setUrlFoto(dto.getAvatarUrl());
-        
+
         if (dto.getEndereco() != null) {
             if (clienteAntigo.getEndereco() == null) {
                 clienteAntigo.setEndereco(new Endereco());
@@ -169,5 +169,12 @@ public class ClienteService {
         }
         repository.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+    public void atualizarNota(Long id, Double novaNota) {
+        Cliente cliente = buscarEntidadePorId(id);
+        // Se na entidade Cliente 'notaCliente' for Integer:
+        cliente.setNotaCliente(novaNota.intValue()); 
+        // Se for Double: cliente.setNotaCliente(novaNota);
+        repository.save(cliente);
     }
 }

@@ -11,12 +11,14 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import psg.facilitei.DTO.*;
+import psg.facilitei.Entity.Cliente;
 import psg.facilitei.Exceptions.ErrorResponseDTO;
 import psg.facilitei.Services.ClienteService;
 
 import jakarta.validation.Valid;
 
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 @RestController
@@ -96,4 +98,20 @@ public class ClienteController {
                 clienteService.delete(id);
                 return ResponseEntity.noContent().build();
         }
+        @PatchMapping("/{id}")
+    public ResponseEntity<Void> atualizarNota(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+        if (updates.containsKey("notaCliente")) {
+            Cliente c = clienteService.buscarEntidadePorId(id);
+            // Converte para Double (o JSON pode mandar como Integer ou Double)
+            Object notaObj = updates.get("notaCliente");
+            Double novaNota = Double.valueOf(notaObj.toString());
+            
+            c.setNotaCliente(novaNota.intValue()); // O Cliente.java usa Integer para notaCliente, certo?
+            
+            clienteService.atualizarNota(id, novaNota); // Vamos criar esse método no Service
+            
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.badRequest().build();
+    }
 }
