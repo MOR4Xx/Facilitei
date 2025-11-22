@@ -10,9 +10,11 @@ import psg.facilitei.DTO.ClienteResponseDTO;
 import psg.facilitei.DTO.ServicoRequestDTO;
 import psg.facilitei.DTO.ServicoResponseDTO;
 import psg.facilitei.DTO.SolicitacaoServicoResponseDTO;
+import psg.facilitei.DTO.TrabalhadorResponseDTO; // <--- Importe isto
 import psg.facilitei.Entity.Cliente;
 import psg.facilitei.Entity.Servico;
 import psg.facilitei.Entity.SolicitacaoServico;
+import psg.facilitei.Entity.Trabalhador; // <--- Importe isto
 
 @Configuration
 public class ModelMapperConfig {
@@ -73,8 +75,14 @@ public class ModelMapperConfig {
                                                         SolicitacaoServicoResponseDTO::setStatus);
                                 });
 
+                // Mapeamento para Cliente (JÁ EXISTIA)
                 modelMapper.createTypeMap(Cliente.class, ClienteResponseDTO.class)
                                 .addMapping(Cliente::getUrlFoto, ClienteResponseDTO::setAvatarUrl);
+
+                // --- AQUI ESTÁ O FIX ---
+                // Mapeamento para Trabalhador (ADICIONADO AGORA)
+                modelMapper.createTypeMap(Trabalhador.class, TrabalhadorResponseDTO.class)
+                                .addMapping(Trabalhador::getUrlFoto, TrabalhadorResponseDTO::setAvatarUrl);
 
                 return modelMapper;
         }
