@@ -15,7 +15,10 @@ interface AvaliacaoClienteModalProps {
   onClose: () => void;
 }
 
-export function AvaliacaoClienteModal({ servico, onClose }: AvaliacaoClienteModalProps) {
+export function AvaliacaoClienteModal({
+  servico,
+  onClose,
+}: AvaliacaoClienteModalProps) {
   const [nota, setNota] = useState(5);
   const [comentario, setComentario] = useState("");
   const { user } = useAuthStore(); // Trabalhador logado
@@ -30,14 +33,14 @@ export function AvaliacaoClienteModal({ servico, onClose }: AvaliacaoClienteModa
       return post("/avaliacoes-cliente", {
         trabalhadorId: user.id,
         clienteId: servico.clienteId,
-        // servicoId: servico.id, // Se quiser vincular ao serviço, adicione no DTO do Java
+        servicoId: servico.id,
         nota: nota,
-        comentario: comentario
+        comentario: comentario,
       });
     },
     onSuccess: () => {
       toast.success("Cliente avaliado com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["cliente"] }); 
+      queryClient.invalidateQueries({ queryKey: ["cliente"] });
       queryClient.invalidateQueries({ queryKey: ["avaliacoesClienteFeitas"] });
       queryClient.invalidateQueries({ queryKey: ["workerData"] });
       setTimeout(onClose, 1000);
@@ -57,7 +60,8 @@ export function AvaliacaoClienteModal({ servico, onClose }: AvaliacaoClienteModa
     <Modal isOpen={!!servico} onClose={onClose} title="Avaliar Cliente">
       <form onSubmit={handleSubmit} className="space-y-6">
         <Typography as="p" className="text-center">
-          Avalie o cliente <strong className="text-primary">{servico?.titulo}</strong>
+          Avalie o cliente{" "}
+          <strong className="text-primary">{servico?.titulo}</strong>
         </Typography>
 
         <RatingInput rating={nota} onRatingChange={setNota} />
@@ -71,16 +75,26 @@ export function AvaliacaoClienteModal({ servico, onClose }: AvaliacaoClienteModa
         />
 
         <div className="flex gap-4 pt-4">
-          <Button type="button" variant="outline" className="w-full" onClick={onClose}>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={onClose}
+            disabled={mutation.isPending || mutation.isSuccess}
+          >
             Cancelar
           </Button>
-          <Button 
-            type="submit" 
-            variant="secondary" 
+          <Button
+            type="submit"
+            variant="secondary"
             className="w-full"
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || mutation.isSuccess}
           >
-            {mutation.isPending ? "Enviando..." : "Enviar"}
+            {mutation.isPending
+              ? "Enviando..."
+              : mutation.isSuccess
+              ? "Sucesso!"
+              : "Enviar"}{" "}
           </Button>
         </div>
       </form>

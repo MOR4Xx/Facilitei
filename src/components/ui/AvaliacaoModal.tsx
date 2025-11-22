@@ -24,24 +24,26 @@ export function AvaliacaoModal({ servico, onClose }: AvaliacaoModalProps) {
   const mutation = useMutation({
     mutationFn: async () => {
       if (!servico || !user) return;
-      
-      // Envia apenas para o endpoint de Serviço. 
+
+      // Envia apenas para o endpoint de Serviço.
       // O Backend agora calcula a média e atualiza o trabalhador sozinho.
       return post("/avaliacoes-servico/Criar", {
         clienteId: user.id,
         servicoId: servico.id,
         nota: nota,
         comentario: comentario,
-        fotos: [] // Se tiver lógica de fotos, inclua aqui
+        fotos: [], // Se tiver lógica de fotos, inclua aqui
       });
     },
     onSuccess: () => {
       toast.success("Avaliação enviada com sucesso!");
-      
+
       // Invalida queries para atualizar as listas na tela
       queryClient.invalidateQueries({ queryKey: ["servicosAvaliados"] });
-      queryClient.invalidateQueries({ queryKey: ["trabalhador", servico?.trabalhadorId] });
-      
+      queryClient.invalidateQueries({
+        queryKey: ["trabalhador", servico?.trabalhadorId],
+      });
+
       setTimeout(onClose, 1000);
     },
     onError: (err: any) => {
@@ -62,7 +64,8 @@ export function AvaliacaoModal({ servico, onClose }: AvaliacaoModalProps) {
     <Modal isOpen={!!servico} onClose={onClose} title="Avalie o Serviço">
       <form onSubmit={handleSubmit} className="space-y-6">
         <Typography as="p" className="text-center">
-          Como foi o serviço <strong className="text-primary">{servico?.titulo}</strong>?
+          Como foi o serviço{" "}
+          <strong className="text-primary">{servico?.titulo}</strong>?
         </Typography>
 
         <RatingInput rating={nota} onRatingChange={setNota} />
@@ -77,16 +80,26 @@ export function AvaliacaoModal({ servico, onClose }: AvaliacaoModalProps) {
         />
 
         <div className="flex gap-4 pt-4">
-          <Button type="button" variant="outline" className="w-full" onClick={onClose}>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={onClose}
+            disabled={mutation.isPending || mutation.isSuccess}
+          >
             Cancelar
           </Button>
-          <Button 
-            type="submit" 
-            variant="secondary" 
-            className="w-full" 
-            disabled={mutation.isPending}
+          <Button
+            type="submit"
+            variant="secondary"
+            className="w-full"
+            disabled={mutation.isPending || mutation.isSuccess}
           >
-            {mutation.isPending ? "Enviando..." : "Enviar"}
+            {mutation.isPending
+              ? "Enviando..."
+              : mutation.isSuccess
+              ? "Sucesso!"
+              : "Enviar"}
           </Button>
         </div>
       </form>
