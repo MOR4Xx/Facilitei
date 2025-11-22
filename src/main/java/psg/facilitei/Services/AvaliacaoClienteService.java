@@ -95,6 +95,7 @@ public class AvaliacaoClienteService {
         AvaliacaoCliente avaliacao = new AvaliacaoCliente();
         avaliacao.setTrabalhador(trabalhador);
         avaliacao.setCliente(cliente);
+        avaliacao.setServicoId(dto.getServicoId());
         avaliacao.setNota(dto.getNota());
         avaliacao.setComentario(dto.getComentario());
         // mediaCliente é setada no método criarAvaliacao
@@ -107,6 +108,7 @@ public class AvaliacaoClienteService {
         dto.setId(entity.getId());
         dto.setTrabalhadorId(entity.getTrabalhador().getId());
         dto.setClienteId(entity.getCliente().getId());
+        dto.setServicoId(entity.getServicoId());
         dto.setNota(entity.getNota());
         dto.setComentario(entity.getComentario());
         dto.setMediaCliente(entity.getMediaCliente());

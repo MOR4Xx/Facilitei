@@ -2,7 +2,6 @@ package psg.facilitei.DTO;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
-
 import java.util.Date;
 
 @Data
@@ -16,6 +15,11 @@ public class AvaliacaoClienteRequestDTO {
 
     @Schema(description = "ID do cliente avaliado")
     private Long clienteId;
+    
+    // --- ADICIONE ISTO ---
+    @Schema(description = "ID do serviço realizado")
+    private Long servicoId;
+    // ---------------------
 
     @Schema(description = "Nota dada pelo trabalhador")
     private int nota;
