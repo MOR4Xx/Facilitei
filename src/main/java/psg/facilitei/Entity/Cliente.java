@@ -18,5 +18,5 @@ import lombok.ToString;
 public class Cliente extends Usuario{
 
     @Column(name = "nota_cliente", nullable = false)
-    private Integer notaCliente = 0;
+    private Double notaCliente = 0.0;
 }

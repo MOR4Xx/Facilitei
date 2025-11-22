@@ -8,6 +8,7 @@ import psg.facilitei.DTO.AvaliacaoClienteResponseDTO;
 import psg.facilitei.Entity.AvaliacaoCliente;
 import psg.facilitei.Entity.Cliente;
 import psg.facilitei.Entity.Trabalhador;
+import psg.facilitei.Exceptions.ResourceNotFoundException; // Importante!
 import psg.facilitei.Repository.AvaliacaoClienteRepository;
 import psg.facilitei.Repository.ClienteRepository;
 import psg.facilitei.Repository.TrabalhadorRepository;
@@ -27,21 +28,33 @@ public class AvaliacaoClienteService {
     @Autowired
     private TrabalhadorRepository trabalhadorRepository;
 
-    
     @Transactional
     public AvaliacaoClienteResponseDTO criarAvaliacao(AvaliacaoClienteRequestDTO dto) {
-
+        // 1. Monta a entidade (busca IDs e valida)
         AvaliacaoCliente avaliacao = toEntity(dto);
 
-        // Calcula nova média do cliente
-        Double novaMedia = calcularMediaCliente(avaliacao.getCliente(), dto.getNota());
+        // 2. Busca avaliações anteriores para calcular a média CORRETA
+        // (Fazemos isso antes de salvar a nova para garantir o cálculo preciso)
+        List<AvaliacaoCliente> avaliacoesAntigas = avaliacaoClienteRepository.findByClienteId(dto.getClienteId());
+
+        double somaNotas = avaliacoesAntigas.stream().mapToDouble(AvaliacaoCliente::getNota).sum();
+        somaNotas += dto.getNota(); // Soma a nota atual que está entrando
+
+        double novaMedia = somaNotas / (avaliacoesAntigas.size() + 1);
+
+        // 3. Define a média na avaliação (snapshot histórico)
         avaliacao.setMediaCliente(novaMedia);
 
+        // 4. Salva a avaliação no banco
         AvaliacaoCliente salvo = avaliacaoClienteRepository.save(avaliacao);
+
+        // 5. ATUALIZA O PERFIL DO CLIENTE (O passo que faltava para ser 100%)
+        Cliente cliente = avaliacao.getCliente();
+        cliente.setNotaCliente(novaMedia);
+        clienteRepository.save(cliente);
 
         return toResponseDTO(salvo);
     }
-
 
     public List<AvaliacaoClienteResponseDTO> listarPorCliente(Long clienteId) {
         List<AvaliacaoCliente> avaliacoes = avaliacaoClienteRepository.findByClienteId(clienteId);
@@ -57,39 +70,37 @@ public class AvaliacaoClienteService {
                 .collect(Collectors.toList());
     }
 
-      @Transactional
+    @Transactional
     public void deletarAvaliacao(Long avaliacaoId) {
         AvaliacaoCliente avaliacao = avaliacaoClienteRepository.findById(avaliacaoId)
-                .orElseThrow(() -> new RuntimeException("Avaliação não encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Avaliação não encontrada"));
 
         Cliente cliente = avaliacao.getCliente();
-
-        // Deleta a avaliação
         avaliacaoClienteRepository.delete(avaliacao);
 
-        // Recalcula média após a deleção
-        atualizarMediaCliente(cliente);
+        // Recalcula média após deleção (opcional, mas recomendado)
+        atualizarMediaAposDelecao(cliente);
     }
 
-
     private AvaliacaoCliente toEntity(AvaliacaoClienteRequestDTO dto) {
-
+        // Usando ResourceNotFoundException para o Frontend receber 404 e não 500
+        // genérico
         Trabalhador trabalhador = trabalhadorRepository.findById(dto.getTrabalhadorId())
-                .orElseThrow(() -> new RuntimeException("Trabalhador não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Trabalhador não encontrado. ID: " + dto.getTrabalhadorId()));
 
         Cliente cliente = clienteRepository.findById(dto.getClienteId())
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado. ID: " + dto.getClienteId()));
 
         AvaliacaoCliente avaliacao = new AvaliacaoCliente();
         avaliacao.setTrabalhador(trabalhador);
         avaliacao.setCliente(cliente);
         avaliacao.setNota(dto.getNota());
         avaliacao.setComentario(dto.getComentario());
-        // mediaCliente será setada depois
+        // mediaCliente é setada no método criarAvaliacao
 
         return avaliacao;
     }
-
 
     private AvaliacaoClienteResponseDTO toResponseDTO(AvaliacaoCliente entity) {
         AvaliacaoClienteResponseDTO dto = new AvaliacaoClienteResponseDTO();
@@ -99,37 +110,18 @@ public class AvaliacaoClienteService {
         dto.setNota(entity.getNota());
         dto.setComentario(entity.getComentario());
         dto.setMediaCliente(entity.getMediaCliente());
+        dto.setData(entity.getData());
         return dto;
     }
 
-    
-    private Double calcularMediaCliente(Cliente cliente, int novaNota) {
-        List<AvaliacaoCliente> avaliacoes = avaliacaoClienteRepository.findAll()
-                .stream()
-                .filter(a -> a.getCliente().getId().equals(cliente.getId()))
-                .toList();
-
-        double soma = avaliacoes.stream().mapToDouble(AvaliacaoCliente::getNota).sum() + novaNota;
-        double total = avaliacoes.size() + 1;
-
-        return soma / total;
-    }
-    
-
-    private void atualizarMediaCliente(Cliente cliente) {
-        List<AvaliacaoCliente> avaliacoes = avaliacaoClienteRepository.findByClienteId(cliente.getId());
-
-        double novaMedia = 0.0;
-        if (!avaliacoes.isEmpty()) {
-            double soma = avaliacoes.stream().mapToDouble(AvaliacaoCliente::getNota).sum();
-            novaMedia = soma / avaliacoes.size();
+    private void atualizarMediaAposDelecao(Cliente cliente) {
+        List<AvaliacaoCliente> restantes = avaliacaoClienteRepository.findByClienteId(cliente.getId());
+        if (restantes.isEmpty()) {
+            cliente.setNotaCliente(0.0);
+        } else {
+            double novaMedia = restantes.stream().mapToDouble(AvaliacaoCliente::getNota).average().orElse(0.0);
+            cliente.setNotaCliente(novaMedia);
         }
-
-        // Atualiza todas as avaliações restantes do cliente com a nova média
-        for (AvaliacaoCliente a : avaliacoes) {
-            a.setMediaCliente(novaMedia);
-        }
-        avaliacaoClienteRepository.saveAll(avaliacoes);
+        clienteRepository.save(cliente);
     }
-
 }
