@@ -25,11 +25,9 @@ import {
 import { AvaliacaoModal } from "../components/ui/AvaliacaoModal";
 import { api, get, put } from "../lib/api";
 
-// --- FUNÇÕES DE BUSCA (API) ---
-const fetchServicosCliente = async (clienteId: string): Promise<Servico[]> => {
-  return await get<Servico[]>(`/servicos/por-cliente/${clienteId}`);
-};
-
+// --- FETCHERS MANTIDOS IGUAIS ---
+const fetchServicosCliente = async (clienteId: string): Promise<Servico[]> =>
+  get<Servico[]>(`/servicos/por-cliente/${clienteId}`);
 const updateServicoStatus = async ({
   id,
   status,
@@ -38,56 +36,35 @@ const updateServicoStatus = async ({
   status: StatusServico;
 }) => {
   const currentService = await get<Servico>(`/servicos/${id}`);
-  const requestDTO = {
-    titulo: currentService.titulo,
-    descricao: currentService.descricao,
-    preco: currentService.preco,
-    trabalhadorId: currentService.trabalhadorId,
-    tipoServico: currentService.tipoServico,
-    clienteId: currentService.clienteId,
-    disponibilidadeId: currentService.disponibilidadeId,
-    statusServico: status,
-  };
+  const requestDTO = { ...currentService, statusServico: status };
   return put(`/servicos/${id}`, requestDTO);
 };
-
-const fetchTrabalhadores = async (): Promise<Trabalhador[]> => {
-  return get<Trabalhador[]>("/trabalhadores/listar");
-};
-
+const fetchTrabalhadores = async (): Promise<Trabalhador[]> =>
+  get<Trabalhador[]>("/trabalhadores/listar");
 const fetchServicosAvaliados = async (
   clienteId: string
-): Promise<AvaliacaoServico[]> => {
-  return get<AvaliacaoServico[]>(`/clientes/avaliacaoservico/${clienteId}`);
-};
+): Promise<AvaliacaoServico[]> =>
+  get<AvaliacaoServico[]>(`/clientes/avaliacaoservico/${clienteId}`);
 
-// --- VARIANTES DE ANIMAÇÃO ---
+// --- VARIANTES ---
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
-
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
 };
 
-// --- COMPONENTE PRINCIPAL ---
 export function DashboardClientePage() {
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
   const [reviewingService, setReviewingService] = useState<Servico | null>(
     null
   );
   const clienteId = user?.role === "cliente" ? user.id : undefined;
 
-  // --- QUERIES ---
-  // Só busca serviços se estiver logado
   const { data: servicos, isLoading: isLoadingServicos } = useQuery<Servico[]>({
     queryKey: ["servicosCliente", clienteId],
     queryFn: () => fetchServicosCliente(clienteId!),
@@ -95,7 +72,6 @@ export function DashboardClientePage() {
     refetchInterval: 3000,
   });
 
-  // Trabalhadores busca SEMPRE (público)
   const { data: trabalhadores, isLoading: isLoadingTrabalhadores } = useQuery<
     Trabalhador[]
   >({
@@ -103,14 +79,12 @@ export function DashboardClientePage() {
     queryFn: fetchTrabalhadores,
   });
 
-  // Avaliações só se logado
-  const { data: servicosAvaliados, isLoading: isLoadingAvaliados } = useQuery({
+  const { data: servicosAvaliados } = useQuery({
     queryKey: ["servicosAvaliados", clienteId],
     queryFn: () => fetchServicosAvaliados(clienteId!),
     enabled: !!clienteId && isAuthenticated,
   });
 
-  // --- MUTATION ---
   const servicoMutation = useMutation({
     mutationFn: updateServicoStatus,
     onSuccess: () => {
@@ -124,74 +98,51 @@ export function DashboardClientePage() {
     },
   });
 
-  // --- MEMOS ---
-  const reviewedServiceIds = useMemo(() => {
-    return new Set(servicosAvaliados?.map((av) => av.servicoId));
-  }, [servicosAvaliados]);
+  const reviewedServiceIds = useMemo(
+    () => new Set(servicosAvaliados?.map((av) => av.servicoId)),
+    [servicosAvaliados]
+  );
 
   const [servicosAtivos, servicosFinalizados] = useMemo(() => {
     if (!servicos) return [[], []];
-    const ativos =
-      servicos?.filter(
+    return [
+      servicos.filter(
         (s) =>
           !["FINALIZADO", "CANCELADO", "RECUSADO"].includes(s.statusServico)
-      ) || [];
-    const finalizados =
-      servicos?.filter((s) => s.statusServico === "FINALIZADO") || [];
-    return [ativos, finalizados];
+      ),
+      servicos.filter((s) => s.statusServico === "FINALIZADO"),
+    ];
   }, [servicos]);
 
-  const totalServicosAtivos = servicosAtivos.length;
   const primeiroNome = user?.nome.split(" ")[0] || "Visitante";
-
-  // Loading só é true se estiver logado E carregando coisas privadas, ou carregando a lista pública
   const isLoading =
-    isLoadingTrabalhadores ||
-    (isAuthenticated && (isLoadingServicos || isLoadingAvaliados));
+    isLoadingTrabalhadores || (isAuthenticated && isLoadingServicos);
 
-  // --- HANDLERS ---
-  const handleApprove = (servicoId: string) =>
-    servicoMutation.mutate({ id: servicoId, status: "FINALIZADO" });
-  const handleContest = (servicoId: string) =>
-    servicoMutation.mutate({ id: servicoId, status: "EM_ANDAMENTO" });
-
+  // Tag de Status com visual Neon
   const renderStatusTag = (status: StatusServico) => {
-    switch (status) {
-      case "PENDENTE_APROVACAO":
-        return (
-          <span className="text-xs font-bold py-1 px-3 rounded-full bg-accent text-dark-background animate-subtle-pulse">
-            AÇÃO NECESSÁRIA
-          </span>
-        );
-      case "EM_ANDAMENTO":
-        return (
-          <span className="text-xs font-bold py-1 px-3 rounded-full bg-primary text-white">
-            EM ANDAMENTO
-          </span>
-        );
-      case "PENDENTE":
-      case "SOLICITADO":
-        return (
-          <span className="text-xs font-bold py-1 px-3 rounded-full bg-status-pending text-white">
-            AGUARDANDO
-          </span>
-        );
-      default:
-        return (
-          <span className="text-xs font-bold py-1 px-3 rounded-full bg-dark-surface text-dark-subtle">
-            {status}
-          </span>
-        );
-    }
+    const styles: Record<string, string> = {
+      PENDENTE_APROVACAO:
+        "bg-status-pending/20 text-status-pending border-status-pending/50 animate-pulse",
+      EM_ANDAMENTO: "bg-primary/20 text-primary border-primary/50",
+      PENDENTE: "bg-dark-subtle/20 text-dark-subtle border-dark-subtle/30",
+      SOLICITADO: "bg-dark-subtle/20 text-dark-subtle border-dark-subtle/30",
+    };
+    const style = styles[status] || "bg-dark-surface text-dark-subtle";
+    return (
+      <span
+        className={`px-3 py-1 rounded-full text-xs font-bold border ${style}`}
+      >
+        {status.replace("_", " ")}
+      </span>
+    );
   };
 
-  if (isLoading) {
+  if (isLoading)
     return (
-      <div className="text-center py-20">
-        <Typography as="h2">Carregando...</Typography>
+      <div className="flex justify-center py-32">
+        <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
-  }
 
   return (
     <>
@@ -199,33 +150,34 @@ export function DashboardClientePage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="space-y-12"
+        className="space-y-10"
       >
-        {/* --- HEADER --- */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row justify-between items-end border-b border-white/10 pb-6">
           <motion.div variants={itemVariants}>
-            <Typography as="h1">
+            <Typography
+              as="h1"
+              className="!text-3xl md:!text-4xl bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60"
+            >
               {isAuthenticated
-                ? `Olá, ${primeiroNome}!`
-                : "Bem-vindo ao Dashboard!"}
+                ? `Olá, ${primeiroNome}`
+                : "Bem-vindo ao Facilitei"}
             </Typography>
-            <Typography as="p" className="!text-lg !text-dark-subtle">
+            <p className="text-dark-subtle mt-2 text-lg">
               {isAuthenticated
-                ? "Gerencie seus serviços e contratações."
-                : "Encontre os melhores profissionais da sua região."}
-            </Typography>
+                ? "Gerencie seus projetos e contratações."
+                : "Conecte-se aos melhores profissionais."}
+            </p>
           </motion.div>
           <motion.div
             variants={itemVariants}
-            className="flex gap-4 mt-4 md:mt-0 w-full md:w-auto"
+            className="flex gap-3 mt-4 md:mt-0 w-full md:w-auto"
           >
             {isAuthenticated && (
               <Button
                 variant="outline"
                 size="md"
-                className="!px-4"
                 onClick={() => navigate("/dashboard/configuracoes")}
-                title="Configurações"
               >
                 <CogIcon className="w-6 h-6" />
               </Button>
@@ -233,135 +185,93 @@ export function DashboardClientePage() {
             <Button
               variant="secondary"
               size="lg"
-              className="shadow-lg shadow-accent/20 hover:shadow-accent/40 w-full"
+              className="shadow-glow-accent w-full md:w-auto"
               onClick={() => navigate("/dashboard/solicitar")}
             >
-              {isAuthenticated
-                ? "Solicitar Novo Serviço ✨"
-                : "Buscar Profissionais 🔍"}
+              {isAuthenticated ? "Novo Pedido +" : "Explorar Profissionais"}
             </Button>
           </motion.div>
         </div>
 
-        {/* --- CARD DE STATUS / HERO VISITANTE --- */}
-        <motion.div variants={itemVariants}>
-          <Card
-            className={`p-6 md:p-8 shadow-2xl flex flex-col sm:flex-row justify-between sm:items-center
-              ${
-                isAuthenticated
-                  ? "bg-gradient-to-r from-primary to-primary-soft shadow-primary/40"
-                  : "bg-gradient-to-r from-dark-surface to-dark-surface_hover shadow-accent/10 border-accent/20"
-              }`}
-          >
-            {isAuthenticated ? (
-              <>
-                <div className="mb-4 sm:mb-0">
-                  <Typography
-                    as="h2"
-                    className="!text-3xl sm:!text-4xl font-extrabold !text-white"
-                  >
-                    {totalServicosAtivos} Serviços Ativos
-                  </Typography>
-                  <p className="mt-2 text-lg sm:text-xl text-teal-200">
-                    Acompanhe o progresso dos seus pedidos.
-                  </p>
-                </div>
-                <BriefcaseIcon className="w-16 h-16 text-accent opacity-30 flex-shrink-0" />
-              </>
-            ) : (
-              <>
-                <div className="mb-4 sm:mb-0">
-                  <Typography
-                    as="h2"
-                    className="!text-3xl sm:!text-4xl font-extrabold !text-accent"
-                  >
-                    Faça login para contratar
-                  </Typography>
-                  <p className="mt-2 text-lg sm:text-xl text-dark-subtle">
-                    Você pode navegar e escolher, mas precisará entrar para
-                    fechar o serviço.
-                  </p>
-                </div>
-                <WrenchScrewdriverIcon className="w-16 h-16 text-primary opacity-30 flex-shrink-0" />
-              </>
-            )}
-          </Card>
-        </motion.div>
-
-        {/* --- LAYOUT PRINCIPAL --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          {/* --- SEÇÃO SERVIÇOS ATIVOS (Apenas Logado) --- */}
+        {/* DASHBOARD CONTENT */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {isAuthenticated ? (
-            <section className="space-y-6 lg:col-span-2">
-              <motion.div variants={itemVariants}>
-                <Typography
-                  as="h2"
-                  className="!text-2xl border-b border-dark-surface/50 pb-2"
-                >
-                  🛠️ Meus Serviços Ativos
+            <section className="lg:col-span-2 space-y-6">
+              <motion.div
+                variants={itemVariants}
+                className="flex items-center gap-3 mb-2"
+              >
+                <div className="bg-primary/10 p-2 rounded-lg">
+                  <WrenchScrewdriverIcon className="w-6 h-6 text-primary" />
+                </div>
+                <Typography as="h2" className="!text-2xl">
+                  Serviços em Andamento
                 </Typography>
               </motion.div>
+
               <LayoutGroup>
-                <motion.div className="grid gap-4">
+                <motion.div className="space-y-4">
                   {servicosAtivos.length > 0 ? (
                     servicosAtivos.map((servico) => (
                       <Card
                         key={servico.id}
                         variants={itemVariants}
                         layout
-                        className={`p-5 transition-all duration-300 ${
+                        className={`p-6 border-l-4 ${
                           servico.statusServico === "PENDENTE_APROVACAO"
-                            ? "!border-accent shadow-glow-accent"
-                            : ""
+                            ? "border-l-status-pending"
+                            : "border-l-primary"
                         }`}
                       >
-                        <div className="flex flex-col md:flex-row justify-between">
-                          <div className="flex gap-4 items-center mb-4 md:mb-0">
-                            <div className="flex-shrink-0 w-12 h-12 bg-dark-surface rounded-lg flex items-center justify-center">
-                              <WrenchScrewdriverIcon className="w-6 h-6 text-primary" />
-                            </div>
-                            <div>
-                              <Typography as="h3" className="!text-lg">
-                                {servico.titulo}
-                              </Typography>
-                              <p className="text-sm text-dark-subtle mt-1">
-                                {renderStatusTag(servico.statusServico)}
-                              </p>
+                        <div className="flex flex-col sm:flex-row justify-between gap-4">
+                          <div>
+                            <h3 className="text-xl font-bold text-white mb-1">
+                              {servico.titulo}
+                            </h3>
+                            <div className="flex items-center gap-3 mt-2">
+                              {renderStatusTag(servico.statusServico)}
+                              <span className="text-sm text-dark-subtle">
+                                R$ {servico.preco?.toFixed(2)}
+                              </span>
                             </div>
                           </div>
-                          <div className="flex gap-2 w-full md:w-auto">
+
+                          <div className="flex items-center gap-2 self-start sm:self-center w-full sm:w-auto">
                             {servico.statusServico === "PENDENTE_APROVACAO" ? (
                               <>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleContest(servico.id)}
-                                  disabled={servicoMutation.isPending}
-                                  className="!border-status-danger !text-status-danger w-1/2 md:w-auto"
+                                  className="!border-status-danger !text-status-danger hover:bg-status-danger/10 w-1/2 sm:w-auto"
+                                  onClick={() =>
+                                    servicoMutation.mutate({
+                                      id: servico.id,
+                                      status: "EM_ANDAMENTO",
+                                    })
+                                  }
                                 >
-                                  <XMarkIcon className="w-5 h-5 md:mr-1" />{" "}
-                                  <span className="hidden md:inline">
-                                    Contestar
-                                  </span>
+                                  <XMarkIcon className="w-4 h-4 mr-1" />{" "}
+                                  Contestar
                                 </Button>
                                 <Button
                                   size="sm"
                                   variant="secondary"
-                                  onClick={() => handleApprove(servico.id)}
-                                  disabled={servicoMutation.isPending}
-                                  className="w-1/2 md:w-auto"
+                                  className="w-1/2 sm:w-auto"
+                                  onClick={() =>
+                                    servicoMutation.mutate({
+                                      id: servico.id,
+                                      status: "FINALIZADO",
+                                    })
+                                  }
                                 >
-                                  <CheckIcon className="w-5 h-5 md:mr-1" />{" "}
-                                  <span className="hidden md:inline">
-                                    Aprovar
-                                  </span>
+                                  <CheckIcon className="w-4 h-4 mr-1" /> Aprovar
                                 </Button>
                               </>
                             ) : servico.statusServico === "EM_ANDAMENTO" ? (
                               <Button
                                 size="sm"
                                 variant="primary"
-                                className="w-full md:w-auto"
+                                className="w-full"
                                 onClick={() =>
                                   navigate(`/dashboard/chat/${servico.id}`)
                                 }
@@ -369,165 +279,102 @@ export function DashboardClientePage() {
                                 Abrir Chat
                               </Button>
                             ) : (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                disabled
-                                className="w-full md:w-auto"
-                              >
-                                Aguardando...
-                              </Button>
+                              <span className="text-sm text-dark-subtle italic">
+                                Aguardando profissional...
+                              </span>
                             )}
                           </div>
                         </div>
                       </Card>
                     ))
                   ) : (
-                    <motion.div variants={itemVariants}>
-                      <Card className="text-center p-8 border-dashed border-dark-subtle/30 border-2">
-                        <Typography as="p">
-                          Você ainda não solicitou nenhum serviço.
-                        </Typography>
-                        <Button
-                          variant="secondary"
-                          className="mt-4"
-                          onClick={() => navigate("/dashboard/solicitar")}
-                        >
-                          Buscar Profissionais
-                        </Button>
-                      </Card>
-                    </motion.div>
+                    <Card className="text-center py-12 border-dashed border-white/10 bg-transparent">
+                      <p className="text-dark-subtle">
+                        Nenhum serviço ativo no momento.
+                      </p>
+                    </Card>
                   )}
                 </motion.div>
               </LayoutGroup>
             </section>
           ) : (
-            // --- SEÇÃO VISITANTE (Espaço ocupado pelos destaques expandidos) ---
-            <section className="lg:col-span-2 space-y-6">
-              <motion.div variants={itemVariants}>
-                <Typography
-                  as="h2"
-                  className="!text-2xl border-b border-dark-surface/50 pb-2"
-                >
-                  🚀 Como funciona
-                </Typography>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-                  <Card className="p-4 text-center">
-                    <Typography as="h3" className="!text-lg text-accent mb-2">
-                      1. Busque
-                    </Typography>
-                    <p className="text-sm text-dark-subtle">
-                      Encontre o profissional ideal pela categoria.
-                    </p>
-                  </Card>
-                  <Card className="p-4 text-center">
-                    <Typography as="h3" className="!text-lg text-accent mb-2">
-                      2. Solicite
-                    </Typography>
-                    <p className="text-sm text-dark-subtle">
-                      Faça login e envie seu pedido detalhado.
-                    </p>
-                  </Card>
-                  <Card className="p-4 text-center">
-                    <Typography as="h3" className="!text-lg text-accent mb-2">
-                      3. Resolva
-                    </Typography>
-                    <p className="text-sm text-dark-subtle">
-                      Negocie e pague direto ao profissional.
-                    </p>
-                  </Card>
-                </div>
-              </motion.div>
+            <section className="lg:col-span-2">
+              <Card className="h-full flex flex-col justify-center items-center text-center p-12 bg-gradient-to-br from-dark-surface to-primary/5 border-primary/20">
+                <BriefcaseIcon className="w-20 h-20 text-primary/40 mb-6" />
+                <h2 className="text-3xl font-bold text-white mb-4">
+                  Faça login para começar
+                </h2>
+                <p className="text-dark-subtle max-w-md mx-auto mb-8">
+                  Acompanhe seus serviços, converse com profissionais e avalie o
+                  trabalho realizado.
+                </p>
+                <Button variant="outline" onClick={() => navigate("/login")}>
+                  Entrar na Conta
+                </Button>
+              </Card>
             </section>
           )}
 
-          {/* --- DESTAQUES (Para todos, mas mais itens se for visitante) --- */}
-          <aside className="space-y-6 lg:col-span-1">
+          {/* SIDEBAR / DESTAQUES */}
+          <aside className="space-y-6">
             <motion.div variants={itemVariants}>
               <Typography
                 as="h2"
-                className="!text-2xl border-b border-dark-surface/50 pb-2"
+                className="!text-xl mb-4 flex items-center gap-2"
               >
-                🌟 Destaques
+                <span className="text-accent">★</span> Profissionais em Alta
               </Typography>
-            </motion.div>
-            <div className="grid grid-cols-1 gap-6">
-              {trabalhadores
-                ?.slice(0, isAuthenticated ? 2 : 4) // Mostra mais se não estiver logado
-                .map((trabalhador) => (
-                  <TrabalhadorCard
-                    key={trabalhador.id}
-                    trabalhador={trabalhador}
-                    variants={cardItemVariants}
-                  />
+              <div className="grid gap-4">
+                {trabalhadores?.slice(0, 3).map((t) => (
+                  <TrabalhadorCard key={t.id} trabalhador={t} />
                 ))}
-            </div>
-            {!isAuthenticated && (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => navigate("/dashboard/solicitar")}
-              >
-                Ver todos os profissionais
-              </Button>
-            )}
+              </div>
+            </motion.div>
           </aside>
         </div>
 
-        {/* --- HISTÓRICO (SÓ LOGADO) --- */}
+        {/* HISTÓRICO */}
         {isAuthenticated && servicosFinalizados.length > 0 && (
-          <section className="space-y-6">
-            <motion.div variants={itemVariants}>
-              <Typography
-                as="h2"
-                className="!text-2xl border-b border-dark-surface/50 pb-2"
-              >
-                ✅ Histórico de Serviços
+          <section>
+            <motion.div
+              variants={itemVariants}
+              className="mb-4 border-t border-white/10 pt-8"
+            >
+              <Typography as="h2" className="!text-2xl">
+                Histórico Finalizado
               </Typography>
             </motion.div>
-            <motion.div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {servicosFinalizados.map((servico) => {
                 const isReviewed = reviewedServiceIds.has(servico.id);
                 return (
                   <Card
                     key={servico.id}
-                    variants={itemVariants}
-                    className={`p-5 ${isReviewed ? "opacity-60" : ""}`}
+                    className={`p-5 flex justify-between items-center ${
+                      isReviewed ? "opacity-60" : "border-accent/30"
+                    }`}
                   >
-                    <div className="flex flex-col sm:flex-row justify-between sm:items-center">
-                      <div className="mb-3 sm:mb-0">
-                        <Typography as="h3" className="!text-lg">
-                          {servico.titulo}
-                        </Typography>
-                        <p className="text-sm text-dark-subtle mt-1">
-                          Finalizado
-                        </p>
-                      </div>
-                      {isReviewed ? (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled
-                          className="!text-accent !border-accent/50 w-full sm:w-auto"
-                        >
-                          <CheckIcon className="w-4 h-4 mr-1" /> Avaliado
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          className="w-full sm:w-auto"
-                          onClick={() => setReviewingService(servico)}
-                        >
-                          <CalendarDaysIcon className="w-4 h-4 mr-1" /> Avaliar
-                          Serviço
-                        </Button>
-                      )}
+                    <div>
+                      <h4 className="font-bold">{servico.titulo}</h4>
+                      <p className="text-xs text-dark-subtle">Concluído</p>
                     </div>
+                    {isReviewed ? (
+                      <span className="text-xs text-accent flex items-center">
+                        <CheckIcon className="w-3 h-3 mr-1" /> Avaliado
+                      </span>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => setReviewingService(servico)}
+                      >
+                        Avaliar
+                      </Button>
+                    )}
                   </Card>
                 );
               })}
-            </motion.div>
+            </div>
           </section>
         )}
       </motion.div>

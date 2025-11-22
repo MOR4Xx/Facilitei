@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Servico } from "../../types/api"; // Removido tipos não usados
+import type { Servico } from "../../types/api";
 import { Modal } from "./Modal";
 import { RatingInput } from "./RatingInput";
 import { Textarea } from "./Textarea";
 import { Button } from "./Button";
 import { Typography } from "./Typography";
 import { toast } from "react-hot-toast";
-import { post } from "../../lib/api"; // Usando o helper do seu api.ts
+import { post } from "../../lib/api";
 
 interface AvaliacaoModalProps {
   servico: Servico | null;
@@ -24,27 +24,23 @@ export function AvaliacaoModal({ servico, onClose }: AvaliacaoModalProps) {
   const mutation = useMutation({
     mutationFn: async () => {
       if (!servico || !user) return;
-
-      // Envia apenas para o endpoint de Serviço.
-      // O Backend agora calcula a média e atualiza o trabalhador sozinho.
       return post("/avaliacoes-servico/Criar", {
         clienteId: user.id,
         servicoId: servico.id,
         nota: nota,
         comentario: comentario,
-        fotos: [], // Se tiver lógica de fotos, inclua aqui
+        fotos: [],
       });
     },
     onSuccess: () => {
-      toast.success("Avaliação enviada com sucesso!");
-
-      // Invalida queries para atualizar as listas na tela
+      toast.success("Avaliação enviada! Obrigado.");
       queryClient.invalidateQueries({ queryKey: ["servicosAvaliados"] });
       queryClient.invalidateQueries({
         queryKey: ["trabalhador", servico?.trabalhadorId],
       });
 
-      setTimeout(onClose, 1000);
+      // Fechar apenas após sucesso
+      setTimeout(onClose, 500);
     },
     onError: (err: any) => {
       const msg = err.response?.data?.message || "Erro ao enviar avaliação.";
@@ -52,57 +48,70 @@ export function AvaliacaoModal({ servico, onClose }: AvaliacaoModalProps) {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (comentario.length < 5) {
-      return toast.error("Escreva um comentário de pelo menos 5 caracteres.");
-    }
+  const handleSubmit = () => {
+    if (mutation.isPending) return; // Previne duplo clique manual
     mutation.mutate();
   };
 
   return (
-    <Modal isOpen={!!servico} onClose={onClose} title="Avalie o Serviço">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <Typography as="p" className="text-center">
+    <Modal isOpen={!!servico} onClose={onClose} title="Avaliar Serviço">
+      <div className="space-y-6 text-center pointer-events-auto">
+        {/* Overlay transparente se estiver carregando para bloquear tudo */}
+        {mutation.isPending && (
+          <div className="absolute inset-0 z-50 bg-transparent cursor-wait" />
+        )}
+
+        <Typography as="p">
           Como foi o serviço{" "}
           <strong className="text-primary">{servico?.titulo}</strong>?
         </Typography>
 
-        <RatingInput rating={nota} onRatingChange={setNota} />
+        <div
+          className={`py-2 transition-opacity ${
+            mutation.isPending ? "opacity-50" : ""
+          }`}
+        >
+          <RatingInput
+            rating={nota}
+            onRatingChange={mutation.isPending ? () => {} : setNota}
+          />
+        </div>
 
         <Textarea
-          label="Comentário"
           name="comentario"
           value={comentario}
           onChange={(e) => setComentario(e.target.value)}
           placeholder="O profissional foi pontual? O serviço ficou bom?"
-          required
+          className="min-h-[100px]"
+          disabled={mutation.isPending}
         />
 
-        <div className="flex gap-4 pt-4">
+        <div className="flex gap-3 pt-2">
           <Button
-            type="button"
             variant="outline"
             className="w-full"
             onClick={onClose}
-            disabled={mutation.isPending || mutation.isSuccess}
+            disabled={mutation.isPending}
           >
             Cancelar
           </Button>
           <Button
-            type="submit"
             variant="secondary"
-            className="w-full"
-            disabled={mutation.isPending || mutation.isSuccess}
+            className="w-full shadow-glow-accent"
+            onClick={handleSubmit}
+            disabled={mutation.isPending}
           >
-            {mutation.isPending
-              ? "Enviando..."
-              : mutation.isSuccess
-              ? "Sucesso!"
-              : "Enviar"}
+            {mutation.isPending ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-dark-background border-t-transparent rounded-full animate-spin"></span>
+                Enviando...
+              </span>
+            ) : (
+              "Enviar Avaliação"
+            )}
           </Button>
         </div>
-      </form>
+      </div>
     </Modal>
   );
 }

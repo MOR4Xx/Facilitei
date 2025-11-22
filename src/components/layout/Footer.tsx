@@ -1,60 +1,93 @@
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import { Typography } from "../ui/Typography";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
-  
-  // Estilo padrão para os links do rodapé
-  const linkStyle = "text-dark-subtle hover:text-accent transition-colors duration-200";
 
   return (
-    <footer className="bg-dark-surface/70 backdrop-blur-lg text-dark-text mt-auto border-t border-primary/20">
-      <div className="container mx-auto px-6 py-12">
-        
-        {/* Seção Superior com Colunas (Responsivo) */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          
-          {/* Coluna 1: Logo e Descrição (Responsivo) */}
-          <div className="md:col-span-2">
-            <Link to="/" className="text-3xl font-extrabold text-accent">
-              Facilitei
+    <footer className="border-t border-white/10 bg-dark-surface/30 backdrop-blur-sm pt-16 pb-8 mt-auto">
+      <div className="container mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          {/* Brand */}
+          <div className="md:col-span-2 space-y-4">
+            <Link to="/" className="text-2xl font-extrabold text-white">
+              Facilitei<span className="text-accent">.</span>
             </Link>
-            <p className="text-dark-subtle mt-3 max-w-xs">
-              Conectando você aos melhores prestadores de serviço da sua região com confiança e agilidade.
+            <p className="text-dark-subtle max-w-xs leading-relaxed">
+              A plataforma líder em conectar necessidades a soluções.
+              Transformando serviços locais com tecnologia e confiança.
             </p>
           </div>
-          
-          {/* Coluna 2: Navegação (Responsivo) */}
+
+          {/* Links */}
           <div>
-            <h3 className="text-lg font-semibold text-primary mb-4">
-              Navegação
-            </h3>
-            <ul className="space-y-3">
-              <li><Link to="/" className={linkStyle}>Home</Link></li>
-              <li><Link to="/dashboard/solicitar" className={linkStyle}>Buscar Profissionais</Link></li>
-              <li><Link to="/about" className={linkStyle}>Sobre Nós</Link></li>
-              <li><Link to="/faq" className={linkStyle}>FAQ</Link></li>
+            <h4 className="text-white font-bold mb-6">Explorar</h4>
+            <ul className="space-y-3 text-dark-subtle">
+              <li>
+                <Link
+                  to="/dashboard/solicitar"
+                  className="hover:text-accent transition-colors"
+                >
+                  Buscar Profissionais
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/cadastro"
+                  className="hover:text-accent transition-colors"
+                >
+                  Ser Profissional
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/about"
+                  className="hover:text-accent transition-colors"
+                >
+                  Sobre Nós
+                </Link>
+              </li>
             </ul>
           </div>
 
-          {/* Coluna 3: Legal (Responsivo) */}
           <div>
-            <h3 className="text-lg font-semibold text-primary mb-4">
-              Legal
-            </h3>
-            <ul className="space-y-3">
-              <li><Link to="#" className={linkStyle}>Termos de Uso</Link></li>
-              <li><Link to="#" className={linkStyle}>Política de Privacidade</Link></li>
-              <li><Link to="#" className={linkStyle}>Suporte</Link></li>
+            <h4 className="text-white font-bold mb-6">Suporte</h4>
+            <ul className="space-y-3 text-dark-subtle">
+              <li>
+                <Link to="/faq" className="hover:text-accent transition-colors">
+                  Central de Ajuda
+                </Link>
+              </li>
+              <li>
+                <Link to="#" className="hover:text-accent transition-colors">
+                  Termos de Uso
+                </Link>
+              </li>
+              <li>
+                <Link to="#" className="hover:text-accent transition-colors">
+                  Privacidade
+                </Link>
+              </li>
             </ul>
           </div>
-
         </div>
 
-        {/* Seção Inferior: Copyright */}
-        <div className="mt-12 border-t border-dark-surface/50 pt-8 text-center text-dark-subtle text-sm">
-          <p>&copy; {currentYear} Facilitei. Todos os direitos reservados.</p>
+        <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-dark-subtle/60">
+          <p>
+            &copy; {currentYear} Facilitei Ltda. Todos os direitos reservados.
+          </p>
+          <div className="flex gap-6">
+            <a href="#" className="hover:text-white transition-colors">
+              Instagram
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              LinkedIn
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              Twitter
+            </a>
+          </div>
         </div>
-        
       </div>
     </footer>
   );

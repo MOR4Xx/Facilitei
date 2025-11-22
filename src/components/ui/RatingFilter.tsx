@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState } from "react";
+import { motion } from "framer-motion";
 
 interface RatingFilterProps {
   rating: number;
@@ -13,19 +14,22 @@ export function RatingFilter({ rating, onRatingChange }: RatingFilterProps) {
       {[1, 2, 3, 4, 5].map((star) => {
         const isActive = star <= (hoverRating || rating);
         return (
-          <span
+          <motion.button
             key={star}
-            className={`text-2xl transition-all duration-150 cursor-pointer ${
-              isActive
-                ? 'text-accent'
-                : 'text-dark-subtle/50 hover:text-accent/70'
-            }`}
+            type="button"
+            whileHover={{ scale: 1.2 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => onRatingChange(star === rating ? 0 : star)}
             onMouseEnter={() => setHoverRating(star)}
             onMouseLeave={() => setHoverRating(0)}
+            className={`text-2xl focus:outline-none transition-colors duration-200 ${
+              isActive
+                ? "text-accent drop-shadow-[0_0_3px_rgba(163,230,53,0.6)]"
+                : "text-white/20 hover:text-accent/50"
+            }`}
           >
             ★
-          </span>
+          </motion.button>
         );
       })}
     </div>

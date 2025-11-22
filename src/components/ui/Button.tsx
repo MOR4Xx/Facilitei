@@ -1,43 +1,51 @@
-import { motion, type HTMLMotionProps } from 'framer-motion';
-import { type ReactNode } from 'react';
+import { motion, type HTMLMotionProps } from "framer-motion";
+import { type ReactNode } from "react";
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline';
-type ButtonSize = 'sm' | 'md' | 'lg';
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
+type ButtonSize = "sm" | "md" | "lg";
 
-type ButtonProps = HTMLMotionProps<'button'> & {
+type ButtonProps = HTMLMotionProps<"button"> & {
   children: ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
   className?: string;
 };
 
-const variantStyles: Record<ButtonVariant, string> = {
-  primary: 'bg-primary text-white hover:bg-primary-hover',
-  secondary: 'bg-accent text-dark-background hover:bg-accent-hover',
-  outline: 'bg-transparent border border-primary text-primary hover:bg-primary hover:text-white',
+const variants: Record<ButtonVariant, string> = {
+  primary:
+    "bg-primary text-white shadow-glow-primary hover:bg-primary-hover border border-transparent",
+  secondary:
+    "bg-accent text-dark-background font-extrabold shadow-glow-accent hover:bg-accent-hover border border-transparent",
+  outline:
+    "bg-transparent border-2 border-primary/50 text-primary hover:bg-primary/10 hover:border-primary",
+  ghost: "bg-transparent text-dark-subtle hover:text-white hover:bg-white/5",
+  danger:
+    "bg-status-danger/10 text-status-danger border border-status-danger/50 hover:bg-status-danger hover:text-white",
 };
 
-const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'px-4 py-2 text-sm',
-  md: 'px-6 py-3 text-base',
-  lg: 'px-8 py-4 text-lg',
+const sizes: Record<ButtonSize, string> = {
+  sm: "px-3 py-1.5 text-sm",
+  md: "px-6 py-3 text-base",
+  lg: "px-8 py-4 text-lg",
 };
 
 export function Button({
   children,
-  variant = 'primary',
-  size = 'md',
-  className = '',
+  variant = "primary",
+  size = "md",
+  className = "",
   ...props
 }: ButtonProps) {
-  const baseStyle =
-    'font-bold rounded-lg transition-all duration-300 transform focus:outline-none focus:ring-4 focus:ring-accent/50 disabled:opacity-50 disabled:cursor-not-allowed';
-
   return (
     <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      className={`${baseStyle} ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+      whileHover={{ scale: 1.02, y: -1 }}
+      whileTap={{ scale: 0.96 }}
+      className={`
+        relative rounded-xl font-bold transition-all duration-200
+        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-background focus:ring-accent
+        disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
+        ${variants[variant]} ${sizes[size]} ${className}
+      `}
       {...props}
     >
       {children}

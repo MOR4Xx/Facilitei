@@ -21,15 +21,12 @@ export function AvaliacaoClienteModal({
 }: AvaliacaoClienteModalProps) {
   const [nota, setNota] = useState(5);
   const [comentario, setComentario] = useState("");
-  const { user } = useAuthStore(); // Trabalhador logado
+  const { user } = useAuthStore();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: async () => {
       if (!servico || !user) return;
-
-      // Envia para o endpoint de Avaliação de Cliente
-      // O Backend calcula a média do cliente automaticamente
       return post("/avaliacoes-cliente", {
         trabalhadorId: user.id,
         clienteId: servico.clienteId,
@@ -39,65 +36,67 @@ export function AvaliacaoClienteModal({
       });
     },
     onSuccess: () => {
-      toast.success("Cliente avaliado com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["cliente"] });
+      toast.success("Cliente avaliado!");
       queryClient.invalidateQueries({ queryKey: ["avaliacoesClienteFeitas"] });
-      queryClient.invalidateQueries({ queryKey: ["workerData"] });
-      setTimeout(onClose, 1000);
+      setTimeout(onClose, 500);
     },
-    onError: (err: any) => {
-      const msg = err.response?.data?.message || "Erro ao avaliar cliente.";
-      toast.error(msg);
-    },
+    onError: () => toast.error("Erro ao avaliar."),
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
+    if (mutation.isPending) return;
     mutation.mutate();
   };
 
   return (
     <Modal isOpen={!!servico} onClose={onClose} title="Avaliar Cliente">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <Typography as="p" className="text-center">
-          Avalie o cliente{" "}
-          <strong className="text-primary">{servico?.titulo}</strong>
-        </Typography>
+      <div className="space-y-6 text-center relative">
+        {/* Bloqueio de interação durante envio */}
+        {mutation.isPending && (
+          <div className="absolute inset-0 z-50 bg-transparent cursor-wait" />
+        )}
 
-        <RatingInput rating={nota} onRatingChange={setNota} />
+        <Typography as="p">Como foi a experiência com o cliente?</Typography>
+
+        <div
+          className={`py-2 transition-opacity ${
+            mutation.isPending ? "opacity-50" : ""
+          }`}
+        >
+          <RatingInput
+            rating={nota}
+            onRatingChange={mutation.isPending ? () => {} : setNota}
+          />
+        </div>
 
         <Textarea
-          label="Comentário"
           name="comentario"
           value={comentario}
           onChange={(e) => setComentario(e.target.value)}
           placeholder="O cliente facilitou o acesso? Pagou corretamente?"
+          className="min-h-[100px]"
+          disabled={mutation.isPending}
         />
 
-        <div className="flex gap-4 pt-4">
+        <div className="flex gap-3 pt-2">
           <Button
-            type="button"
             variant="outline"
             className="w-full"
             onClick={onClose}
-            disabled={mutation.isPending || mutation.isSuccess}
+            disabled={mutation.isPending}
           >
             Cancelar
           </Button>
           <Button
-            type="submit"
             variant="secondary"
-            className="w-full"
-            disabled={mutation.isPending || mutation.isSuccess}
+            className="w-full shadow-glow-accent"
+            onClick={handleSubmit}
+            disabled={mutation.isPending}
           >
-            {mutation.isPending
-              ? "Enviando..."
-              : mutation.isSuccess
-              ? "Sucesso!"
-              : "Enviar"}{" "}
+            {mutation.isPending ? "Enviando..." : "Avaliar Cliente"}
           </Button>
         </div>
-      </form>
+      </div>
     </Modal>
   );
 }

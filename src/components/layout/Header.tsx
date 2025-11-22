@@ -8,26 +8,13 @@ import { MenuIcon, XMarkIcon } from "../ui/Icons";
 export function Header() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const navigate = useNavigate();
-
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setIsMenuOpen(false);
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const handleLogout = () => {
@@ -36,228 +23,221 @@ export function Header() {
     navigate("/");
   };
 
-  const handleLoginNav = () => {
-    setIsMenuOpen(false);
-    navigate("/login");
-  };
+  const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
+    `relative px-3 py-2 text-sm font-medium transition-colors duration-300 ${
+      isActive ? "text-accent" : "text-dark-subtle hover:text-white"
+    }`;
 
-  const handleProfileNav = (url: string) => {
-    setIsMenuOpen(false);
-    navigate(url);
-  };
-
-  const navActive = "text-accent font-semibold";
-  const navInactive =
-    "text-dark-text/80 font-medium hover:text-accent transition-colors duration-200";
-  const dashActive =
-    "text-accent font-semibold bg-accent/10 px-3 py-2 rounded-lg";
-  const dashInactive =
-    "text-dark-text/80 font-medium hover:text-accent hover:bg-accent/10 px-3 py-2 rounded-lg transition-all duration-200";
-  const mobileLink = "text-dark-text text-2xl font-semibold text-center py-3";
-  const mobileLinkActive =
-    "text-accent text-2xl font-semibold text-center py-3";
-  const mobileDashActive =
-    "text-accent bg-accent/10 rounded-lg text-2xl font-semibold text-center py-3";
-
-  const headerBaseStyle =
-    "sticky top-0 z-50 transition-all duration-300 ease-in-out";
-  const headerScrolledStyle =
-    "bg-dark-surface/70 backdrop-blur-lg border-b border-primary/20 shadow-lg";
-  const headerTopStyle = "bg-transparent border-b border-transparent";
-
-  const profileUrl =
-    user && isAuthenticated
-      ? user.role === "cliente"
-        ? `/cliente/${user.id}`
-        : `/trabalhador/${user.id}`
-      : "/login";
+  // Indicador animado embaixo do link ativo
+  const ActiveIndicator = () => (
+    <motion.div
+      layoutId="navbar-indicator"
+      className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent shadow-[0_0_10px_rgba(163,230,53,0.7)]"
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+    />
+  );
 
   return (
     <>
       <header
-        className={`${headerBaseStyle} ${
-          isScrolled ? headerScrolledStyle : headerTopStyle
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          isScrolled
+            ? "bg-dark-background/80 backdrop-blur-md border-b border-white/5 shadow-lg py-3"
+            : "bg-transparent py-6"
         }`}
       >
-        <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <Link to="/" className="text-3xl font-extrabold text-accent z-50">
-            Facilitei
+        <div className="container mx-auto px-6 flex justify-between items-center">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="w-8 h-8 bg-gradient-to-tr from-primary to-accent rounded-lg flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-300">
+              <span className="text-dark-background font-bold text-xl">F</span>
+            </div>
+            <span className="text-2xl font-bold tracking-tight text-white group-hover:text-shadow-lg transition-all">
+              Facilitei
+            </span>
           </Link>
 
-          {/* Desktop */}
-          <div className="hidden md:flex items-center gap-8">
-            <ul className="flex items-center space-x-6 text-base">
-              <li>
-                <NavLink
-                  to="/"
-                  end
-                  className={({ isActive }) =>
-                    isActive ? navActive : navInactive
-                  }
-                >
-                  Home
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/dashboard"
-                  className={({ isActive }) =>
-                    isActive ? dashActive : dashInactive
-                  }
-                >
-                  Dashboard
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/about"
-                  className={({ isActive }) =>
-                    isActive ? navActive : navInactive
-                  }
-                >
-                  Sobre
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/faq"
-                  className={({ isActive }) =>
-                    isActive ? navActive : navInactive
-                  }
-                >
-                  FAQ
-                </NavLink>
-              </li>
-            </ul>
+          {/* Desktop Nav */}
+          <nav className="hidden md:flex items-center gap-8">
+            <div className="flex gap-1">
+              {["/", "/dashboard", "/about", "/faq"].map((path) => {
+                const labels: Record<string, string> = {
+                  "/": "Home",
+                  "/dashboard": "Dashboard",
+                  "/about": "Sobre",
+                  "/faq": "Ajuda",
+                };
+                return (
+                  <NavLink key={path} to={path} className={navLinkClasses}>
+                    {({ isActive }) => (
+                      <>
+                        {labels[path]}
+                        {isActive && <ActiveIndicator />}
+                      </>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+
+            <div className="h-6 w-px bg-white/10 mx-2" />
 
             {isAuthenticated && user ? (
               <div className="flex items-center gap-4">
-                <Button onClick={handleLogout} variant="outline" size="sm">
-                  Sair
-                </Button>
-                <Link to={profileUrl} title="Meu Perfil">
-                  {/* AQUI: Adicionado o fallback || '/default-avatar.png' */}
+                <div className="text-right hidden lg:block">
+                  <p className="text-sm font-bold text-white leading-none">
+                    {user.nome.split(" ")[0]}
+                  </p>
+                  <p className="text-xs text-accent uppercase font-bold tracking-wider">
+                    {user.role}
+                  </p>
+                </div>
+                <Link
+                  to={
+                    user.role === "cliente"
+                      ? `/cliente/${user.id}`
+                      : `/trabalhador/${user.id}`
+                  }
+                  className="relative group"
+                >
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent rounded-full blur opacity-0 group-hover:opacity-75 transition duration-300"></div>
                   <img
                     src={user.avatarUrl || "/default-avatar.png"}
-                    alt={user.nome}
-                    className="w-10 h-10 rounded-full object-cover border-2 border-accent
-                               hover:border-accent-hover transition-all hover:scale-110"
+                    alt="Perfil"
+                    className="relative w-10 h-10 rounded-full object-cover border-2 border-dark-surface"
                   />
                 </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-dark-subtle hover:text-red-400 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75"
+                    />
+                  </svg>
+                </button>
               </div>
             ) : (
-              <Button
-                onClick={() => navigate("/login")}
-                variant="secondary"
-                size="sm"
-              >
-                Login / Cadastro
-              </Button>
+              <div className="flex gap-3">
+                <Link
+                  to="/login"
+                  className="text-sm font-medium text-white hover:text-accent transition-colors px-3 py-2"
+                >
+                  Entrar
+                </Link>
+                <Button
+                  onClick={() => navigate("/cadastro")}
+                  size="sm"
+                  className="shadow-glow-primary"
+                >
+                  Criar Conta
+                </Button>
+              </div>
             )}
-          </div>
+          </nav>
 
-          {/* Mobile Button */}
-          <div className="md:hidden z-50">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-dark-text"
-            >
-              {isMenuOpen ? (
-                <XMarkIcon className="w-8 h-8 text-accent" />
-              ) : (
-                <MenuIcon className="w-8 h-8" />
-              )}
-            </button>
-          </div>
-        </nav>
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setIsMenuOpen(true)}
+            className="md:hidden text-white p-2"
+          >
+            <MenuIcon className="w-8 h-8" />
+          </button>
+        </div>
       </header>
 
-      {/* Menu Mobile */}
+      {/* Mobile Menu Overlay */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: "-100%" }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: "-100%" }}
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed inset-0 bg-dark-background z-40 flex flex-col items-center justify-center space-y-8 pt-20"
+            className="fixed inset-0 z-[60] bg-dark-background/95 backdrop-blur-xl flex flex-col p-8"
           >
-            <ul className="flex flex-col space-y-6">
-              <li>
-                <NavLink
-                  to="/"
-                  end
-                  onClick={() => setIsMenuOpen(false)}
-                  className={({ isActive }) =>
-                    isActive ? mobileLinkActive : mobileLink
-                  }
-                >
-                  Home
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/dashboard"
-                  onClick={() => setIsMenuOpen(false)}
-                  className={({ isActive }) =>
-                    isActive ? mobileDashActive : mobileLink
-                  }
-                >
-                  Dashboard
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/about"
-                  onClick={() => setIsMenuOpen(false)}
-                  className={({ isActive }) =>
-                    isActive ? mobileLinkActive : mobileLink
-                  }
-                >
-                  Sobre
-                </NavLink>
-              </li>
-              <li>
-                <NavLink
-                  to="/faq"
-                  onClick={() => setIsMenuOpen(false)}
-                  className={({ isActive }) =>
-                    isActive ? mobileLinkActive : mobileLink
-                  }
-                >
-                  FAQ
-                </NavLink>
-              </li>
-            </ul>
+            <div className="flex justify-end mb-8">
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="p-2 bg-white/5 rounded-full text-white"
+              >
+                <XMarkIcon className="w-8 h-8" />
+              </button>
+            </div>
 
-            <div className="flex flex-col gap-6 w-full px-10 pt-6 border-t border-dark-surface">
+            <nav className="flex flex-col gap-6 text-center text-2xl font-bold">
+              <Link
+                to="/"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-white hover:text-accent"
+              >
+                Home
+              </Link>
+              <Link
+                to="/dashboard"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-white hover:text-accent"
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/about"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-white hover:text-accent"
+              >
+                Sobre
+              </Link>
+              <Link
+                to="/faq"
+                onClick={() => setIsMenuOpen(false)}
+                className="text-white hover:text-accent"
+              >
+                FAQ
+              </Link>
+            </nav>
+
+            <div className="mt-auto space-y-4">
               {isAuthenticated && user ? (
                 <>
-                  <Button
-                    onClick={() => handleProfileNav(profileUrl)}
-                    variant="primary"
-                    size="lg"
-                    className="w-full"
-                  >
-                    Meu Perfil
-                  </Button>
+                  <div className="flex items-center justify-center gap-4 p-4 bg-white/5 rounded-xl">
+                    <img
+                      src={user.avatarUrl || "/default-avatar.png"}
+                      className="w-12 h-12 rounded-full"
+                    />
+                    <div className="text-left">
+                      <p className="text-white font-bold">{user.nome}</p>
+                      <p className="text-accent text-sm uppercase">
+                        {user.role}
+                      </p>
+                    </div>
+                  </div>
                   <Button
                     onClick={handleLogout}
                     variant="outline"
-                    size="lg"
-                    className="w-full"
+                    className="w-full border-red-500/50 text-red-400"
                   >
                     Sair
                   </Button>
                 </>
               ) : (
                 <Button
-                  onClick={handleLoginNav}
-                  variant="secondary"
-                  size="lg"
-                  className="w-full"
+                  onClick={() => {
+                    navigate("/login");
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full py-4 text-lg"
                 >
-                  Login / Cadastro
+                  Acessar Conta
                 </Button>
               )}
             </div>

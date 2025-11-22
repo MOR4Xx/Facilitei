@@ -1,58 +1,34 @@
-import { type ComponentProps, type ReactNode } from 'react';
+import { type ComponentProps } from "react";
 
-type InputProps = ComponentProps<'input'> & {
-  label: string;
-  icon?: ReactNode;
+type InputProps = ComponentProps<"input"> & {
+  label?: string;
   name: string;
 };
 
-export function Input({ label, type = 'text', icon, name, ...props }: InputProps) {
-  const hasIcon = !!icon;
-
+export function Input({ label, name, className = "", ...props }: InputProps) {
   return (
-    <div className="relative w-full">
-      {/* 1. Label (Verde fraco por padrão, muda no foco) */}
-      <label
-        htmlFor={name}
-        className="block text-sm font-medium text-primary mb-2 transition-colors duration-300
-                   peer-focus:text-accent"
-      >
-        {label}
-      </label>
-
-      {/* 2. Wrapper relativo para o ícone */}
-      <div className="relative">
-        {icon && (
-          <span
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-primary
-                             peer-focus:text-accent transition-colors duration-300"
-          >
-            {icon}
-          </span>
-        )}
-        <input
-          id={name}
-          name={name}
-          type={type}
-          className={`
-            peer 
-            w-full 
-            bg-dark-surface 
-            border-2 
-            border-primary/50 
-            rounded-lg 
-            p-3 
-            text-dark-text 
-            placeholder-dark-subtle/50
-            transition-all duration-300
-            focus:outline-none 
-            focus:border-accent 
-            focus:shadow-glow-accent/50
-            ${hasIcon ? 'pl-10' : 'pl-4'}
-          `} 
-          {...props}
-        />
-      </div>
+    <div className="relative w-full group">
+      {label && (
+        <label
+          htmlFor={name}
+          className="block text-sm font-medium text-dark-subtle mb-1.5 transition-colors group-focus-within:text-accent"
+        >
+          {label}
+        </label>
+      )}
+      <input
+        id={name}
+        name={name}
+        className={`
+          w-full bg-dark-surface/50 border-2 border-white/10 rounded-xl px-4 py-3
+          text-white placeholder-dark-subtle/30
+          transition-all duration-300 ease-out
+          focus:outline-none focus:border-accent focus:bg-dark-surface focus:shadow-[0_0_15px_rgba(163,230,53,0.15)]
+          disabled:opacity-50 disabled:cursor-not-allowed
+          ${className}
+        `}
+        {...props}
+      />
     </div>
   );
 }

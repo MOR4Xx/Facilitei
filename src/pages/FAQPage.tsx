@@ -1,27 +1,53 @@
 import { AccordionItem } from "../components/ui/Accordion";
-import { Typography } from '../components/ui/Typography';
+import { Typography } from "../components/ui/Typography";
+import { Card } from "../components/ui/Card";
+import { motion } from "framer-motion";
 
 export function FAQPage() {
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="text-center mb-12">
-        <Typography as="h1" className="!text-4xl sm:!text-5xl font-extrabold text-dark-text">Dúvidas Frequentes</Typography>
-        <p className="mt-4 text-lg text-dark-subtle">Encontre aqui as respostas para as perguntas mais comuns.</p>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-3xl mx-auto py-12"
+    >
+      <div className="text-center mb-16">
+        <Typography as="h1" className="!text-4xl md:!text-5xl font-bold mb-4">
+          Dúvidas Frequentes
+        </Typography>
+        <p className="text-xl text-dark-subtle">
+          Tudo o que você precisa saber para usar o Facilitei.
+        </p>
       </div>
-      <div className="space-y-4">
+
+      <Card className="divide-y divide-white/10 bg-dark-surface/50 backdrop-blur-md border-primary/20">
         <AccordionItem title="Como funciona o pagamento?">
-          <p>O pagamento é combinado diretamente com o profissional. A plataforma Facilitei conecta você ao prestador, mas a negociação de valores e forma de pagamento é feita entre as duas partes para maior flexibilidade.</p>
+          <p>
+            O pagamento é negociado livremente entre você e o profissional. O
+            Facilitei conecta as partes, mas não retém valores, garantindo que
+            100% do valor vá para quem trabalhou.
+          </p>
         </AccordionItem>
-        <AccordionItem title="Os profissionais são de confiança?">
-          <p>Sim. Todos os profissionais passam por um processo de verificação de documentos e antecedentes. Além disso, nosso sistema de avaliação permite que a comunidade avalie a qualidade e a confiabilidade de cada prestador após a conclusão de um serviço.</p>
+        <AccordionItem title="Os profissionais são verificados?">
+          <p>
+            Sim! Realizamos uma verificação de antecedentes e documentos de
+            todos os profissionais cadastrados para garantir a segurança da
+            comunidade.
+          </p>
         </AccordionItem>
-        <AccordionItem title="O que acontece se eu tiver um problema com o serviço?">
-          <p>Recomendamos que você primeiro tente resolver diretamente com o profissional. Caso não seja possível, nossa equipe de suporte está disponível para mediar a situação e ajudar a encontrar a melhor solução.</p>
+        <AccordionItem title="E se o serviço não for concluído?">
+          <p>
+            Você pode reportar o problema através do nosso suporte. Temos uma
+            equipe pronta para mediar conflitos e garantir que ninguém saia no
+            prejuízo.
+          </p>
         </AccordionItem>
-        <AccordionItem title="Posso cancelar um serviço agendado?">
-          <p>Sim, você pode cancelar um serviço. No entanto, pedimos que o cancelamento seja feito com no mínimo 24 horas de antecedência para não prejudicar a agenda do profissional. Cancelamentos tardios podem estar sujeitos a taxas, dependendo da política de cada prestador.</p>
+        <AccordionItem title="Como cancelo um serviço?">
+          <p>
+            Acesse seu Dashboard, encontre o serviço e clique em "Contestar" ou
+            entre em contato via chat com o profissional para reagendar.
+          </p>
         </AccordionItem>
-      </div>
-    </div>
+      </Card>
+    </motion.div>
   );
 }

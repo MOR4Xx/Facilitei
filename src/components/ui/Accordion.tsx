@@ -1,4 +1,5 @@
-import { useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type AccordionItemProps = {
   title: string;
@@ -9,25 +10,51 @@ export function AccordionItem({ title, children }: AccordionItemProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border-b border-dark-surface/50">
+    <div className="border-b border-white/10 last:border-b-0">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex justify-between items-center text-left py-5 px-2"
+        className="w-full flex justify-between items-center text-left py-5 px-6 hover:bg-white/5 transition-colors group"
       >
-        <span className="text-lg font-medium text-dark-text">{title}</span>
-        <span className={`transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" className="text-accent">
-            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-          </svg>
+        <span
+          className={`text-lg font-medium transition-colors ${
+            isOpen ? "text-accent" : "text-white group-hover:text-white/80"
+          }`}
+        >
+          {title}
         </span>
+        <motion.span
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          className="text-accent"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </motion.span>
       </button>
-      <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-96' : 'max-h-0'}`}
-      >
-        <div className="p-4 pt-0 text-dark-subtle">
-          {children}
-        </div>
-      </div>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="overflow-hidden"
+          >
+            <div className="px-6 pb-6 pt-2 text-dark-subtle leading-relaxed">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

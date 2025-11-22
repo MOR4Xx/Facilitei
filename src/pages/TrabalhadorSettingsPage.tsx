@@ -9,354 +9,192 @@ import type { Trabalhador, TipoServico } from "../types/api";
 import { allServicosList } from "../types/api";
 import { motion } from "framer-motion";
 import { toast } from "react-hot-toast";
-import { api } from "../lib/api"; // <--- Importando a api para buscar dados frescos
+import { api } from "../lib/api";
 
 export function TrabalhadorSettingsPage() {
   const { user, login } = useAuthStore();
-
-  // Inicializa com o que tem no store, mas vamos atualizar logo em seguida
-  const [formData, setFormData] = useState<Trabalhador | null>(() => {
-    if (user && user.role === "trabalhador") {
-      return {
-        ...user,
-        servicos: (user as Trabalhador).servicos || [], // Garante array
-      } as Trabalhador;
-    }
-    return null;
-  });
-
+  const [formData, setFormData] = useState<Trabalhador | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true); // Loading inicial do fetch
 
-  // 1. BUSCAR DADOS FRESCOS DO BACKEND AO CARREGAR
   useEffect(() => {
-    const fetchLatestData = async () => {
+    const fetch = async () => {
       if (user?.id) {
         try {
           const { data } = await api.get<Trabalhador>(
             `/trabalhadores/buscarPorId/${user.id}`
           );
-          // Garante que servicos não seja null vindo do back
-          setFormData({
-            ...data,
-            servicos: data.servicos || [],
-          });
-        } catch (error) {
-          console.error("Erro ao buscar dados atualizados:", error);
-          toast.error("Não foi possível carregar seus dados mais recentes.");
-        } finally {
-          setIsFetching(false);
+          setFormData({ ...data, servicos: data.servicos || [] });
+        } catch {
+          toast.error("Erro ao carregar dados.");
         }
       }
     };
-
-    fetchLatestData();
+    fetch();
   }, [user?.id]);
 
-  // Garante que o serviço principal esteja dentro da lista de serviços
-  useEffect(() => {
-    if (formData && formData.servicos.length > 0) {
-      if (!formData.servicos.includes(formData.servicoPrincipal)) {
-        setFormData((prev) => {
-          if (!prev) return null;
-          return {
-            ...prev,
-            servicoPrincipal: prev.servicos[0],
-          };
-        });
-      }
-    }
-  }, [formData?.servicos]); // Removi servicoPrincipal da dependência para evitar loop
-
-  if (isFetching) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <Typography as="h2">Carregando seu perfil...</Typography>
-      </div>
-    );
-  }
-
-  if (!formData) {
-    return <div>Erro ao carregar perfil. Tente fazer login novamente.</div>;
-  }
-
-  // Handlers
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev!, [name]: value }));
-  };
-
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev!,
-      endereco: {
-        ...prev!.endereco,
-        [name]: value,
-      },
-    }));
-  };
-
-  const handleServiceChange = (service: TipoServico) => {
+  const handleServiceToggle = (service: TipoServico) => {
     setFormData((prev) => {
       if (!prev) return null;
-      const currentServices = prev.servicos || [];
-      const exists = currentServices.includes(service);
-
-      let newServices: TipoServico[];
-
-      if (exists) {
-        // Remove
-        newServices = currentServices.filter((s) => s !== service);
-      } else {
-        // Adiciona
-        newServices = [...currentServices, service];
-      }
-
-      return { ...prev, servicos: newServices };
+      const exists = prev.servicos.includes(service);
+      return {
+        ...prev,
+        servicos: exists
+          ? prev.servicos.filter((s) => s !== service)
+          : [...prev.servicos, service],
+      };
     });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData) return;
     setIsLoading(true);
-
-    // Validações
-    if (!formData.servicos || formData.servicos.length === 0) {
-      toast.error("Você deve oferecer pelo menos um serviço.");
-      setIsLoading(false);
-      return;
-    }
-    if (!formData.servicos.includes(formData.servicoPrincipal)) {
-      // Tenta corrigir auto, mas avisa se der ruim
-      toast.error(
-        "O serviço principal deve ser um dos serviços que você oferece."
-      );
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      // 2. PREPARAR O PAYLOAD CORRETO (servicos -> habilidades)
-      // O backend Java (RequestDTO) espera "habilidades", não "servicos" no PUT
-      const payload = {
-        ...formData,
-        habilidades: formData.servicos, // <--- O PULO DO GATO AQUI
-      };
-
-      const { data: updatedUser } = await api.put<Trabalhador>(
+      const payload = { ...formData, habilidades: formData.servicos }; // Ajuste p/ DTO Java
+      const { data } = await api.put<Trabalhador>(
         `/trabalhadores/atualizar/${user!.id}`,
         payload
       );
-
-      // Atualiza o AuthStore com os dados novos
-      login({ ...updatedUser, role: "trabalhador" });
-
-      toast.success("Perfil atualizado com sucesso!");
-    } catch (err: any) {
-      console.error(err);
-      const msg = err.response?.data?.message || "Erro ao atualizar perfil.";
-      toast.error(msg);
+      login({ ...data, role: "trabalhador" });
+      toast.success("Perfil atualizado!");
+    } catch (e: any) {
+      toast.error(e.response?.data?.message || "Erro ao salvar.");
     } finally {
       setIsLoading(false);
     }
   };
 
+  if (!formData) return <div className="text-center py-20">Carregando...</div>;
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-3xl mx-auto"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="max-w-5xl mx-auto"
     >
-      <Typography as="h1" className="mb-8 text-center !text-3xl sm:!text-4xl">
-        Minhas Configurações
+      <Typography
+        as="h1"
+        className="mb-8 !text-3xl font-bold border-b border-white/10 pb-4"
+      >
+        Meu Perfil Profissional
       </Typography>
 
-      <Card className="p-6 sm:p-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Typography
-            as="h3"
-            className="!text-xl border-b border-dark-surface/50 pb-2"
-          >
-            Dados Pessoais
-          </Typography>
-
-          <ImageUpload
-            label="Foto de Perfil"
-            value={formData.avatarUrl}
-            onChange={(url) =>
-              setFormData((prev) => ({ ...prev!, avatarUrl: url }))
-            }
-          />
-
-          <Input
-            label="Nome Completo"
-            name="nome"
-            value={formData.nome}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            label="E-mail"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-
-          <Input
-            label="Disponibilidade"
-            name="disponibilidade"
-            value={formData.disponibilidade}
-            onChange={handleChange}
-            placeholder="Ex: Segunda a Sexta, 8h às 18h"
-            required
-          />
-
-          {/* --- ENDEREÇO --- */}
-          <Typography
-            as="h3"
-            className="!text-xl border-b border-dark-surface/50 pb-2 pt-4"
-          >
-            Meu Endereço
-          </Typography>
-
-          <Input
-            label="Rua"
-            name="rua"
-            value={formData.endereco?.rua || ""}
-            onChange={handleAddressChange}
-            required
-          />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Input
-              label="Número"
-              name="numero"
-              value={formData.endereco?.numero || ""}
-              onChange={handleAddressChange}
-              required
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 lg:grid-cols-3 gap-8"
+      >
+        {/* Coluna Esquerda */}
+        <div className="space-y-6">
+          <Card className="p-6 flex flex-col items-center text-center sticky top-24">
+            <ImageUpload
+              value={formData.avatarUrl}
+              onChange={(url) =>
+                setFormData((p) => (p ? { ...p, avatarUrl: url } : null))
+              }
             />
-            <Input
-              label="Bairro"
-              name="bairro"
-              value={formData.endereco?.bairro || ""}
-              onChange={handleAddressChange}
-              required
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Input
-              label="Cidade"
-              name="cidade"
-              value={formData.endereco?.cidade || ""}
-              onChange={handleAddressChange}
-              required
-            />
-            <Input
-              label="Estado (UF)"
-              name="estado"
-              value={formData.endereco?.estado || ""}
-              onChange={handleAddressChange}
-              required
-              maxLength={2}
-            />
-          </div>
-          <Input
-            label="CEP"
-            name="cep"
-            value={formData.endereco?.cep || ""}
-            onChange={handleAddressChange}
-            required
-          />
+            <Typography as="h3" className="mt-4 font-bold">
+              {formData.nome}
+            </Typography>
+            <p className="text-accent font-medium">
+              {formData.servicoPrincipal.replace(/_/g, " ")}
+            </p>
+          </Card>
+        </div>
 
-          {/* --- SERVIÇOS OFERECIDOS --- */}
-          <Typography
-            as="h3"
-            className="!text-xl border-b border-dark-surface/50 pb-2 pt-4"
-          >
-            Serviços Oferecidos
-          </Typography>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-3 bg-dark-surface/50 rounded-lg">
-            {allServicosList.map((service) => {
-              if (!service) return null; // Proteção contra nulos na lista
-
-              const isSelected = formData.servicos.includes(service);
-
-              return (
-                <label
-                  key={service}
-                  className={`
-                    flex items-center p-3 rounded-lg border-2 transition-all duration-200 cursor-pointer
-                    ${
-                      isSelected
-                        ? "bg-accent border-accent text-dark-background font-bold"
-                        : "bg-dark-surface border-primary/50 text-dark-subtle hover:border-accent/50"
-                    }
-                  `}
-                >
-                  <input
-                    type="checkbox"
-                    className="hidden"
-                    checked={isSelected}
-                    onChange={() => handleServiceChange(service)}
-                  />
-                  <span className="capitalize">
-                    {service.replace(/_/g, " ").toLowerCase()}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
-
-          {/* --- SERVIÇO PRINCIPAL --- */}
-          {formData.servicos && formData.servicos.length > 0 && (
+        {/* Coluna Direita */}
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="p-8 space-y-6">
             <div>
-              <label
-                htmlFor="servicoPrincipal"
-                className="block text-sm font-medium text-primary mb-2"
+              <Typography
+                as="h3"
+                className="!text-xl font-semibold mb-4 text-primary"
               >
-                Seu Serviço Principal (Destaque)
-              </label>
-              <select
-                id="servicoPrincipal"
-                name="servicoPrincipal"
-                value={formData.servicoPrincipal}
-                onChange={handleChange}
-                className="w-full bg-dark-surface border-2 border-primary/50 rounded-lg p-3 text-dark-text focus:outline-none focus:border-accent"
-              >
-                {formData.servicos.map((service) => {
-                  if (!service) return null;
-                  return (
-                    <option
-                      key={service}
-                      value={service}
-                      className="bg-dark-surface capitalize"
-                    >
-                      {service.replace(/_/g, " ").toLowerCase()}
-                    </option>
-                  );
-                })}
-              </select>
+                Informações Básicas
+              </Typography>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Input
+                  label="Nome"
+                  name="nome"
+                  value={formData.nome}
+                  onChange={(e) =>
+                    setFormData({ ...formData, nome: e.target.value })
+                  }
+                />
+                <Input
+                  label="Email"
+                  name="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                />
+                <div className="md:col-span-2">
+                  <Input
+                    label="Disponibilidade"
+                    name="disp"
+                    value={formData.disponibilidade}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        disponibilidade: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+              </div>
             </div>
-          )}
 
-          <div className="pt-6">
-            <Button
-              type="submit"
-              size="lg"
-              variant="secondary"
-              className="w-full"
-              disabled={isLoading}
-            >
-              {isLoading ? "Salvando..." : "Salvar Alterações"}
-            </Button>
-          </div>
-        </form>
-      </Card>
+            <div className="border-t border-white/10 pt-6">
+              <Typography
+                as="h3"
+                className="!text-xl font-semibold mb-4 text-primary"
+              >
+                Serviços Oferecidos
+              </Typography>
+              <div className="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2 bg-dark-background/30 rounded-lg border border-white/5">
+                {allServicosList.map((s) => (
+                  <label
+                    key={s}
+                    className={`flex items-center p-2 rounded cursor-pointer transition-all ${
+                      formData.servicos.includes(s)
+                        ? "bg-accent/20 border border-accent/50"
+                        : "hover:bg-white/5"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="hidden"
+                      checked={formData.servicos.includes(s)}
+                      onChange={() => handleServiceToggle(s)}
+                    />
+                    <span
+                      className={`text-sm ${
+                        formData.servicos.includes(s)
+                          ? "text-accent font-bold"
+                          : "text-dark-subtle"
+                      }`}
+                    >
+                      {s.replace(/_/g, " ").toLowerCase()}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <Button
+                type="submit"
+                size="lg"
+                variant="secondary"
+                className="w-full shadow-glow-accent"
+                disabled={isLoading}
+              >
+                {isLoading ? "Salvando..." : "Salvar Alterações"}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </form>
     </motion.div>
   );
 }
