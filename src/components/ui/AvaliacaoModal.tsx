@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Servico, AvaliacaoTrabalhador, AvaliacaoServico } from "../../types/api";
+import type {
+  Servico,
+  AvaliacaoTrabalhador,
+  AvaliacaoServico,
+} from "../../types/api";
 import { Modal } from "./Modal";
 import { RatingInput } from "./RatingInput";
 import { Textarea } from "./Textarea";
@@ -15,11 +19,14 @@ import { toast } from "react-hot-toast";
 const postAvaliacaoServico = async (
   data: AvaliacaoServico
 ): Promise<AvaliacaoServico> => {
-  const res = await fetch(`http://localhost:8080/api/avaliacoes-servico/Criar`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
+  const res = await fetch(
+    `http://localhost:8080/api/avaliacoes-servico/Criar`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }
+  );
   if (!res.ok) throw new Error("Falha ao salvar avaliação do serviço.");
   return res.json();
 };
@@ -76,10 +83,19 @@ export function AvaliacaoModal({ servico, onClose }: AvaliacaoModalProps) {
   const mutationUpdateWorker = useMutation({
     mutationFn: updateTrabalhadorNota,
     onSuccess: () => {
-      // Sucesso final! Invalida tudo
-      queryClient.invalidateQueries({ queryKey: ["trabalhador", servico?.trabalhadorId] });
+      // Invalida os dados do trabalhador para atualizar a nota na tela
+      queryClient.invalidateQueries({
+        queryKey: ["trabalhador", servico?.trabalhadorId],
+      });
       queryClient.invalidateQueries({ queryKey: ["trabalhadores"] });
-toast.success("Avaliação enviada com sucesso! Obrigado!");      setTimeout(() => {
+
+      // ADICIONADO: Invalida as avaliações para elas aparecerem na lista
+      queryClient.invalidateQueries({
+        queryKey: ["avaliacoesTrabalhador", servico?.trabalhadorId],
+      });
+
+      toast.success("Avaliação enviada com sucesso! Obrigado!");
+      setTimeout(() => {
         onClose();
       }, 2000);
     },
@@ -101,7 +117,10 @@ toast.success("Avaliação enviada com sucesso! Obrigado!");      setTimeout(() 
           `http://localhost:8080/api/avaliacoes-trabalhador?trabalhadorId=${novaAvaliacao.trabalhadorId}`
         );
         const todasAvaliacoes: AvaliacaoTrabalhador[] = await res.json();
-        const totalNotas = todasAvaliacoes.reduce((acc, av) => acc + av.nota, 0);
+        const totalNotas = todasAvaliacoes.reduce(
+          (acc, av) => acc + av.nota,
+          0
+        );
         const novaMedia = parseFloat(
           (totalNotas / todasAvaliacoes.length).toFixed(1)
         );
@@ -167,7 +186,7 @@ toast.success("Avaliação enviada com sucesso! Obrigado!");      setTimeout(() 
     mutationPostAvaliacaoTrabalhador.isPending ||
     mutationUpdateWorker.isPending;
 
-    const isSuccess = mutationUpdateWorker.isSuccess;
+  const isSuccess = mutationUpdateWorker.isSuccess;
 
   return (
     <Modal isOpen={!!servico} onClose={onClose} title="Avalie o Serviço">
@@ -204,7 +223,11 @@ toast.success("Avaliação enviada com sucesso! Obrigado!");      setTimeout(() 
             className="w-full"
             disabled={isLoading || isSuccess}
           >
-            {isLoading ? "Enviando..." : isSuccess ? "Enviado!" : "Enviar Avaliação"}
+            {isLoading
+              ? "Enviando..."
+              : isSuccess
+              ? "Enviado!"
+              : "Enviar Avaliação"}
           </Button>
         </div>
       </form>
