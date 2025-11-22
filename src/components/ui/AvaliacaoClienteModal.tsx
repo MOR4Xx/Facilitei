@@ -37,7 +37,9 @@ export function AvaliacaoClienteModal({ servico, onClose }: AvaliacaoClienteModa
     },
     onSuccess: () => {
       toast.success("Cliente avaliado com sucesso!");
+      queryClient.invalidateQueries({ queryKey: ["cliente"] }); 
       queryClient.invalidateQueries({ queryKey: ["avaliacoesClienteFeitas"] });
+      queryClient.invalidateQueries({ queryKey: ["workerData"] });
       setTimeout(onClose, 1000);
     },
     onError: (err: any) => {
