@@ -11,8 +11,8 @@ import "./index.css";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false, // Evita recarregar ao trocar de aba
-      staleTime: 1000 * 60 * 5, // Mantém os dados "frescos" por 5 minutos
+      refetchOnWindowFocus: true, // AQUI: Volta a atualizar se trocar de aba
+      staleTime: 0, // AQUI: Dados sempre considerados "velhos", força update ao navegar
     },
   },
 });

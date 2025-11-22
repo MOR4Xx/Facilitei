@@ -90,6 +90,7 @@ export function DashboardClientePage() {
     queryKey: ["servicosCliente", clienteId],
     queryFn: () => fetchServicosCliente(clienteId!),
     enabled: !!clienteId && isAuthenticated,
+    refetchInterval: 3000, // <--- A MÁGICA: Atualiza a cada 3 segundos
   });
 
   const { data: trabalhadores, isLoading: isLoadingTrabalhadores } = useQuery<

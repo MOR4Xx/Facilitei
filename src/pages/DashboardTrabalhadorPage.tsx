@@ -136,6 +136,7 @@ export function DashboardTrabalhadorPage() {
     queryKey: ["workerData", trabalhador.id],
     queryFn: () => fetchWorkerData(trabalhador.id),
     enabled: !!trabalhador.id,
+    refetchInterval: 3000,
   });
 
   const { data: avaliacoesFeitas } = useQuery({
