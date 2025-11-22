@@ -30,10 +30,11 @@ const fetchTrabalhadorById = async (id: string): Promise<Trabalhador> => {
 
 const fetchAvaliacoesTrabalhador = async (
   workerId: string
-): Promise<AvaliacaoTrabalhador[]> => {
+): Promise<any[]> => { // Pode tipar corretamente se quiser
   try {
-    return await get<AvaliacaoTrabalhador[]>(
-      `/avaliacoes-trabalhador?trabalhadorId=${workerId}`
+    // ALTERADO: Agora busca do endpoint de serviço, que contém os comentários reais dos trabalhos
+    return await get<any[]>(
+      `/avaliacoes-servico/trabalhador/${workerId}`
     );
   } catch {
     return [];
