@@ -106,7 +106,7 @@ public class ClienteController {
             Object notaObj = updates.get("notaCliente");
             Double novaNota = Double.valueOf(notaObj.toString());
             
-            c.setNotaCliente(novaNota.intValue()); // O Cliente.java usa Integer para notaCliente, certo?
+            c.setNotaCliente(novaNota);
             
             clienteService.atualizarNota(id, novaNota); // Vamos criar esse método no Service
             
