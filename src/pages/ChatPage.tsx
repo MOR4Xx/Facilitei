@@ -68,7 +68,11 @@ export function ChatPage() {
   }, [user, servicoId]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "start",
+    });
   }, [messages]);
 
   const handleSendMessage = (e?: React.FormEvent) => {
