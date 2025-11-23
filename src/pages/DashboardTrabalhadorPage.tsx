@@ -223,13 +223,6 @@ export function DashboardTrabalhadorPage() {
                   {trabalhador.notaTrabalhador?.toFixed(1) || "N/A"}
                 </p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/dashboard/configuracoes")}
-              >
-                <CogIcon className="w-5 h-5 mr-2" /> Ajustar Perfil
-              </Button>
             </div>
           </Card>
         </motion.div>
