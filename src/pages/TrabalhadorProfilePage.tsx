@@ -177,14 +177,17 @@ export function TrabalhadorProfilePage() {
                 </div>
               </div>
 
-              <Button
-                variant="secondary"
-                size="lg"
-                className="w-full mt-8 shadow-glow-accent font-bold text-lg"
-                onClick={handleOpenModal}
-              >
-                Contratar Agora 🚀
-              </Button>
+              {/* Só mostra o botão se NÃO for um trabalhador */}
+              {user?.role !== "trabalhador" && (
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="w-full mt-8 shadow-glow-accent font-bold text-lg"
+                  onClick={handleOpenModal}
+                >
+                  Contratar Agora 🚀
+                </Button>
+              )}
             </Card>
           </motion.div>
 
