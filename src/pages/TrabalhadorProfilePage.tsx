@@ -11,7 +11,7 @@ import { Modal } from "../components/ui/Modal";
 import { Textarea } from "../components/ui/Textarea";
 import { toast } from "react-hot-toast";
 import { get, post } from "../lib/api";
-import { CheckIcon, WrenchScrewdriverIcon } from "../components/ui/Icons";
+import { CheckIcon, WrenchScrewdriverIcon, CogIcon } from "../components/ui/Icons";
 
 const fetchTrabalhadorById = async (id: string): Promise<Trabalhador> =>
   get<Trabalhador>(`/trabalhadores/buscarPorId/${id}`);
@@ -47,6 +47,7 @@ export function TrabalhadorProfilePage() {
   const { user, isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
   const location = useLocation();
+  const isOwner = user?.id === trabalhadorId;
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [descricao, setDescricao] = useState("");
@@ -177,16 +178,26 @@ export function TrabalhadorProfilePage() {
                 </div>
               </div>
 
-              {/* Só mostra o botão se NÃO for um trabalhador */}
-              {user?.role !== "trabalhador" && (
+             {isOwner ? (
                 <Button
-                  variant="secondary"
+                  variant="outline"
                   size="lg"
-                  className="w-full mt-8 shadow-glow-accent font-bold text-lg"
-                  onClick={handleOpenModal}
+                  className="w-full mt-8 border-white/20 hover:bg-white/5 text-white"
+                  onClick={() => navigate("/dashboard/configuracoes")}
                 >
-                  Contratar Agora 🚀
+                  <CogIcon className="w-5 h-5 mr-2" /> Editar Perfil
                 </Button>
+              ) : (
+                user?.role !== "trabalhador" && (
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full mt-8 shadow-glow-accent font-bold text-lg"
+                    onClick={handleOpenModal}
+                  >
+                    Contratar Agora 🚀
+                  </Button>
+                )
               )}
             </Card>
           </motion.div>
