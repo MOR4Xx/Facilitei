@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-background text-dark-text font-sans antialiased overflow-x-hidden;
+    /* Fundo profundo com granularidade sutil */
+    background-image: 
+      radial-gradient(circle at 15% 50%, rgba(13, 148, 136, 0.08), transparent 25%), 
+      radial-gradient(circle at 85% 30%, rgba(163, 230, 53, 0.05), transparent 25%);
+    background-attachment: fixed;
+  }
+
+  /* Scrollbar Personalizada */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-dark-background;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-dark-surface rounded-full border-2 border-dark-background;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/50;
+  }
+}
+
+/* Utilitários de Animação */
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0,0,0,0.5);
+  }
+  .text-glow {
+    text-shadow: 0 0 10px rgba(163, 230, 53, 0.5);
+  }
+}

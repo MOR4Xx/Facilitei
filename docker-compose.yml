@@ -1,0 +1,51 @@
+services:
+  api-facilitei:
+    build:
+      context: ./Facilitei-Api
+      dockerfile: Dockerfile
+    container_name: api_facilitei
+    ports:
+      - "8080:8080"
+    expose:
+      - "8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/faciliteidb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: admin
+
+    networks:
+      - facilitei
+
+  frontend:
+    build:
+        context: ./Facilitei-Front
+        dockerfile: Dockerfile
+    container_name: frontend_container
+    ports:
+      - "80:80"
+    networks:
+      - facilitei
+
+  db:
+    image: mysql:8.0.44
+    container_name: facilitei_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: faciliteidb
+    ports:
+      - "3307:3307"
+    networks:
+      - facilitei
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+networks:
+  facilitei:
+    driver: bridge
+
+volumes:
+  mysql-data:
